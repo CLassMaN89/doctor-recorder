@@ -1359,3 +1359,8 @@ html body[data-theme="dark"] .ip-badge,html[data-theme="dark"] .ip-badge{backgro
 
 /* v10.7 — Telefon (marka / model) alanı pasif: kullanıcı değiştiremez */
 html body .locked-field{background:#eef3f7!important;color:#5b7386!important;cursor:not-allowed;pointer-events:none;-webkit-text-fill-color:#5b7386;opacity:1}
+
+/* v10.8 — Çıkış düğmesi */
+body.mobile-mode .rec-top-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+body.mobile-mode .logout-btn{border:1px solid #d5e2ec;background:#fff;color:#5b7386;border-radius:999px;padding:5px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+body.mobile-mode .logout-btn:active{background:#eef3f7}

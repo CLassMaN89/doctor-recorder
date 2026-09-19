@@ -478,8 +478,28 @@ async function initMobile(){
  if(!ok)return expired();
  $('#firstName').value='';
  $('#lastName').value='';
- $('#identity').classList.remove('hidden');
+ $('#logoutBtn').onclick=logout;
+ // Aynı QR oturumunda sayfa yenilenirse giriş korunur; kayıt ekranı açık kalır. Çıkış için "Çıkış" düğmesi kullanılır.
+ const savedLogin=readLogin();
+ if(savedLogin&&savedLogin.token===token){
+  $('#firstName').value=savedLogin.first; $('#lastName').value=savedLogin.last;
+  await register();
+  if(!device){$('#identity').classList.remove('hidden')}
+ } else {
+  $('#identity').classList.remove('hidden');
+ }
  setInterval(async()=>{if(!(await checkToken()))expired()},5000);
+}
+function readLogin(){try{return JSON.parse(localStorage.getItem('dr_login')||'null')}catch{return null}}
+function saveLogin(first,last){try{localStorage.setItem('dr_login',JSON.stringify({token,first,last}))}catch{}}
+// Çıkış: uyarı verir; onaylanırsa giriş silinir, "Kayıtlarım" listesi bu telefondan temizlenir ve ad-soyad ekranı gelir.
+// Kayıtların kendisi sisteme gönderilmiştir, silinmez.
+function logout(){
+ if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){alert('Önce kaydı bitirin, sonra çıkış yapabilirsiniz.');return}
+ if(isFinishing){alert('Kayıt gönderiliyor, lütfen bekleyin.');return}
+ if(!confirm('Çıkış yaparsanız "Kayıtlarım" listesi bu telefondan silinir.\n\nSes kayıtlarınız sisteme gönderilmiştir, kaybolmaz.\n\nÇıkış yapılsın mı?'))return;
+ try{localStorage.removeItem('dr_login');localStorage.setItem('dr_list_since',String(Date.now()))}catch{}
+ location.reload();
 }
 async function checkToken(){
  if(!token)return false;
@@ -491,6 +511,7 @@ async function register(){
  try{
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
   $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
+  saveLogin(first,last);
   lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
 }
@@ -714,7 +735,10 @@ async function toggleRecording(){
 async function loadMobileHistory(){
  if(!device)return;
  try{
-  const recs=await api('device-recordings',{query:{token,device_token:device.device_token}});
+  let recs=await api('device-recordings',{query:{token,device_token:device.device_token}});
+  // Çıkış yapıldıysa o andan önceki kayıtlar bu telefonda gösterilmez (sistemde durur).
+  const since=Number((()=>{try{return localStorage.getItem('dr_list_since')}catch{return 0}})()||0);
+  if(since)recs=recs.filter(r=>new Date(r.created_at).getTime()>since);
   $('#historyCount').textContent=`${recs.length} kayıt`;
   const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
   recs.forEach((r,i)=>{
