@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=79">
+  <link rel="stylesheet" href="style.css?v=80">
 </head>
 <body>
 <main>
@@ -34,7 +34,7 @@
       </header>
 
       <div class="dashboard-content">
-        <div class="dashboard-top">
+        <div class="dashboard-showcase"><div class="dashboard-top">
           <section class="dash-card connect-panel">
             <div class="connect-upper">
               <div class="connect-copy"><span class="online-dot"></span><div><h2>Masaüstüne Bağlandı</h2><p>Doktor cihazı aktif olarak bağlandı.</p></div></div>
@@ -64,6 +64,11 @@
             <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText"></span><i class="status-cursor"></i></span><b id="liveConnText">00:00</b></div>
           </section>
         </div>
+        <aside class="phone-preview-panel" aria-label="Telefon görünümü">
+          <div class="phone-preview-head"><div><span>TELEFON GÖRÜNÜMÜ</span><b>Doktor ekranı</b></div><small>Mobil önizleme</small></div>
+          <img src="phone-preview.png" alt="Doktor Kayıt mobil ekran önizlemesi">
+        </aside>
+      </div>
 
         <section class="dash-card recordings recordings-table">
           <div class="section-head table-head">
@@ -153,6 +158,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=79"></script>
+<script src="app.js?v=80"></script>
 </body>
 </html>
