@@ -84,15 +84,12 @@ async function initDesktop(){
  if(!data.session){const r=await sb.auth.signInAnonymously(); if(r.error){alert('Oturum açılamadı');return}}
  $('#newQr').onclick=createSession;
  $('#deviceFilter').onchange=()=>renderDashboard(window.__dash||{devices:[],recordings:[]});
- const activateNav=id=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.id===id))};
- $('#navHome').onclick=()=>{activateNav('navHome');document.querySelector('.dashboard-content').scrollIntoView({behavior:'smooth'});};
- $('#navRecords').onclick=()=>{activateNav('navRecords');document.querySelector('.recordings-table').scrollIntoView({behavior:'smooth',block:'start'});};
- $('#navDoctors').onclick=()=>{activateNav('navDoctors');renderDoctorPanel();$('#doctorsPanel').classList.remove('hidden');$('#settingsPanel').classList.add('hidden');};
- $('#navSettings').onclick=()=>{activateNav('navSettings');$('#settingsPanel').classList.remove('hidden');$('#doctorsPanel').classList.add('hidden');};
- document.querySelectorAll('.panelClose').forEach(b=>b.onclick=()=>{b.closest('.workspace-panel').classList.add('hidden');activateNav('navHome')});
- $('#topRefresh').onclick=loadDashboard;
- await createSession();
+ $('#topRefresh') && ($('#topRefresh').onclick=loadDashboard);
+ const saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
+ if(saved?.id&&saved?.token){session=saved;showSessionQR();await loadDashboard();dashboardInt=setInterval(loadDashboard,2500)}
+ else await createSession();
 }
+
 function renderDoctorPanel(){
  const d=window.__dash||{devices:[]}, box=$('#doctorListPanel');
  if(!box)return;
@@ -103,19 +100,30 @@ function renderDoctorPanel(){
   box.appendChild(el);
  });
 }
+function showSessionQR(){
+ if(!session)return;
+ const code=(session.token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+ $('#sessionCode').textContent=code.match(/.{1,3}/g)?.slice(0,3).join(' ')||'--------';
+ const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
+ $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:150,height:150,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+}
 async function createSession(){
  try{
   session=await api('create-session',{method:'POST',auth:true,body:{}});
-  $('#sessionCode').textContent=(session.token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().match(/.{1,3}/g)?.slice(0,3).join(' ')||'--------';
-  const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
-  $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:220,height:220,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  localStorage.setItem('dr_pc_session',JSON.stringify(session)); showSessionQR();
   if(dashboardInt)clearInterval(dashboardInt);
   await loadDashboard(); dashboardInt=setInterval(loadDashboard,2500);
  }catch(e){console.error(e);alert('QR oluşturulamadı.')}
 }
 async function loadDashboard(){
  if(!session)return;
- try{const d=await api('dashboard',{auth:true,query:{session_id:session.id}});window.__dash=d;renderDashboard(d)}catch(e){console.error(e)}
+ try{
+   const d=await api('history',{auth:true});
+   // Current QR session devices first, historical recordings remain persistent.
+   const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id);
+   window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
+   renderDashboard(window.__dash);
+ }catch(e){console.error(e)}
 }
 
 function waveSeed(v){
@@ -178,42 +186,36 @@ function wireWavePlayer(root,audio,play,timeEl){
 function playIcon(){return '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>'}
 function pauseIcon(){return '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" stroke="none"/></svg>'}
 
+function animatePlaybackWave(root,audio){
+ const wave=root.querySelector('.apple-wave'); if(!wave)return;
+ const bars=[...wave.querySelectorAll('i')]; let raf=0;
+ const tick=()=>{const t=performance.now()/180;bars.forEach((b,i)=>{const base=parseFloat(getComputedStyle(b).getPropertyValue('--h'))||10;const pulse=.72+.34*Math.abs(Math.sin(t+i*.43));b.style.height=`${Math.max(4,base*pulse)}px`});raf=requestAnimationFrame(tick)};
+ audio.addEventListener('play',()=>{cancelAnimationFrame(raf);tick()});
+ const stop=()=>{cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
+}
+
 function renderDashboard(d){
- const devices=d.devices||[], recs=d.recordings||[];
+ const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
  $('#deviceCount').textContent=`${devices.length} cihaz`;
- const devBox=$('#devices');
- if(devices.length){
-  stopWaitingLoop();
-  devBox.innerHTML='';
- }else{
-  devBox.innerHTML=waitingMarkup();
-  startWaitingLoop();
- }
+ const devBox=$('#devices'); devBox.innerHTML='';
+ if(!devices.length){devBox.innerHTML=waitingMarkup();startWaitingLoop()}else stopWaitingLoop();
  devices.forEach(x=>{
-  const el=document.createElement('div'); el.className='device';
+  const el=document.createElement('div');el.className='device device-card';
   const active=Date.now()-new Date(x.last_seen_at).getTime()<45000;
   const st=x.status==='recording'?'Kayıt yapıyor':x.status==='uploading'?'Gönderiliyor':active?'Bağlı':'Bağlantı bekleniyor';
-  const latestRec=recs.find(r=>r.device_connection_id===x.id);
-  const seenSec=Math.max(0,Math.round((Date.now()-new Date(x.last_seen_at).getTime())/1000));
-  el.innerHTML=`<div class="device-rich"><div class="phone-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg></div><div class="device-main"><b>${esc(x.device_model||'Telefon')}</b><small>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)} · ${esc(x.ip_address||'IP alınamadı')}</small></div><div class="online-meta"><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${st}</b><small>Son görülme: ${seenSec<8?'şimdi':seenSec+' sn önce'}</small></div><div class="sent-info ${latestRec?'':'muted'}"><span class="sent-check">✓</span><div><b>${latestRec?'Ses kaydı bilgisayara gönderildi':'Henüz kayıt gönderilmedi'}</b><small>${latestRec?'Son kayıt: '+new Date(latestRec.created_at).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Kayıt bekleniyor'}</small></div></div></div>`;
-  el.onclick=()=>{$('#deviceFilter').value=x.id;renderDashboard(d)};
+  const latest=recs.find(r=>r.device_connection_id===x.id);
+  el.innerHTML=`<div class="device-phone"><span class="phone-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg></span><div><b>${esc(x.device_model||'Telefon')}</b><small>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)} · ${esc(x.ip_address||'IP alınamadı')}</small></div></div><div class="device-presence"><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${st}</b><small>Son görülme: ${active?'şimdi':Math.round((Date.now()-new Date(x.last_seen_at))/1000)+' sn önce'}</small></div><div class="device-sent ${latest?'':'muted'}"><span>✓</span><div><b>${latest?'Ses kaydı bilgisayara gönderildi':'Henüz kayıt gönderilmedi'}</b><small>${latest?'Son kayıt: '+new Date(latest.created_at).toLocaleString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Kayıt bekleniyor'}</small></div></div>`;
   devBox.appendChild(el);
  });
- const filter=$('#deviceFilter'), old=filter.value; filter.innerHTML='<option value="">Tüm doktorlar</option>';
- devices.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=devices.some(x=>x.id===old)?old:'';
- const map=Object.fromEntries(devices.map(x=>[x.id,x]));
- const shown=recs.filter(r=>!filter.value||r.device_connection_id===filter.value);
- const box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
- shown.forEach((r,ri)=>{
-  const x=map[r.device_connection_id]||{};
-  const row=document.createElement('div');row.className='rec-row wave-rec-row';
-  const when=new Date(r.created_at);
-  const stamp=`${when.toLocaleDateString('tr-TR')} · ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
-  row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${esc(x.device_model||'Telefon')}</div><div class="rec-date">${stamp.replace(' · ',' - ')}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="more" aria-label="Diğer işlemler">⋮</button><span class="ptime hidden-time">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" crossorigin="anonymous" src="${r.signed_url||''}"></audio></div>`;
-  const audio=row.querySelector('audio'),play=row.querySelector('.play'),pt=row.querySelector('.ptime');
-  wireWavePlayer(row,audio,play,pt);
-  box.appendChild(row);
- });
+ const activeRec=devices.find(x=>x.status==='recording');
+ const live=$('.live-panel'); if(live){live.classList.toggle('is-recording',!!activeRec); const title=live.querySelector('h2');if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor';}
+ const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
+ const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
+ const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
+ const shown=recs.filter(r=>!filter.value||r.device_connection_id===filter.value),box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ shown.forEach((r,ri)=>{const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row';const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+ row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${esc(x.device_model||'Telefon')}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil">⌫</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+ const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!confirm('Bu ses kaydı kalıcı olarak silinsin mi?'))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){alert('Kayıt silinemedi.')}};box.appendChild(row)});
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
@@ -225,8 +227,9 @@ let mobilePageHidden=false;
 function qrLabel(){
  const raw=(token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
  if(!raw)return '------';
- return raw.match(/.{1,4}/g).join(' ');
+ return raw.slice(0,9).match(/.{1,3}/g).join(' ');
 }
+
 function setSentBadge(show){
  const el=$('#sentBadge'); if(!el)return;
  el.classList.toggle('hidden',!show);
@@ -243,6 +246,7 @@ function stopHeartbeat(){
 async function initMobile(){
  $('#mobile').classList.remove('hidden');
  const qrEl=$('#mobileQrCode'); if(qrEl) qrEl.textContent=qrLabel();
+ const mini=$('#mobileMiniQr'); if(mini){mini.innerHTML='';new QRCode(mini,{text:location.href,width:54,height:54,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
  document.addEventListener('visibilitychange',()=>{
   mobilePageHidden=document.hidden;
   if(!document.hidden && device){
@@ -262,7 +266,7 @@ async function initMobile(){
  if(!ok)return expired();
  const saved=JSON.parse(localStorage.getItem('dr_doctor')||'null');
  if(saved?.first)$('#firstName').value=saved.first;
- if(saved?.last)$('#lastName').value=saved.last;
+ if(saved?.last)$('#lastName').value=saved.last; if($('#deviceModelInput'))$('#deviceModelInput').value=localStorage.getItem('dr_device_model')||model();
  if($('#deviceModelInput')) $('#deviceModelInput').value=localStorage.getItem('dr_device_model')||model();
  $('#identity').classList.remove('hidden');
  setInterval(async()=>{if(!(await checkToken()))expired()},5000);
@@ -276,7 +280,7 @@ async function register(){
  const first=$('#firstName').value.trim(),last=$('#lastName').value.trim(); if(!first||!last){$('#identityError').textContent='Ad ve soyad alanlarını doldurun.';$('#identityError').classList.remove('hidden');return}
  try{
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:($('#deviceModelInput')?.value.trim()||model())}});
-  localStorage.setItem('dr_doctor',JSON.stringify({first,last})); localStorage.setItem('dr_device_model',$('#deviceModelInput')?.value.trim()||model());
+  localStorage.setItem('dr_doctor',JSON.stringify({first,last})); localStorage.setItem('dr_device_model',$('#deviceModelInput')?.value.trim()||model()); localStorage.setItem('dr_device_model',$('#deviceModelInput')?.value.trim()||model());
   $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=$('#deviceModelInput')?.value.trim()||model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
   lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
@@ -482,7 +486,7 @@ async function loadMobileHistory(){
    const stamp=new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
    el.innerHTML=`<div class="mrec-wave-line"><div class="mrec-label"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><b>Kayıt ${recs.length-i}</b><small>${stamp} · ${fmt(r.duration_seconds)}</small></div>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}<button class="play mobile-play" aria-label="Oynat">▶</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
    const audio=el.querySelector('audio'),play=el.querySelector('.play');
-   wireWavePlayer(el,audio,play,null);
+   wireWavePlayer(el,audio,play,null); animatePlaybackWave(el,audio);
    box.appendChild(el);
   });
  }catch(e){console.error('mobile history',e)}

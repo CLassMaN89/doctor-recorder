@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=73">
+  <link rel="stylesheet" href="style.css?v=74">
 </head>
 <body>
 <main>
@@ -67,7 +67,7 @@
             <div><div class="kicker">SES KAYITLARI</div><h2>Gelen Ses Kayıtları</h2></div>
             <div class="table-filters"><select id="deviceFilter"><option value="">Tüm doktorlar</option></select><button class="date-filter">▣ &nbsp; Tarih seç⌄</button><button class="table-refresh">↻</button></div>
           </div>
-          <div class="recording-columns"><span>#</span><span>DOKTOR / CİHAZ</span><span>SÜRE</span><span>SES DALGASI</span></div>
+          <div class="recording-columns"><span>#</span><span>DOKTOR</span><span>CİHAZ</span><span>TARİH - SAAT</span><span>SÜRE</span><span>SES DALGASI / İŞLEMLER</span></div>
           <div id="recordings"><div class="empty">Henüz kayıt yok.</div></div>
         </section>
       </div>
@@ -87,7 +87,7 @@
       <div id="connection" class="connection checking">
         <span class="pcico">▣</span>
         <div class="conn-copy"><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
-        <div class="qr-session-info"><span>QR</span><b id="mobileQrCode">------</b></div>
+        <div class="qr-session-info"><div id="mobileMiniQr" class="mobile-mini-qr"></div><div><span>QR Oturum</span><b id="mobileQrCode">------</b></div></div>
       </div>
 
       <section id="identity" class="identity cardish hidden">
@@ -96,6 +96,7 @@
         <p>Ses kayıtlarının size ait olduğunu ayırabilmemiz için adınızı ve soyadınızı yazın.</p>
         <label>Adınız<input id="firstName" autocomplete="given-name" placeholder="Ahmet"></label>
         <label>Soyadınız<input id="lastName" autocomplete="family-name" placeholder="Yılmaz"></label>
+        <label>Telefon modeli<input id="deviceModelInput" autocomplete="off" placeholder="Örn. iPhone 15 Pro"></label>
         <button id="identityContinue" class="primary">Devam Et →</button>
         <div id="identityError" class="error hidden"></div>
       </section>
@@ -150,6 +151,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=73"></script>
+<script src="app.js?v=74"></script>
 </body>
 </html>

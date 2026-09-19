@@ -120,3 +120,15 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Rebuilt waveform envelope to match the supplied clustered Apple-style reference more closely.
 - Play buttons use actual audio elements with signed URLs, async error handling and refresh guidance.
 - Sidebar Home / Recordings / Doctors / Settings now perform real actions.
+
+
+## v7.4
+- Removed desktop sidebar and centered dashboard to max 1440px.
+- Connected doctors render as independent stacked cards.
+- QR is larger on desktop; refresh keeps recordings persistent.
+- Desktop loads persistent recording history across QR sessions.
+- Added permanent recording delete action (Storage + DB via Edge Function v6).
+- Playback waveform animates while audio is playing on desktop and mobile.
+- Mobile shows a small QR plus short 9-character session code.
+- Live recording card reacts to phone recording state and animates only while a device is recording.
+- Doctor identity is requested per QR session and phone model can be entered explicitly.
