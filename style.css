@@ -1213,3 +1213,29 @@ html[data-theme="dark"] #mobile .history-empty,html[data-theme="dark"] #mobile .
 .duraklat-icon{width:30px;height:30px;object-fit:contain;display:block}
 .pause-control-icon{width:22px;height:22px;object-fit:contain;display:block;margin:auto}
 [data-theme="dark"] .duraklat-icon,[data-theme="dark"] .pause-control-icon{filter:invert(1)}
+
+/* v9.3 — themed, functional recording filters */
+#desktop .table-filters{align-items:center!important}
+#desktop .doctor-select-wrap,#desktop .date-picker-wrap{position:relative;height:38px;min-width:0}
+#desktop .doctor-select-wrap{width:184px}
+#desktop .doctor-select-wrap select{
+  width:100%!important;height:38px!important;appearance:none;-webkit-appearance:none;
+  padding:0 38px 0 13px!important;border:1px solid var(--th-line)!important;border-radius:10px!important;
+  background:var(--th-input)!important;color:var(--th-text)!important;font-size:13px!important;font-weight:600!important;
+  outline:none;cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease
+}
+#desktop .doctor-select-wrap::after{content:"";position:absolute;right:14px;top:50%;width:7px;height:7px;border-right:2px solid var(--th-muted);border-bottom:2px solid var(--th-muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+#desktop .doctor-select-wrap select:hover,#desktop .doctor-select-wrap select:focus,#desktop .date-picker-wrap:hover .date-filter,#desktop .date-filter:focus{border-color:var(--th-blue)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--th-blue) 12%,transparent)!important}
+#desktop .date-picker-wrap{width:144px}
+#desktop .date-picker-wrap::before{content:"";position:absolute;left:12px;top:50%;width:13px;height:13px;transform:translateY(-50%);border:1.7px solid var(--th-muted);border-radius:3px;pointer-events:none;z-index:2}
+#desktop .date-picker-wrap::after{content:"";position:absolute;left:14px;top:11px;width:9px;height:3px;border-top:1.7px solid var(--th-muted);border-bottom:1.7px solid var(--th-muted);pointer-events:none;z-index:2}
+#desktop .date-filter{width:100%!important;height:38px!important;min-width:0!important;padding:0 10px 0 34px!important;border:1px solid var(--th-line)!important;border-radius:10px!important;background:var(--th-input)!important;color:var(--th-text)!important;font-size:12px!important;font-weight:600!important;outline:none;cursor:pointer;color-scheme:light}
+html[data-theme="dark"] #desktop .date-filter{color-scheme:dark}
+#desktop .date-filter::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+#desktop .date-placeholder{position:absolute;left:35px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:var(--th-text);pointer-events:none;white-space:nowrap}
+#desktop .date-picker-wrap.has-value .date-placeholder{display:none}
+#desktop .date-picker-wrap:not(.has-value) .date-filter{color:transparent!important}
+#desktop .table-refresh{border-radius:10px!important;transition:border-color .16s ease,background .16s ease,transform .12s ease}
+#desktop .table-refresh:hover{border-color:var(--th-blue)!important;background:var(--th-hover)!important;color:var(--th-blue)!important}
+#desktop .table-refresh:active{transform:rotate(25deg)}
+@media(max-width:760px){#desktop .doctor-select-wrap{width:min(100%,184px)}#desktop .date-picker-wrap{width:144px}}

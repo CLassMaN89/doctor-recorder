@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=92">
+  <link rel="stylesheet" href="style.css?v=93">
 </head>
 <body>
 <main>
@@ -68,7 +68,11 @@
         <section class="dash-card recordings recordings-table">
           <div class="section-head table-head">
             <div><div class="kicker">SES KAYITLARI</div><h2>Gelen Ses Kayıtları</h2></div>
-            <div class="table-filters"><select id="deviceFilter"><option value="">Tüm doktorlar</option></select><button class="date-filter">▣ &nbsp; Tarih seç⌄</button><button class="table-refresh">↻</button></div>
+            <div class="table-filters">
+              <div class="doctor-select-wrap"><select id="deviceFilter" aria-label="Doktor filtresi"><option value="">Tüm doktorlar</option></select></div>
+              <div class="date-picker-wrap"><input id="recordingDateFilter" class="date-filter" type="date" aria-label="Kayıt tarihi"><span class="date-placeholder">Tarih seç</span></div>
+              <button class="table-refresh" type="button" aria-label="Kayıtları yenile">↻</button>
+            </div>
           </div>
           <div class="recording-columns"><span>#</span><span>DOKTOR</span><span>CİHAZ</span><span>TARİH - SAAT</span><span>SÜRE</span><span>SES DALGASI / İŞLEMLER</span></div>
           <div id="recordings"><div class="empty">Henüz kayıt yok.</div></div>
@@ -153,6 +157,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=92"></script>
+<script src="app.js?v=93"></script>
 </body>
 </html>
