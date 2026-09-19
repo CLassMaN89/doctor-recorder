@@ -95,3 +95,11 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Starting a new recording clears the previous success confirmation.
 - Mobile recording history is rendered as one-line rows.
 - v6.9 microphone ReferenceError fix, red TextLoop, and REC SVG indicators are preserved.
+
+## v7.1
+- Desktop and mobile recording histories now use the requested compact Apple-like pink/violet/blue/cyan waveform rows.
+- Waveforms are deterministic per recording and clickable for seeking; play buttons control the actual signed audio.
+- Live recording visualizer now uses a white background and microphone-reactive vertical gradient bars.
+- Duplicate lower successful-upload message is hidden; only the green confirmation beside device info remains.
+- Success badge is absolutely positioned so it does not push the recorder content downward.
+- Mobile QR/session display now shows the full token grouped in blocks instead of only six characters.

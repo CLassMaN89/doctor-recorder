@@ -100,6 +100,48 @@ async function loadDashboard(){
  if(!session)return;
  try{const d=await api('dashboard',{auth:true,query:{session_id:session.id}});window.__dash=d;renderDashboard(d)}catch(e){console.error(e)}
 }
+
+function waveSeed(v){
+ let h=2166136261; const s=String(v||'recording');
+ for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+ return h>>>0;
+}
+function waveBars(seed,count=54){
+ let x=waveSeed(seed), out='';
+ for(let i=0;i<count;i++){
+  x=(Math.imul(x,1664525)+1013904223)>>>0;
+  const p=i/(count-1), env=.22+.78*Math.pow(Math.sin(Math.PI*p),.8);
+  const noise=.25+(x/4294967295)*.75;
+  const pulse=.55+.45*Math.abs(Math.sin((p*5.6)+(seed?.length||1)));
+  const h=Math.max(3,Math.round((5+25*env*noise*pulse)));
+  out+=`<i style="--h:${h}px;--i:${i}"></i>`;
+ }
+ return out;
+}
+function waveMarkup(seed,extra=''){
+ return `<div class="apple-wave ${extra}" data-wave="${esc(seed)}">${waveBars(seed)}</div>`;
+}
+function wireWavePlayer(root,audio,play,timeEl){
+ const bars=[...root.querySelectorAll('.apple-wave i')];
+ const paint=()=>{
+  const ratio=audio.duration?audio.currentTime/audio.duration:0;
+  bars.forEach((b,i)=>b.classList.toggle('played',i/bars.length<=ratio));
+  if(timeEl)timeEl.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||0)}`;
+ };
+ audio.ontimeupdate=paint;
+ audio.onended=()=>{play.textContent='▶';paint()};
+ play.onclick=()=>{
+  document.querySelectorAll('audio').forEach(a=>{if(a!==audio)a.pause()});
+  audio.paused?audio.play():audio.pause();
+ };
+ audio.onplay=()=>play.textContent='❚❚';
+ audio.onpause=()=>play.textContent='▶';
+ root.querySelector('.apple-wave').onclick=e=>{
+  if(!audio.duration)return;
+  const b=e.currentTarget.getBoundingClientRect();
+  audio.currentTime=Math.max(0,Math.min(audio.duration,((e.clientX-b.left)/b.width)*audio.duration));
+ };
+}
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[];
  $('#deviceCount').textContent=`${devices.length} cihaz`;
@@ -124,13 +166,14 @@ function renderDashboard(d){
  const map=Object.fromEntries(devices.map(x=>[x.id,x]));
  const shown=recs.filter(r=>!filter.value||r.device_connection_id===filter.value);
  const box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
- shown.forEach(r=>{
-  const x=map[r.device_connection_id]||{}; const row=document.createElement('div');row.className='rec-row';
-  row.innerHTML=`<img class="recording-rec-icon desktop-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><div class="rec-meta"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><small>${esc(x.device_model||'')} · ${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><div class="player"><button class="play">▶</button><div class="track"><div class="fill"></div></div><span class="ptime">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
-  const audio=row.querySelector('audio'), play=row.querySelector('.play'), fill=row.querySelector('.fill'), pt=row.querySelector('.ptime'), track=row.querySelector('.track');
-  play.onclick=()=>{document.querySelectorAll('audio').forEach(a=>{if(a!==audio)a.pause()});audio.paused?audio.play():audio.pause()};
-  audio.onplay=()=>play.textContent='❚❚';audio.onpause=()=>play.textContent='▶';audio.ontimeupdate=()=>{fill.style.width=`${audio.duration?audio.currentTime/audio.duration*100:0}%`;pt.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||r.duration_seconds)}`};
-  track.onclick=e=>{if(audio.duration){const b=track.getBoundingClientRect();audio.currentTime=((e.clientX-b.left)/b.width)*audio.duration}};
+ shown.forEach((r,ri)=>{
+  const x=map[r.device_connection_id]||{};
+  const row=document.createElement('div');row.className='rec-row wave-rec-row';
+  const when=new Date(r.created_at);
+  const stamp=`${when.toLocaleDateString('tr-TR')} · ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+  row.innerHTML=`<div class="rec-id"><img class="recording-rec-icon desktop-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><span>${shown.length-ri}</span></div><div class="rec-meta"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><small>${esc(x.device_model||'Telefon')} · ${stamp}</small></div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat">▶</button><span class="ptime">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+  const audio=row.querySelector('audio'),play=row.querySelector('.play'),pt=row.querySelector('.ptime');
+  wireWavePlayer(row,audio,play,pt);
   box.appendChild(row);
  });
 }
@@ -143,7 +186,8 @@ let mobilePageHidden=false;
 
 function qrLabel(){
  const raw=(token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
- return raw ? raw.slice(0,6) : '------';
+ if(!raw)return '------';
+ return raw.match(/.{1,4}/g).join(' ');
 }
 function setSentBadge(show){
  const el=$('#sentBadge'); if(!el)return;
@@ -313,7 +357,8 @@ async function uploadRecording(){
    body:form
   });
 
-  $('#uploadState').textContent='Kayıt başarıyla gönderildi.';
+  $('#uploadState').textContent='';
+  $('#uploadState').classList.add('hidden');
   setSentBadge(true);
   $('#statePill').className='pill';
   $('#statePill').textContent='Hazır';
@@ -392,8 +437,11 @@ async function loadMobileHistory(){
   $('#historyCount').textContent=`${recs.length} kayıt`;
   const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
   recs.forEach((r,i)=>{
-   const el=document.createElement('div');el.className='mrec';
-   el.innerHTML=`<div class="mrec-one-line"><b class="recording-title"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı">Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small><audio controls preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+   const el=document.createElement('div');el.className='mrec wave-mrec';
+   const stamp=new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+   el.innerHTML=`<div class="mrec-wave-line"><div class="mrec-label"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><b>Kayıt ${recs.length-i}</b><small>${stamp} · ${fmt(r.duration_seconds)}</small></div>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}<button class="play mobile-play" aria-label="Oynat">▶</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+   const audio=el.querySelector('audio'),play=el.querySelector('.play');
+   wireWavePlayer(el,audio,play,null);
    box.appendChild(el);
   });
  }catch(e){console.error('mobile history',e)}
@@ -405,36 +453,27 @@ function startWave(s){
  stopWave();
  $('#waveWrap')?.classList.remove('hidden');
  const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
- analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.68;src.connect(analyser);waveCtx=ac;
- const data=new Uint8Array(analyser.fftSize);
+ analyser=ac.createAnalyser();analyser.fftSize=256;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;
+ const freq=new Uint8Array(analyser.frequencyBinCount);
  const draw=()=>{
   waveRAF=requestAnimationFrame(draw);
   const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);
   if(c.width!==w||c.height!==h){c.width=w;c.height=h}
-  analyser.getByteTimeDomainData(data);
-  let energy=0;for(let i=0;i<data.length;i++){const v=(data[i]-128)/128;energy+=v*v}energy=Math.sqrt(energy/data.length);
-  const gain=Math.min(1,Math.max(.10,energy*5.8));
+  analyser.getByteFrequencyData(freq);
   ctx.clearRect(0,0,w,h);
-  const grad=ctx.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,w*.58);grad.addColorStop(0,'rgba(40,25,75,.32)');grad.addColorStop(1,'rgba(2,5,12,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
-  const layers=[
-   {c:'#ff405e',a:1.00,f:1.00,p:0,l:3.1},
-   {c:'#8a4dff',a:.88,f:1.18,p:47,l:3.0},
-   {c:'#3d8bff',a:.78,f:.86,p:103,l:2.8},
-   {c:'#39e5b2',a:.66,f:1.34,p:159,l:2.5},
-   {c:'#ffffff',a:.38,f:1.06,p:211,l:1.4}
-  ];
-  layers.forEach((L,li)=>{
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);
+  const bars=64,gap=2.4*dpr,bw=Math.max(2*dpr,(w-gap*(bars-1))/bars),cy=h/2;
+  for(let i=0;i<bars;i++){
+   const p=i/(bars-1), fi=Math.min(freq.length-1,Math.floor(p*freq.length*.72));
+   const energy=freq[fi]/255, env=.32+.68*Math.pow(Math.sin(Math.PI*p),.72);
+   const bh=Math.max(4*dpr,(8+energy*h*.78)*env);
+   const hue=330+p*210; // pink -> violet -> blue -> cyan
+   ctx.fillStyle=`hsl(${hue%360} 92% 56%)`;
+   const x=i*(bw+gap),y=cy-bh/2,r=Math.min(bw/2,3*dpr);
    ctx.beginPath();
-   for(let i=0;i<420;i++){
-    const p=i/419,x=p*w,env=Math.pow(Math.sin(Math.PI*p),.62);
-    const di=Math.floor(p*(data.length-1)),raw=(data[(di+L.p)%data.length]-128)/128;
-    const harmonic=Math.sin(p*Math.PI*2*(2.1+li*.35)+performance.now()*.0025*(li%2?1:-1))*.16;
-    const y=h*.5+(raw*.78+harmonic)*h*.62*gain*L.a*env;
-    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-   }
-   ctx.strokeStyle=L.c;ctx.lineWidth=L.l*dpr;ctx.globalAlpha=.82;ctx.shadowBlur=14*dpr;ctx.shadowColor=L.c;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
-  });
-  ctx.globalAlpha=1;ctx.shadowBlur=0;
+   if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,r);else ctx.rect(x,y,bw,bh);
+   ctx.fill();
+  }
  };
  draw();
 }
