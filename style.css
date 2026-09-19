@@ -645,3 +645,51 @@
   50%{transform:scaleY(1.25)}
   100%{transform:scaleY(.72)}
 }
+
+/* ==========================================================
+   v7.7 — exact live recording card from supplied reference
+   ========================================================== */
+@media(min-width:761px){
+ .live-panel{
+   background:#fff!important;border:1px solid #dfe9f1!important;border-radius:15px!important;
+   box-shadow:0 5px 18px rgba(30,67,98,.045)!important;padding:16px 18px 14px!important;
+   min-height:292px!important;display:flex!important;flex-direction:column!important;
+ }
+ .live-head{height:34px!important;display:flex!important;align-items:flex-start!important;justify-content:space-between!important;border-bottom:1px solid #edf2f6!important;padding-bottom:9px!important}
+ .live-head .kicker{font-size:10px!important;letter-spacing:.09em!important;color:#087bea!important;font-weight:900!important}
+ .live-timer{font-size:19px!important;line-height:20px!important;color:#102c49!important;font-weight:900!important;font-variant-numeric:tabular-nums!important}
+ .live-apple-wave{height:78px!important;margin:8px 0 5px!important;padding:0 4px!important;gap:1.6px!important;background:transparent!important}
+ .live-apple-wave i{min-width:2px!important;max-width:4px!important;border-radius:999px!important;opacity:1!important;background:hsl(var(--hue) 96% 55%)!important}
+ /* reference remains visibly alive even before amplitude data arrives */
+ .live-apple-wave i{animation:referenceWave .72s ease-in-out infinite alternate!important;animation-delay:calc(var(--i) * -12ms)!important}
+ @keyframes referenceWave{0%{transform:scaleY(.58)}45%{transform:scaleY(1.12)}100%{transform:scaleY(.72)}}
+
+ .live-actions{display:grid!important;grid-template-columns:repeat(3,74px)!important;justify-content:center!important;gap:14px!important;margin:1px auto 10px!important}
+ .live-actions button{appearance:none!important;border:0!important;background:none!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;color:#153957!important}
+ .live-actions .control-circle{width:48px!important;height:48px!important;border-radius:50%!important;background:#eef5fa!important;display:grid!important;place-items:center!important;font-size:18px!important;font-weight:900!important}
+ .live-actions .live-finish .control-circle{width:50px!important;height:50px!important;background:#ff4056!important;color:#fff!important;box-shadow:0 7px 17px rgba(255,64,86,.26)!important}
+ .live-actions .live-finish .control-circle i{display:block!important;width:13px!important;height:13px!important;border-radius:2px!important;background:#fff!important}
+ .live-actions .control-circle svg{width:21px!important;height:21px!important}
+ .live-actions small{font-size:9px!important;color:#31506b!important;font-weight:600!important}
+ .live-actions .live-finish small{font-weight:900!important;color:#142f49!important}
+
+ .live-strip{height:38px!important;min-height:38px!important;background:#edfbf4!important;border:0!important;border-radius:9px!important;padding:0 10px!important;display:flex!important;align-items:center!important;gap:7px!important;overflow:hidden!important}
+ .live-mic{width:17px;height:17px;color:#0db467;display:grid;place-items:center;flex:0 0 17px}
+ .live-mic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+ .live-rec-svg{width:34px!important;height:22px!important;flex:0 0 34px!important;display:grid!important;place-items:center!important}
+ .live-rec-svg img{width:34px!important;height:22px!important;object-fit:contain!important}
+ .live-status-loop{position:relative!important;display:inline-flex!important;align-items:center!important;min-width:0!important;max-width:250px!important;width:max-content!important;height:22px!important;overflow:hidden!important;color:#0a9f5c!important;font-size:10px!important;font-weight:800!important;white-space:nowrap!important}
+ .live-status-loop #liveStatusText{display:inline-block!important;animation:statusTextTravel 2.7s ease-in-out infinite!important;clip-path:none!important}
+ .live-status-loop .status-cursor{display:block!important;width:2px!important;height:15px!important;background:#ff3e56!important;margin-left:3px!important;flex:0 0 2px!important;animation:statusCursorTravel 2.7s ease-in-out infinite, cursorBlink .55s linear infinite alternate!important}
+ @keyframes statusTextTravel{
+   0%,12%{transform:translateX(-9px);opacity:.15}
+   35%,72%{transform:translateX(0);opacity:1}
+   92%,100%{transform:translateX(8px);opacity:.2}
+ }
+ @keyframes statusCursorTravel{
+   0%,12%{transform:translateX(-9px);opacity:.25}
+   35%,72%{transform:translateX(0);opacity:1}
+   92%,100%{transform:translateX(8px);opacity:.25}
+ }
+ .live-strip>b{margin-left:auto!important;font-size:12px!important;color:#0ba45f!important;font-weight:900!important;font-variant-numeric:tabular-nums!important}
+}

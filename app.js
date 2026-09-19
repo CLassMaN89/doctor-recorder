@@ -195,10 +195,21 @@ function animatePlaybackWave(root,audio){
 }
 
 
+let liveStartedAt=0,liveTimerRAF=0;
 function renderLiveWave(recording){
  const box=$('#liveWave'); if(!box)return;
  if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',78);
  box.classList.toggle('active',!!recording);
+ if(recording && !liveStartedAt) liveStartedAt=Date.now();
+ if(!recording) liveStartedAt=0;
+ cancelAnimationFrame(liveTimerRAF);
+ const tick=()=>{
+  const sec=liveStartedAt?Math.floor((Date.now()-liveStartedAt)/1000):0;
+  const val=fmt(sec);
+  const a=$('#liveTimer'),b=$('#liveConnText'); if(a)a.textContent=val;if(b)b.textContent=val;
+  if(recording)liveTimerRAF=requestAnimationFrame(tick);
+ };
+ tick();
 }
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
@@ -218,9 +229,7 @@ function renderDashboard(d){
  const live=$('.live-panel');
  if(live){
   live.classList.toggle('is-recording',!!activeRec);
-  const title=live.querySelector('h2'); if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor';
   const lst=$('#liveStatusText'); if(lst)lst.textContent=activeRec?'Şuanda kayıt işlemi yapılıyor...':'Kayıt bekleniyor...';
-  const conn=$('#liveConnText'); if(conn)conn.textContent=activeRec?'Kayıt Aktif':(devices.length?'Bağlı':'Bekleniyor');
  }
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
