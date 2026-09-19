@@ -89,7 +89,7 @@ async function initDesktop(){
 async function createSession(){
  try{
   session=await api('create-session',{method:'POST',auth:true,body:{}});
-  $('#sessionCode').textContent=session.token.slice(0,8).toUpperCase();
+  $('#sessionCode').textContent=(session.token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().match(/.{1,3}/g)?.slice(0,3).join(' ')||'--------';
   const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
   $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:220,height:220,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
   if(dashboardInt)clearInterval(dashboardInt);

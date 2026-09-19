@@ -103,3 +103,10 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Duplicate lower successful-upload message is hidden; only the green confirmation beside device info remains.
 - Success badge is absolutely positioned so it does not push the recorder content downward.
 - Mobile QR/session display now shows the full token grouped in blocks instead of only six characters.
+
+
+## v7.2
+- Desktop was fully rebuilt to match the approved dashboard mockup instead of only restyling the old cards.
+- Added sidebar, top app bar, combined connection/QR/device card, live recording visual card, and full-width waveform recordings table.
+- Existing functional IDs and backend flows are preserved.
+- Mobile waveform history remains compact and consistent with desktop.

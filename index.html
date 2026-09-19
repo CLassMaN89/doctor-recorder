@@ -8,56 +8,64 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=71">
+  <link rel="stylesheet" href="style.css?v=72">
 </head>
 <body>
 <main>
   <!-- DESKTOP -->
-  <section id="desktop" class="desktop hidden">
-    <header class="top">
-      <div class="brand"><span class="brandmark">▥</span><div><b>DOKTOR <i>KAYIT</i></b><small>QR ile güvenli mobil dikta</small></div></div>
-      <span class="secure">● HTTPS · Güvenli</span>
-    </header>
+  <section id="desktop" class="desktop desktop-shell hidden">
+    <aside class="side-nav">
+      <div class="side-brand"><span class="side-mic">♩</span><div><b>Doktor Kayıt</b><small>Sesli Raporlama Sistemi</small></div></div>
+      <nav>
+        <button class="nav-item active">⌂ <span>Ana Sayfa</span></button>
+        <button class="nav-item">≋ <span>Ses Kayıtları</span></button>
+        <button class="nav-item">♙ <span>Doktorlar</span></button>
+        <button class="nav-item">⚙ <span>Ayarlar</span></button>
+      </nav>
+      <div class="side-status"><span>●</span> Sistem Aktif<small>v7.2</small></div>
+    </aside>
 
-    <div class="intro"><span>QR İLE DİKTE</span><h1>Doktor Ses Kayıtları</h1><p>Aynı QR kodunu birden fazla doktor okutabilir. Her telefon ve kayıt ayrı tutulur.</p></div>
+    <div class="desktop-work">
+      <header class="app-topbar">
+        <div class="searchbox">⌕ <span>Hasta ara (Ad, Soyad, TC, Acc No...)</span></div>
+        <div class="top-user"><span class="bell">♧</span><span class="avatar">SK</span><div><b>Doktor Kayıt</b><small>Sesli Raporlama</small></div></div>
+      </header>
 
-    <div class="desktop-grid">
-      <aside class="card qr-card">
-        <div class="kicker">BAĞLANTI</div><h2>Telefon bağla</h2><p>QR kodu telefon kamerasıyla okutun.</p>
-        <div class="qrbox"><div id="qrcode"></div></div>
-        <div class="session"><span>Oturum Kodu</span><b id="sessionCode">--------</b></div>
-        <button id="newQr" class="primary">↻ Yeni QR Oluştur</button>
-        <div class="hint">Aynı aktif QR birden fazla telefon tarafından okutulabilir.</div>
-      </aside>
+      <div class="dashboard-content">
+        <div class="dashboard-top">
+          <section class="dash-card connect-panel">
+            <div class="connect-upper">
+              <div class="connect-copy"><span class="online-dot"></span><div><h2>Masaüstüne Bağlandı</h2><p>Doktor cihazı aktif olarak bağlandı.</p></div></div>
+              <div class="mini-qr"><div id="qrcode"></div></div>
+              <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span></div>
+            </div>
+            <div class="connect-divider"></div>
+            <div class="connected-area">
+              <div id="devices" class="devices">
+                <div class="empty waiting-empty">
+                  <span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span>
+                  <div class="waiting-loop"><span class="waiting-static">Telefon</span><div class="waiting-animated-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>
+                </div>
+              </div>
+              <span id="deviceCount" class="count hidden-count">0 cihaz</span>
+              <button id="newQr" class="refresh-qr" title="Yeni QR oluştur">↻</button>
+            </div>
+          </section>
 
-      <div class="desktop-main">
-        <section class="card device-card">
-          <div class="section-head">
-            <div><div class="kicker">CANLI BAĞLANTILAR</div><h2>Bağlı Telefonlar</h2></div>
-            <span id="deviceCount" class="count">0 cihaz</span>
-          </div>
-          <div id="devices" class="devices">
-  <div class="empty waiting-empty">
-    <span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span>
-    <div class="waiting-loop">
-      <span class="waiting-static">Telefon</span>
-      <div class="waiting-animated-slot">
-        <span class="waiting-rotating-wrap">
-          <span id="waitingType" class="waiting-rotating">Bekleniyor...</span>
-          <span class="waiting-gradient"></span>
-        </span>
-        <span class="type-cursor"></span>
-      </div>
-    </div>
-  </div>
-</div>
-        </section>
+          <section class="dash-card live-panel">
+            <div class="live-head"><div><div class="kicker">CANLI SES KAYDI</div><h2>Aktif Telefon</h2></div><b class="live-clock">● CANLI</b></div>
+            <div class="desktop-demo-wave" aria-hidden="true"></div>
+            <div class="live-actions"><span>Ⅱ<small>Duraklat</small></span><span class="stop-demo">■<small>Kaydı Bitir</small></span><span>⚑<small>İşaretle</small></span></div>
+            <div class="live-strip"><span>♩ &nbsp; Telefon üzerinden kayıt kontrolü</span><b>Bağlı</b></div>
+          </section>
+        </div>
 
-        <section class="card recordings">
-          <div class="section-head">
+        <section class="dash-card recordings recordings-table">
+          <div class="section-head table-head">
             <div><div class="kicker">SES KAYITLARI</div><h2>Gelen Ses Kayıtları</h2></div>
-            <select id="deviceFilter"><option value="">Tüm doktorlar</option></select>
+            <div class="table-filters"><select id="deviceFilter"><option value="">Tüm doktorlar</option></select><button class="date-filter">▣ &nbsp; Tarih seç⌄</button><button class="table-refresh">↻</button></div>
           </div>
+          <div class="recording-columns"><span>#</span><span>DOKTOR / CİHAZ</span><span>SÜRE</span><span>SES DALGASI</span></div>
           <div id="recordings"><div class="empty">Henüz kayıt yok.</div></div>
         </section>
       </div>
@@ -138,6 +146,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=71"></script>
+<script src="app.js?v=72"></script>
 </body>
 </html>
