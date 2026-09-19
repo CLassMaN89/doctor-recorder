@@ -80,3 +80,9 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Generic errors now display their browser exception name for diagnosis.
 - Fixed waveform wrapper being hidden immediately by `startWave -> stopWave`.
 - v6.7 red TextLoop and v6.6 REC icons preserved.
+
+## v6.9
+- Fixed the actual ReferenceError: `uploadRecording` had been accidentally removed while refactoring `startRecording`.
+- Restored upload handler with Safari MIME/extension handling.
+- Successful upload resets recorder/timer and refreshes mobile history.
+- Future generic errors display both exception name and message.

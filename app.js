@@ -231,7 +231,7 @@ async function startRecording(){
   console.error('Recorder start failed:',e?.name,e?.message,e);
   acquiredStream?.getTracks().forEach(t=>t.stop());
   stream=null;recorder=null;
-  let msg=`Mikrofon başlatılamadı${e?.name?` (${e.name})`:''}.`;
+  let msg=`Mikrofon başlatılamadı${e?.name?` (${e.name})`:''}${e?.message?`: ${e.message}`:''}.`;
   if(e?.name==='NotAllowedError'||e?.name==='SecurityError') msg='Mikrofon erişimine izin verilmedi. Safari adres çubuğundaki site ayarlarından Mikrofon → İzin Ver seçin.';
   else if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
   else if(e?.name==='NotReadableError'||e?.name==='TrackStartError') msg='Mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
@@ -240,6 +240,75 @@ async function startRecording(){
   $('#uploadState').classList.remove('hidden');
  }
 }
+
+async function uploadRecording(){
+ const finishedRecorder=recorder;
+ try{
+  $('#uploadState').textContent='Ses kaydı gönderiliyor…';
+  $('#uploadState').classList.remove('hidden');
+
+  const duration=finishedRecorder?.__finalDuration ||
+    Math.max(1,Math.round(elapsedBeforePause/1000));
+
+  const actualType=(finishedRecorder?.mimeType || chunks[0]?.type || 'audio/mp4').split(';')[0];
+  const blob=new Blob(chunks,{type:actualType});
+  stream?.getTracks().forEach(t=>t.stop());
+
+  if(!blob.size) throw new Error('empty_recording');
+
+  const ext=actualType.includes('mp4')?'m4a':
+            actualType.includes('mpeg')?'mp3':
+            actualType.includes('wav')?'wav':
+            actualType.includes('aac')?'aac':'webm';
+
+  const form=new FormData();
+  form.append('file',blob,`recording.${ext}`);
+  form.append('duration_seconds',String(duration));
+
+  await api('upload',{
+   method:'POST',
+   query:{token,device_token:device.device_token},
+   body:form
+  });
+
+  $('#uploadState').textContent='Kayıt başarıyla gönderildi.';
+  $('#statePill').className='pill';
+  $('#statePill').textContent='Hazır';
+  $('#tapHint').textContent='Yeni kayıt için mikrofona dokunun';
+  $('#recordHelp').textContent='Ses kaydı bilgisayara gönderildi.';
+  $('#timer').textContent='00:00';
+
+  recorder=null;
+  chunks=[];
+  stream=null;
+  elapsedBeforePause=0;
+  pauseStartedAt=0;
+  startedAt=0;
+  isPaused=false;
+  isFinishing=false;
+
+  state('idle').catch(e=>console.warn('Device state update failed:',e));
+  await loadMobileHistory();
+ }catch(e){
+  console.error('Upload failed:',e);
+  stream?.getTracks().forEach(t=>t.stop());
+  recorder=null;
+  chunks=[];
+  stream=null;
+  elapsedBeforePause=0;
+  pauseStartedAt=0;
+  startedAt=0;
+  isPaused=false;
+  isFinishing=false;
+  $('#timer').textContent='00:00';
+  $('#statePill').className='pill';
+  $('#statePill').textContent='Gönderilemedi';
+  $('#uploadState').textContent='Ses kaydı gönderilemedi. Tekrar kayıt alabilirsiniz.';
+  $('#uploadState').classList.remove('hidden');
+  state('idle').catch(()=>{});
+ }
+}
+
 function updateTimer(){
  let ms=0;
  if(recorder){
