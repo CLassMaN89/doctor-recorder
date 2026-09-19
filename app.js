@@ -211,6 +211,27 @@ function renderLiveWave(recording){
  };
  tick();
 }
+
+let liveTypingTimer=0,liveTypingKey="";
+function startLiveTypeLoop(text){
+ const el=$('#liveStatusText'), cursor=$('.status-cursor'); if(!el)return;
+ if(liveTypingKey===text && liveTypingTimer)return;
+ clearTimeout(liveTypingTimer); liveTypingTimer=0; liveTypingKey=text;
+ let pos=0, deleting=false;
+ el.textContent="";
+ const step=()=>{
+   if(!deleting){
+     pos=Math.min(text.length,pos+1); el.textContent=text.slice(0,pos);
+     if(pos===text.length){deleting=true;liveTypingTimer=setTimeout(step,1500);return}
+     liveTypingTimer=setTimeout(step,58);
+   }else{
+     pos=Math.max(0,pos-1); el.textContent=text.slice(0,pos);
+     if(pos===0){deleting=false;liveTypingTimer=setTimeout(step,420);return}
+     liveTypingTimer=setTimeout(step,30);
+   }
+ };
+ step();
+}
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
  $('#deviceCount').textContent=`${devices.length} cihaz`;
@@ -229,7 +250,7 @@ function renderDashboard(d){
  const live=$('.live-panel');
  if(live){
   live.classList.toggle('is-recording',!!activeRec);
-  const lst=$('#liveStatusText'); if(lst)lst.textContent=activeRec?'Şuanda kayıt işlemi yapılıyor...':'Kayıt bekleniyor...';
+  startLiveTypeLoop(activeRec?'Şuanda kayıt işlemi yapılıyor...':'Telefon bekleniyor...');
  }
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));

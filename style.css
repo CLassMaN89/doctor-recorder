@@ -693,3 +693,50 @@
  }
  .live-strip>b{margin-left:auto!important;font-size:12px!important;color:#0ba45f!important;font-weight:900!important;font-variant-numeric:tabular-nums!important}
 }
+
+/* ==========================================================
+   v7.8 — requested background + device summary + real typing
+   ========================================================== */
+@media(min-width:761px){
+  /* exact requested background for the upper connection area */
+  .connect-panel{background:#f5fafe!important}
+  .connect-upper{background:#f5fafe!important}
+  .connected-area{background:#f5fafe!important}
+
+  .connected-copy{min-width:250px}
+  .connected-device-summary{
+    margin-top:10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap
+  }
+  .connected-device-summary span{
+    display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #dceaf4;
+    border-radius:8px;background:#fff;color:#163957
+  }
+  .connected-device-summary b{font-size:10px}
+  .connected-device-summary small{font-size:9px;color:#71899d}
+  .connected-device-summary em{
+    font-style:normal;font-size:9px;font-weight:800;color:#087bea;background:#e9f4ff;
+    padding:5px 7px;border-radius:999px
+  }
+
+  /* status strip: REC stays fixed. Only typed text changes. */
+  .live-strip{background:#edfbf4!important}
+  .live-rec-svg{
+    width:42px!important;height:24px!important;flex:0 0 42px!important;
+    display:grid!important;place-items:center!important
+  }
+  .live-rec-svg img{width:42px!important;height:24px!important;object-fit:contain!important}
+  .live-status-loop{
+    display:inline-flex!important;align-items:center!important;width:255px!important;max-width:255px!important;
+    height:24px!important;overflow:hidden!important;white-space:nowrap!important;color:#079d5b!important;
+    font-size:10px!important;font-weight:800!important
+  }
+  .live-status-loop #liveStatusText{
+    display:inline!important;animation:none!important;transform:none!important;opacity:1!important
+  }
+  .live-status-loop .status-cursor{
+    display:inline-block!important;width:2px!important;height:15px!important;background:#ff3e56!important;
+    margin-left:2px!important;flex:0 0 2px!important;transform:none!important;
+    animation:v78CursorBlink .55s steps(1,end) infinite!important
+  }
+  @keyframes v78CursorBlink{0%,48%{opacity:1}49%,100%{opacity:0}}
+}
