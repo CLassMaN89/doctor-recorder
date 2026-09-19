@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=74">
+  <link rel="stylesheet" href="style.css?v=75">
 </head>
 <body>
 <main>
@@ -57,8 +57,8 @@
           <section class="dash-card live-panel">
             <div class="live-head"><div><div class="kicker">CANLI SES KAYDI</div><h2>Aktif Telefon</h2></div><b class="live-clock">● CANLI</b></div>
             <div class="desktop-demo-wave" aria-hidden="true"></div>
-            <div class="live-actions"><span>Ⅱ<small>Duraklat</small></span><span class="stop-demo">■<small>Kaydı Bitir</small></span><span>⚑<small>İşaretle</small></span></div>
-            <div class="live-strip"><span>♩ &nbsp; Telefon üzerinden kayıt kontrolü</span><b>Bağlı</b></div>
+            <div class="live-actions"><span class="live-pause">Ⅱ<small>Duraklat</small></span><span class="live-play">▶<small>Oynat</small></span></div>
+            <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText">Kayıt bekleniyor...</span><i></i></span><b>Bağlı</b></div>
           </section>
         </div>
 
@@ -96,7 +96,6 @@
         <p>Ses kayıtlarının size ait olduğunu ayırabilmemiz için adınızı ve soyadınızı yazın.</p>
         <label>Adınız<input id="firstName" autocomplete="given-name" placeholder="Ahmet"></label>
         <label>Soyadınız<input id="lastName" autocomplete="family-name" placeholder="Yılmaz"></label>
-        <label>Telefon modeli<input id="deviceModelInput" autocomplete="off" placeholder="Örn. iPhone 15 Pro"></label>
         <button id="identityContinue" class="primary">Devam Et →</button>
         <div id="identityError" class="error hidden"></div>
       </section>
@@ -151,6 +150,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=74"></script>
+<script src="app.js?v=75"></script>
 </body>
 </html>

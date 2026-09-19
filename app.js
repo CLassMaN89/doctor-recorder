@@ -190,8 +190,8 @@ function animatePlaybackWave(root,audio){
  const wave=root.querySelector('.apple-wave'); if(!wave)return;
  const bars=[...wave.querySelectorAll('i')]; let raf=0;
  const tick=()=>{const t=performance.now()/180;bars.forEach((b,i)=>{const base=parseFloat(getComputedStyle(b).getPropertyValue('--h'))||10;const pulse=.72+.34*Math.abs(Math.sin(t+i*.43));b.style.height=`${Math.max(4,base*pulse)}px`});raf=requestAnimationFrame(tick)};
- audio.addEventListener('play',()=>{cancelAnimationFrame(raf);tick()});
- const stop=()=>{cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
+ audio.addEventListener('play',()=>{wave.classList.add('is-playing');cancelAnimationFrame(raf);tick()});
+ const stop=()=>{wave.classList.remove('is-playing');cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
 }
 
 function renderDashboard(d){
@@ -208,7 +208,7 @@ function renderDashboard(d){
   devBox.appendChild(el);
  });
  const activeRec=devices.find(x=>x.status==='recording');
- const live=$('.live-panel'); if(live){live.classList.toggle('is-recording',!!activeRec); const title=live.querySelector('h2');if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor';}
+ const live=$('.live-panel'); if(live){live.classList.toggle('is-recording',!!activeRec); const title=live.querySelector('h2');if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor'; const lst=live.querySelector('#liveStatusText');if(lst)lst.textContent=activeRec?'Şuanda kayıt işlemi yapılıyor...':'Kayıt bekleniyor...';}
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
@@ -266,8 +266,7 @@ async function initMobile(){
  if(!ok)return expired();
  const saved=JSON.parse(localStorage.getItem('dr_doctor')||'null');
  if(saved?.first)$('#firstName').value=saved.first;
- if(saved?.last)$('#lastName').value=saved.last; if($('#deviceModelInput'))$('#deviceModelInput').value=localStorage.getItem('dr_device_model')||model();
- if($('#deviceModelInput')) $('#deviceModelInput').value=localStorage.getItem('dr_device_model')||model();
+ if(saved?.last)$('#lastName').value=saved.last;
  $('#identity').classList.remove('hidden');
  setInterval(async()=>{if(!(await checkToken()))expired()},5000);
 }
@@ -279,9 +278,9 @@ function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textCont
 async function register(){
  const first=$('#firstName').value.trim(),last=$('#lastName').value.trim(); if(!first||!last){$('#identityError').textContent='Ad ve soyad alanlarını doldurun.';$('#identityError').classList.remove('hidden');return}
  try{
-  device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:($('#deviceModelInput')?.value.trim()||model())}});
-  localStorage.setItem('dr_doctor',JSON.stringify({first,last})); localStorage.setItem('dr_device_model',$('#deviceModelInput')?.value.trim()||model()); localStorage.setItem('dr_device_model',$('#deviceModelInput')?.value.trim()||model());
-  $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=$('#deviceModelInput')?.value.trim()||model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
+  device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
+  localStorage.setItem('dr_doctor',JSON.stringify({first,last}));
+  $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
   lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
 }
@@ -506,7 +505,7 @@ function startWave(s){
   if(c.width!==w||c.height!==h){c.width=w;c.height=h}
   analyser.getByteFrequencyData(freq);
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);
+  // transparent background; only the animated waveform is drawn
   const bars=64,gap=2.4*dpr,bw=Math.max(2*dpr,(w-gap*(bars-1))/bars),cy=h/2;
   for(let i=0;i<bars;i++){
    const p=i/(bars-1), fi=Math.min(freq.length-1,Math.floor(p*freq.length*.72));

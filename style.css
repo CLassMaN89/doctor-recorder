@@ -567,3 +567,28 @@
 @media(max-width:1100px) and (min-width:761px){.dashboard-top{grid-template-columns:1fr!important}.device-card{grid-template-columns:1fr 1fr!important}.device-sent{grid-column:1/3}.recording-columns,.wave-rec-row{grid-template-columns:52px 110px 100px 145px 50px minmax(280px,1fr)!important}.wave-player{grid-template-columns:minmax(220px,1fr) 38px 32px!important}}
 /* mobile QR + animated playback */
 .qr-session-info{display:flex!important;align-items:center!important;gap:8px!important;max-width:none!important}.mobile-mini-qr{width:58px;height:58px;background:#fff;border-radius:8px;padding:2px;flex:0 0 58px}.mobile-mini-qr canvas,.mobile-mini-qr img{width:54px!important;height:54px!important}.qr-session-info>div:last-child b{font-size:11px!important;white-space:nowrap}.identity label{display:block}.identity input{width:100%}.mobile-wave i{transition:height .12s linear!important}
+
+/* v7.5 requested UI corrections */
+@media(min-width:761px){
+  .dashboard-content{max-width:1320px;margin:0 auto!important}
+  .dash-card{background:transparent!important;box-shadow:none!important;border-color:#dce8f1!important}
+  .connect-panel,.recordings-table{background:#fff!important}
+  .live-panel{background:transparent!important;border-color:transparent!important;padding-left:18px!important;padding-right:18px!important}
+  .connected-area{position:relative!important;padding-top:8px!important}
+  #deviceCount.count{position:static!important;align-self:flex-start!important;justify-self:end!important;margin:0 0 8px auto!important;display:block!important;width:max-content!important;transform:none!important}
+  .devices{padding-right:0!important;clear:both!important}
+  .device-card{width:100%!important;box-sizing:border-box!important;background:#fff!important;margin:0!important}
+  .live-panel .desktop-demo-wave{height:82px!important;margin:12px 0 6px!important}
+  .live-panel .desktop-demo-wave:before{animation:continuousWave .78s ease-in-out infinite alternate!important;transform-origin:center!important}
+  .live-actions{justify-content:center!important;gap:34px!important}
+  .live-actions>span{background:transparent!important;box-shadow:none!important}
+  .live-strip{background:transparent!important;border:0!important;padding-left:0!important;padding-right:0!important}
+}
+@keyframes continuousWave{0%{transform:scaleY(.58) translateX(-1px);filter:saturate(1)}50%{transform:scaleY(1.06) translateX(1px);filter:saturate(1.18)}100%{transform:scaleY(.72) translateX(0);filter:saturate(1.05)}}
+.live-rec-svg{width:22px;height:22px;display:inline-grid;place-items:center;flex:0 0 22px}.live-rec-svg img{width:22px;height:22px;display:block}.live-status-loop{display:inline-flex;align-items:center;min-width:210px;overflow:hidden;white-space:nowrap;color:#12a45e;font-weight:700}.live-status-loop #liveStatusText{display:inline-block;animation:statusReveal 2.2s ease-in-out infinite}.live-status-loop i{width:2px;height:1.05em;background:#ff405d;margin-left:3px;animation:cursorBlink .7s infinite alternate}@keyframes statusReveal{0%{clip-path:inset(0 100% 0 0);opacity:.25}45%,72%{clip-path:inset(0 0 0 0);opacity:1}100%{clip-path:inset(0 100% 0 0);opacity:.25}}@keyframes cursorBlink{to{opacity:.25}}
+/* Keep playback waves alive while audio is playing; idle rows stay clean */
+.apple-wave.is-playing i{animation:recordedWave .52s ease-in-out infinite alternate!important;animation-delay:calc(var(--i,0) * -18ms)!important}@keyframes recordedWave{from{transform:scaleY(.58)}to{transform:scaleY(1.22)}}
+/* Mobile: no dark waveform background, continuous bright waveform */
+.wave{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:8px 0!important;height:92px!important}.wave canvas{background:transparent!important}
+.mobile-history,.mrec{background:transparent!important;box-shadow:none!important}.mrec{border-left:0!important;border-right:0!important}
+@media(max-width:760px){.phone{background:#f8fbfd!important}.cardish{background:#fff!important}.connection{background:#fff!important}.qr-session-info{margin-left:auto}.mobile-mini-qr{border:1px solid #dce8f0}.live-status-loop{min-width:0}}
