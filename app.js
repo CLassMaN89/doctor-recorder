@@ -177,6 +177,9 @@ async function startRecording(){
    err.stage='permission'; throw err;
   }
   stream=acquiredStream;
+  if(typeof window.MediaRecorder==='undefined'){
+   const err=new Error('MediaRecorder_not_supported'); err.name='NotSupportedError'; err.stage='recorder'; throw err;
+  }
 
   // Safari/iOS MediaRecorder support differs by version. Try candidates one by one
   // and finally let the browser choose its own default MIME type.
@@ -221,13 +224,14 @@ async function startRecording(){
   $('#recordControls').classList.remove('hidden');
   $('#pauseBtn').classList.remove('resume');
   $('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';
-  startWave(stream);
-  await state('recording');
+  // Visualizer and server presence are auxiliary. Neither may cancel a valid mic recording.
+  try{ startWave(stream); }catch(waveErr){ console.warn('Waveform unavailable:',waveErr); $('#waveWrap')?.classList.add('hidden'); }
+  state('recording').catch(stateErr=>console.warn('Device state update failed:',stateErr));
  }catch(e){
   console.error('Recorder start failed:',e?.name,e?.message,e);
   acquiredStream?.getTracks().forEach(t=>t.stop());
   stream=null;recorder=null;
-  let msg='Mikrofon başlatılamadı.';
+  let msg=`Mikrofon başlatılamadı${e?.name?` (${e.name})`:''}.`;
   if(e?.name==='NotAllowedError'||e?.name==='SecurityError') msg='Mikrofon erişimine izin verilmedi. Safari adres çubuğundaki site ayarlarından Mikrofon → İzin Ver seçin.';
   else if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
   else if(e?.name==='NotReadableError'||e?.name==='TrackStartError') msg='Mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
@@ -248,10 +252,10 @@ async function togglePause(){
  if(!recorder||isFinishing)return;
  if(recorder.state==='recording'){
   recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
-  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');$('#pauseBtn').innerHTML='▶ <span>Devam Et</span>';stopWave();await state('idle');
+  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');$('#pauseBtn').innerHTML='▶ <span>Devam Et</span>';stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
  }else if(recorder.state==='paused'){
   recorder.resume(); startedAt=Date.now(); isPaused=false;
-  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';$('#waveWrap').classList.remove('hidden');startWave(stream);await state('recording');
+  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
  }
 }
 async function finishRecording(){
@@ -261,7 +265,7 @@ async function finishRecording(){
  const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
  recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
  clearInterval(timerInt); recorder.stop(); isPaused=false;
- $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();await state('uploading');
+ $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
 }
 async function toggleRecording(){
  if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;
@@ -287,6 +291,7 @@ function expired(){
 }
 function startWave(s){
  stopWave();
+ $('#waveWrap')?.classList.remove('hidden');
  const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
  analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.68;src.connect(analyser);waveCtx=ac;
  const data=new Uint8Array(analyser.fftSize);

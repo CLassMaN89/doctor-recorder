@@ -72,3 +72,11 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Animated text, gradient background and cursor changed from violet to red.
 - REC SVG is in an independent fixed-width grid slot and does not move when text expands/collapses.
 - v6.6 recording REC icons and v6.4 iPhone microphone fixes remain.
+
+## v6.8
+- Critical mic-start fix: a failed `device-state` network request no longer gets misreported as a microphone failure.
+- Waveform/AudioContext failure no longer stops a valid MediaRecorder session.
+- Added explicit MediaRecorder support detection.
+- Generic errors now display their browser exception name for diagnosis.
+- Fixed waveform wrapper being hidden immediately by `startWave -> stopWave`.
+- v6.7 red TextLoop and v6.6 REC icons preserved.
