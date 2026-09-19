@@ -17,13 +17,34 @@ function isRecordingPlaybackActive(){
 function deviceId(){
  return mobileConnectionId;
 }
-function model(){
+// Gerçek cihaz adı: Android Chrome modeli User-Agent'ta gizler ("K"); userAgentData ile gerçek model istenir.
+// iOS tarayıcıları tam model vermez; ekran ölçüsünden seri tahmin edilir.
+let detectedModel=null;
+function iosModelGuess(){
+ const w=Math.min(screen.width,screen.height),h=Math.max(screen.width,screen.height);
+ const map={'320x568':'iPhone SE (1. nesil)','375x667':'iPhone 8 / SE','414x736':'iPhone 8 Plus','375x812':'iPhone X / 11 Pro / 12-13 mini','414x896':'iPhone 11 / XR / 11 Pro Max','390x844':'iPhone 12-14','428x926':'iPhone 12-14 Pro Max / Plus','393x852':'iPhone 15 / 16 / Pro','430x932':'iPhone 15-16 Pro Max / Plus','402x874':'iPhone 16 Pro','440x956':'iPhone 16 Pro Max'};
+ return map[w+'x'+h]||'iPhone';
+}
+function baseModel(){
  const ua=navigator.userAgent;
- if(/iPhone/i.test(ua)) return 'iPhone';
+ if(/iPhone/i.test(ua)) return iosModelGuess();
  if(/iPad/i.test(ua)) return 'iPad';
  const m=ua.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/|\))/i);
- return m?.[1]?.trim()||(/Android/i.test(ua)?'Android Telefon':'Telefon');
+ const raw=m?.[1]?.trim();
+ return raw&&raw.length>1?raw:(/Android/i.test(ua)?'Android Telefon':'Telefon');
 }
+function prettyModel(v){
+ v=String(v||'').trim(); if(!v||v.length<2)return null;
+ if(/^SM-/i.test(v))return 'Samsung '+v; if(/^Pixel/i.test(v))return 'Google '+v; return v;
+}
+async function detectModel(){
+ try{
+  const uad=navigator.userAgentData;
+  if(uad?.getHighEntropyValues){const h=await uad.getHighEntropyValues(['model']);const p=prettyModel(h.model);if(p)detectedModel=p}
+ }catch{}
+}
+function model(){return detectedModel||baseModel()}
+detectModel();
 function fmt(sec){sec=Math.max(0,Math.floor(sec||0));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`}
 async function api(action,{method='GET',body=null,auth=false,query={}}={}){
  const q=new URLSearchParams({action,...query});
