@@ -1269,3 +1269,9 @@ html body .apple-wave i.played{opacity:.98!important;filter:none!important}
 html body .live-apple-wave,html body .preview-wave{justify-content:space-between!important;gap:0!important}
 html body .live-apple-wave i,html body .preview-wave i{flex:0 0 2.4px!important;width:2.4px!important;min-width:2.4px!important;max-width:2.4px!important;border-radius:1.2px!important;background:var(--c,#a83cff)!important;opacity:.45!important;animation:none!important;transform:none!important;transition:none!important}
 html body .live-apple-wave.active i,html body .preview-wave.active i{opacity:.95!important;animation:none!important;transform:none!important}
+
+/* v10.1 — dalgalar Dikte2'deki gibi sürekli hareketli; çalınmayan kısım biraz soluk, çalınan kısım tam renkli */
+html body .apple-wave i{opacity:.72!important}
+html body .apple-wave.is-playing i{opacity:.85!important}
+html body .apple-wave i.played{opacity:.98!important}
+html body .live-apple-wave i,html body .preview-wave i{opacity:.85!important}

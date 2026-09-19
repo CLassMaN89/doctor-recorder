@@ -248,7 +248,7 @@ function setFlow(el,on){
  if(el.__flow){cancelAnimationFrame(el.__flow);el.__flow=0}
  const bars=[...el.querySelectorAll('i')];
  if(!on){bars.forEach(b=>b.style.height='');return}
- const tick=()=>{flowHeights(bars,el.clientHeight||46,performance.now()*.003);el.__flow=requestAnimationFrame(tick)};
+ const tick=()=>{if(!el.isConnected){el.__flow=0;return}flowHeights(bars,el.clientHeight||46,performance.now()*.003);el.__flow=requestAnimationFrame(tick)};
  tick();
 }
 function waveBars(seed,count=72){
@@ -309,8 +309,9 @@ function pauseIcon(){return '<img class="pause-control-icon" src="duraklat.png" 
 
 function animatePlaybackWave(root,audio){
  const wave=root.querySelector('.apple-wave'); if(!wave)return;
- audio.addEventListener('play',()=>{wave.classList.add('is-playing');setFlow(wave,true)});
- const stop=()=>{wave.classList.remove('is-playing');setFlow(wave,false)};
+ setFlow(wave,true); // Dikte2'deki gibi dalga sürekli akar; oynatırken çalınan kısım koyulaşır
+ audio.addEventListener('play',()=>wave.classList.add('is-playing'));
+ const stop=()=>wave.classList.remove('is-playing');
  audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
 }
 
@@ -320,7 +321,7 @@ function renderLiveWave(recording){
  const box=$('#liveWave'); if(!box)return;
  if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',92);
  box.classList.toggle('active',!!recording);
- setFlow(box,!!recording);
+ setFlow(box,true);
  if(recording && !liveStartedAt) liveStartedAt=Date.now();
  if(!recording) liveStartedAt=0;
  cancelAnimationFrame(liveTimerRAF);
@@ -363,7 +364,7 @@ function renderPhonePreview(d){
  const st=$('#previewState'); if(st)st.textContent=active?'Kayıt yapılıyor...':'Kayıt bekleniyor...';
  const wave=$('#previewWave');
  if(wave && !wave.children.length) wave.innerHTML=waveBars('phone-preview-live',62);
- if(wave) {wave.classList.toggle('active',!!active);setFlow(wave,!!active)}
+ if(wave) {wave.classList.toggle('active',!!active);setFlow(wave,true)}
  const rows=$('#previewRecordings'); if(rows){
    rows.innerHTML=recs.slice(0,5).map((r,i)=>{
      const dev=devices.find(x=>x.id===r.device_connection_id);
