@@ -1431,3 +1431,6 @@ html[data-theme="dark"] body #desktop .brand-bar .theme-choice.active,html body[
 html[data-theme="dark"] body #desktop .sys-pill:not(.offline),html body[data-theme="dark"] #desktop .sys-pill:not(.offline){background:rgba(39,213,138,.12);border-color:rgba(39,213,138,.3);color:#27d58a}
 @media(max-width:1180px){html body #desktop .brand-clock,html body #desktop .brand-sep{display:none}}
 @media(max-width:900px){html body #desktop .brand-bar{flex-wrap:wrap;gap:12px;padding:14px}html body #desktop .brand-text h1{font-size:22px}html body #desktop .brand-ico{width:52px;height:52px}html body #desktop .brand-bar .theme-choice span{display:none}html body #desktop .brand-bar .theme-choice{padding:0 12px}}
+
+/* v11.4 — Marka çubuğu alttaki kartlarla aynı genişlikte; üstte hafif boşluk */
+html body #desktop .brand-bar{margin:18px 0 18px!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
