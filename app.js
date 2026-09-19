@@ -141,8 +141,14 @@
       if (status.status === 'completed') {
         setPcStatus('Kayıt tamamlandı', 'completed');
         await loadRecordings();
+      } else if (status.status === 'uploading') {
+        setPcStatus('Ses PC’ye gönderiliyor', 'live');
+      } else if (status.status === 'paused') {
+        setPcStatus('Kayıt duraklatıldı', 'waiting');
       } else if (status.status === 'recording') {
         setPcStatus('Telefon kayıt yapıyor', 'live');
+      } else if (status.status === 'connected') {
+        setPcStatus('Telefon bağlandı', 'completed');
       } else {
         setPcStatus('Telefon bekleniyor', 'waiting');
       }
@@ -206,6 +212,20 @@
       return;
     }
 
+    async function updateRemoteState(status) {
+      try {
+        await apiFetch(`${API_URL}?action=state&token=${encodeURIComponent(token)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+      } catch (err) {
+        console.warn('Durum güncellenemedi:', status, err);
+      }
+    }
+
+    updateRemoteState('connected');
+
     async function startRecording() {
       hideError();
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
@@ -225,6 +245,7 @@
         mediaRecorder.addEventListener('dataavailable', e => { if (e.data?.size) chunks.push(e.data); });
         mediaRecorder.addEventListener('stop', finalizeRecording);
         mediaRecorder.start(1000);
+        await updateRemoteState('recording');
 
         startedAt = Date.now();
         pausedTotal = 0;
@@ -256,6 +277,7 @@
         $('#statusPill').textContent = 'Duraklatıldı';
         $('#statusPill').className = 'pill paused';
         $('#micOrb').classList.remove('live');
+        updateRemoteState('paused');
       } else if (mediaRecorder.state === 'paused') {
         mediaRecorder.resume();
         pausedTotal += Date.now() - pauseStarted;
@@ -264,6 +286,7 @@
         $('#statusPill').textContent = 'Kayıtta';
         $('#statusPill').className = 'pill live';
         $('#micOrb').classList.add('live');
+        updateRemoteState('recording');
       }
     }
 
@@ -299,6 +322,7 @@
       $('#statusPill').className = 'pill paused';
 
       try {
+        await updateRemoteState('uploading');
         const ext = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : type.includes('wav') ? 'wav' : 'webm';
         const file = new File([blob], `dictation-${Date.now()}.${ext}`, { type });
         const form = new FormData();
