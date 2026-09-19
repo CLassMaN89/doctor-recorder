@@ -117,6 +117,11 @@ async function createSession(){
 }
 async function loadDashboard(){
  if(!session)return;
+ // Do not rebuild the recordings DOM while a recording is playing.
+ // The dashboard refreshes every 2.5 seconds; rebuilding the <audio> element
+ // was stopping playback at each refresh.
+ const playingAudio=[...document.querySelectorAll('#recordings audio')].some(a=>!a.paused&&!a.ended);
+ if(playingAudio)return;
  try{
    const d=await api('history',{auth:true});
    // Current QR session devices first, historical recordings remain persistent.
