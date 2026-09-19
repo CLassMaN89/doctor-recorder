@@ -32,10 +32,48 @@ async function api(action,{method='GET',body=null,auth=false,query={}}={}){
  return j;
 }
 
+
+let waitingLoopTimer=null;
+let waitingLoopIndex=0;
+let waitingLoopDeleting=false;
+const waitingLoopText='Telefon Bekleniyor...';
+
+function stopWaitingLoop(){
+ if(waitingLoopTimer){clearTimeout(waitingLoopTimer);waitingLoopTimer=null}
+ waitingLoopIndex=0;waitingLoopDeleting=false;
+}
+function startWaitingLoop(){
+ stopWaitingLoop();
+ const tick=()=>{
+  const el=document.getElementById('waitingType');
+  if(!el){waitingLoopTimer=setTimeout(tick,250);return}
+  if(!waitingLoopDeleting){
+   waitingLoopIndex=Math.min(waitingLoopText.length,waitingLoopIndex+1);
+   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
+   if(waitingLoopIndex===waitingLoopText.length){
+    waitingLoopDeleting=true;
+    waitingLoopTimer=setTimeout(tick,1500);
+    return;
+   }
+   waitingLoopTimer=setTimeout(tick,72);
+  }else{
+   waitingLoopIndex=Math.max(0,waitingLoopIndex-1);
+   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
+   if(waitingLoopIndex===0){
+    waitingLoopDeleting=false;
+    waitingLoopTimer=setTimeout(tick,420);
+    return;
+   }
+   waitingLoopTimer=setTimeout(tick,34);
+  }
+ };
+ tick();
+}
+
 if(isMobile) initMobile(); else initDesktop();
 
 async function initDesktop(){
- $('#desktop').classList.remove('hidden');
+ $('#desktop').classList.remove('hidden'); startWaitingLoop();
  let {data}=await sb.auth.getSession();
  if(!data.session){const r=await sb.auth.signInAnonymously(); if(r.error){alert('Oturum açılamadı');return}}
  $('#newQr').onclick=createSession;
@@ -59,7 +97,14 @@ async function loadDashboard(){
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[];
  $('#deviceCount').textContent=`${devices.length} cihaz`;
- const devBox=$('#devices'); devBox.innerHTML=devices.length?'':'<div class="empty">Telefon bekleniyor…</div>';
+ const devBox=$('#devices');
+ if(devices.length){
+  stopWaitingLoop();
+  devBox.innerHTML='';
+ }else{
+  devBox.innerHTML='<div class="empty waiting-empty"><span id="waitingType"></span><span class="type-cursor"></span></div>';
+  startWaitingLoop();
+ }
  devices.forEach(x=>{
   const el=document.createElement('div'); el.className='device';
   const active=Date.now()-new Date(x.last_seen_at).getTime()<20000;
