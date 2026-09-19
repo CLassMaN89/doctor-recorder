@@ -34,13 +34,13 @@ async function api(action,{method='GET',body=null,auth=false,query={}}={}){
 
 
 let waitingLoopTimer=null;
-const waitingLoopText='Bekleniyor...';
+const waitingLoopText='TelefonBekleniyor...';
 
 function stopWaitingLoop(){
  if(waitingLoopTimer){clearTimeout(waitingLoopTimer);waitingLoopTimer=null}
 }
 function waitingMarkup(){
- return '<div class="empty waiting-empty"><img class="waiting-live-icon" src="live-recording.svg" alt=""><div class="waiting-loop"><span class="waiting-static">Telefon</span><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>';
+ return '<div class="empty waiting-empty"><span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span><div class="waiting-text-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">TelefonBekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>';
 }
 function startWaitingLoop(){
  stopWaitingLoop();
@@ -126,7 +126,7 @@ function renderDashboard(d){
  const box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  shown.forEach(r=>{
   const x=map[r.device_connection_id]||{}; const row=document.createElement('div');row.className='rec-row';
-  row.innerHTML=`<div class="rec-meta"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><small>${esc(x.device_model||'')} · ${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><div class="player"><button class="play">▶</button><div class="track"><div class="fill"></div></div><span class="ptime">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+  row.innerHTML=`<img class="recording-rec-icon desktop-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><div class="rec-meta"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><small>${esc(x.device_model||'')} · ${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><div class="player"><button class="play">▶</button><div class="track"><div class="fill"></div></div><span class="ptime">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
   const audio=row.querySelector('audio'), play=row.querySelector('.play'), fill=row.querySelector('.fill'), pt=row.querySelector('.ptime'), track=row.querySelector('.track');
   play.onclick=()=>{document.querySelectorAll('audio').forEach(a=>{if(a!==audio)a.pause()});audio.paused?audio.play():audio.pause()};
   audio.onplay=()=>play.textContent='❚❚';audio.onpause=()=>play.textContent='▶';audio.ontimeupdate=()=>{fill.style.width=`${audio.duration?audio.currentTime/audio.duration*100:0}%`;pt.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||r.duration_seconds)}`};
@@ -277,7 +277,7 @@ async function loadMobileHistory(){
   const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
   recs.forEach((r,i)=>{
    const el=document.createElement('div');el.className='mrec';
-   el.innerHTML=`<div class="mrec-top"><b>Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><audio controls preload="metadata" src="${r.signed_url||''}"></audio>`;
+   el.innerHTML=`<div class="mrec-top"><b class="recording-title"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı">Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><audio controls preload="metadata" src="${r.signed_url||''}"></audio>`;
    box.appendChild(el);
   });
  }catch(e){console.error('mobile history',e)}

@@ -58,3 +58,9 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - MediaRecorder MIME tipleri tek tek denenir; son çare tarayıcının varsayılan codec'i kullanılır.
 - İzin hatası ile codec/cihaz/meşgul mikrofon hataları artık ayrı mesaj gösterir.
 - Upload MIME/uzantısı gerçek MediaRecorder çıktısından belirlenir.
+
+
+## v6.6
+- Tamamlanmış her ses kaydının başında sabit Live Recording/REC SVG gösterilir.
+- İkon hem PC kayıt listesinde hem telefondaki Kayıtlarım alanında görünür.
+- Kayıt ikonları animasyonsuzdur; tamamlanmış kayıt göstergesidir.

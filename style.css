@@ -125,3 +125,79 @@
   from{opacity:1}
   to{opacity:.45}
 }
+
+/* v6.5 - SVG is locked in a fixed slot; only the complete text animates */
+.waiting-empty{
+  display:grid!important;
+  grid-template-columns:68px 190px;
+  align-items:center;
+  justify-content:center;
+  column-gap:8px;
+}
+.waiting-icon-slot{
+  width:68px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:visible;
+}
+.waiting-live-icon{
+  width:62px!important;
+  height:28px!important;
+  display:block;
+  flex:none!important;
+  transform:none!important;
+}
+.waiting-text-slot{
+  width:190px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  overflow:visible;
+}
+.waiting-text-slot .waiting-rotating-wrap{
+  flex:0 0 auto;
+}
+.waiting-text-slot .waiting-rotating{
+  font-size:17px;
+  font-weight:700;
+}
+
+/* v6.6 - completed recording indicator */
+.recording-title{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+}
+.recording-rec-icon{
+  width:28px;
+  height:16px;
+  object-fit:contain;
+  flex:0 0 28px;
+  display:block;
+  animation:none!important;
+  transform:none!important;
+}
+
+/* v6.6 recording REC icons */
+.rec-row{
+  display:flex;
+  align-items:center;
+}
+.desktop-rec-icon{
+  width:32px!important;
+  height:18px!important;
+  margin-right:9px;
+  flex:0 0 32px!important;
+}
+.mrec-top .recording-title{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.mrec-top .recording-rec-icon{
+  width:27px;
+  height:15px;
+}
