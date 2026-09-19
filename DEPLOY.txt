@@ -1,0 +1,20 @@
+Doctor Recorder Clean v5.1
+
+Hedef:
+https://classman89.github.io/doctor-recorder/
+
+Bu sürümde:
+- Ekran genel olarak yaklaşık %10-15 küçültüldü.
+- QR alanı 264px -> 228px indirildi.
+- Kart padding ve boşlukları azaltıldı.
+- Başlık, açıklama ve adım yazıları küçültüldü.
+- Tercih edilen font: "Record".
+- Eğer ziyaretçinin sisteminde Record font kuruluysa otomatik kullanılır.
+- Web üzerinde herkeste kesin görünmesi için Record font dosyasının ayrıca projeye eklenmesi gerekir.
+
+Değiştir:
+- index.html
+- style.css
+
+Değiştirme:
+- app.js
