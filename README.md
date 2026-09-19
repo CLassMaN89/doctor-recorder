@@ -45,3 +45,16 @@ recordings.device_connection_id eklendi.
 device_connections RLS açık ve public client erişimi revoke edildi; telefon işlemleri Edge Function üzerinden yürür.
 
 Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klinik production için personel kimlik doğrulaması, daha sıkı CORS, audit/retention ve kurumsal güvenlik kontrolleri gerekir.
+
+
+## v6.3
+- Telefon Bekleniyor alanı verilen TextLoop davranışına uyarlandı: `Telefon` sabit, `Bekleniyor...` mor gradient kutu içinde width 0 -> auto açılıp kapanır.
+- Mor cursor çizgisi nefes alır gibi yanıp söner.
+- Kullanıcının verdiği `Live Recording.svg` sol tarafta kullanılır.
+
+
+## v6.4 iPhone/Safari mikrofon düzeltmesi
+- getUserMedia artık iOS için basit `audio:true` ile başlatılır.
+- MediaRecorder MIME tipleri tek tek denenir; son çare tarayıcının varsayılan codec'i kullanılır.
+- İzin hatası ile codec/cihaz/meşgul mikrofon hataları artık ayrı mesaj gösterir.
+- Upload MIME/uzantısı gerçek MediaRecorder çıktısından belirlenir.

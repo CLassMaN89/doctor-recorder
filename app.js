@@ -34,40 +34,46 @@ async function api(action,{method='GET',body=null,auth=false,query={}}={}){
 
 
 let waitingLoopTimer=null;
-let waitingLoopIndex=0;
-let waitingLoopDeleting=false;
-const waitingLoopText='Telefon Bekleniyor...';
+const waitingLoopText='Bekleniyor...';
 
 function stopWaitingLoop(){
  if(waitingLoopTimer){clearTimeout(waitingLoopTimer);waitingLoopTimer=null}
- waitingLoopIndex=0;waitingLoopDeleting=false;
+}
+function waitingMarkup(){
+ return '<div class="empty waiting-empty"><img class="waiting-live-icon" src="live-recording.svg" alt=""><div class="waiting-loop"><span class="waiting-static">Telefon</span><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>';
 }
 function startWaitingLoop(){
  stopWaitingLoop();
- const tick=()=>{
-  const el=document.getElementById('waitingType');
-  if(!el){waitingLoopTimer=setTimeout(tick,250);return}
-  if(!waitingLoopDeleting){
-   waitingLoopIndex=Math.min(waitingLoopText.length,waitingLoopIndex+1);
-   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
-   if(waitingLoopIndex===waitingLoopText.length){
-    waitingLoopDeleting=true;
-    waitingLoopTimer=setTimeout(tick,1500);
-    return;
-   }
-   waitingLoopTimer=setTimeout(tick,72);
-  }else{
-   waitingLoopIndex=Math.max(0,waitingLoopIndex-1);
-   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
-   if(waitingLoopIndex===0){
-    waitingLoopDeleting=false;
-    waitingLoopTimer=setTimeout(tick,420);
-    return;
-   }
-   waitingLoopTimer=setTimeout(tick,34);
-  }
+ const wrap=document.querySelector('.waiting-rotating-wrap');
+ const textEl=document.getElementById('waitingType');
+ if(!wrap||!textEl)return;
+ textEl.textContent=waitingLoopText;
+ // Measure the real text width so the animation behaves like Motion width: 0 -> auto.
+ const probe=textEl.cloneNode(true);
+ probe.style.cssText='position:absolute;visibility:hidden;width:auto;white-space:nowrap;pointer-events:none;';
+ document.body.appendChild(probe);
+ const width=Math.ceil(probe.getBoundingClientRect().width+3);
+ probe.remove();
+ wrap.style.setProperty('--loop-width',`${width}px`);
+
+ const reveal=()=>{
+  wrap.classList.remove('loop-out');
+  void wrap.offsetWidth;
+  wrap.classList.add('loop-in');
+  waitingLoopTimer=setTimeout(()=>{
+   wrap.classList.remove('loop-in');
+   wrap.style.width=`${width}px`; wrap.style.opacity='1';
+   waitingLoopTimer=setTimeout(()=>{
+    wrap.style.width='';wrap.style.opacity='';
+    wrap.classList.add('loop-out');
+    waitingLoopTimer=setTimeout(()=>{
+     wrap.classList.remove('loop-out');
+     reveal();
+    },820);
+   },2200);
+  },820);
  };
- tick();
+ reveal();
 }
 
 if(isMobile) initMobile(); else initDesktop();
@@ -102,7 +108,7 @@ function renderDashboard(d){
   stopWaitingLoop();
   devBox.innerHTML='';
  }else{
-  devBox.innerHTML='<div class="empty waiting-empty"><span id="waitingType"></span><span class="type-cursor"></span></div>';
+  devBox.innerHTML=waitingMarkup();
   startWaitingLoop();
  }
  devices.forEach(x=>{
@@ -160,15 +166,75 @@ async function register(){
 }
 async function state(status){if(!device)return;try{await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}})}catch(e){if(e.status===410)expired()}}
 async function startRecording(){
+ let acquiredStream=null;
  try{
-  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  const mime=['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm'].find(x=>MediaRecorder.isTypeSupported(x))||'';
-  recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;
-  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=uploadRecording;
-  recorder.start(350);startedAt=Date.now();
+  if(!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('getUserMedia_not_supported'),{stage:'permission'});
+  // iPhone/Safari: first request the simplest audio stream. Some Safari versions
+  // reject otherwise valid sessions when optional constraints/codecs are forced.
+  try{
+   acquiredStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(err){
+   err.stage='permission'; throw err;
+  }
+  stream=acquiredStream;
+
+  // Safari/iOS MediaRecorder support differs by version. Try candidates one by one
+  // and finally let the browser choose its own default MIME type.
+  const candidates=[
+   'audio/mp4',
+   'audio/mp4;codecs=mp4a.40.2',
+   'audio/webm;codecs=opus',
+   'audio/webm'
+  ];
+  recorder=null;
+  let lastRecorderError=null;
+  for(const type of candidates){
+   try{
+    if(window.MediaRecorder?.isTypeSupported && !MediaRecorder.isTypeSupported(type)) continue;
+    recorder=new MediaRecorder(stream,{mimeType:type});
+    break;
+   }catch(err){lastRecorderError=err}
+  }
+  if(!recorder){
+   try{recorder=new MediaRecorder(stream)}
+   catch(err){err.stage='recorder';err.cause=lastRecorderError;throw err}
+  }
+
+  chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;
+  recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  recorder.onerror=e=>{
+   console.error('MediaRecorder error',e);
+   $('#uploadState').textContent='Kayıt sırasında tarayıcı hatası oluştu.';
+   $('#uploadState').classList.remove('hidden');
+  };
+  recorder.onstop=uploadRecording;
+  recorder.start(500);
+  startedAt=Date.now();
   timerInt=setInterval(updateTimer,100);
-  $('#timer').textContent='00:00';$('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#waveWrap').classList.remove('hidden');$('#recordControls').classList.remove('hidden');$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';startWave(stream);await state('recording');
- }catch(e){$('#uploadState').textContent='Mikrofon izni gerekli.';$('#uploadState').classList.remove('hidden')}
+  $('#timer').textContent='00:00';
+  $('#mic').classList.add('recording');
+  $('#statePill').className='pill recording';
+  $('#statePill').textContent='Kaydediliyor';
+  $('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';
+  $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
+  $('#waveWrap').classList.remove('hidden');
+  $('#recordControls').classList.remove('hidden');
+  $('#pauseBtn').classList.remove('resume');
+  $('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';
+  startWave(stream);
+  await state('recording');
+ }catch(e){
+  console.error('Recorder start failed:',e?.name,e?.message,e);
+  acquiredStream?.getTracks().forEach(t=>t.stop());
+  stream=null;recorder=null;
+  let msg='Mikrofon başlatılamadı.';
+  if(e?.name==='NotAllowedError'||e?.name==='SecurityError') msg='Mikrofon erişimine izin verilmedi. Safari adres çubuğundaki site ayarlarından Mikrofon → İzin Ver seçin.';
+  else if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
+  else if(e?.name==='NotReadableError'||e?.name==='TrackStartError') msg='Mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
+  else if(e?.name==='NotSupportedError'||e?.stage==='recorder') msg='Mikrofon izni var, ancak bu Safari sürümünde ses kayıt biçimi başlatılamadı.';
+  $('#uploadState').textContent=msg;
+  $('#uploadState').classList.remove('hidden');
+ }
 }
 function updateTimer(){
  let ms=0;

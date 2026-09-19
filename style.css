@@ -38,3 +38,90 @@
 .mrec{padding:11px 0;border-top:1px solid #edf2f5}.mrec:first-child{border-top:0}.mrec-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.mrec-top b{font-size:12px}.mrec-top small{color:#7b91a2}
 .mrec audio{width:100%;height:34px}
 .wave{height:128px;background:radial-gradient(circle at 50% 50%,#111023 0,#070914 55%,#03060c 100%)}
+
+/* v6.3 - supplied TextLoop visual adapted to this vanilla HTML app */
+.waiting-empty{
+  min-height:86px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  overflow:hidden;
+}
+.waiting-live-icon{
+  width:62px;
+  height:28px;
+  object-fit:contain;
+  flex:0 0 auto;
+}
+.waiting-loop{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:flex-start;
+  width:max-content;
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:-.02em;
+  line-height:1.15;
+  color:#36566d;
+}
+.waiting-static{
+  margin-right:5px;
+  white-space:nowrap;
+}
+.waiting-rotating-wrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  overflow:hidden;
+  white-space:nowrap;
+  width:0;
+  opacity:0;
+  will-change:width,opacity;
+}
+.waiting-rotating{
+  position:relative;
+  z-index:2;
+  white-space:nowrap;
+  padding-right:2px;
+  background:linear-gradient(90deg,#7657ef 0%,#6732d6 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.waiting-gradient{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(239,235,255,0),rgba(221,210,255,.30),rgba(210,196,255,.68));
+}
+.type-cursor{
+  display:inline-block;
+  width:3px;
+  height:1.10em;
+  margin-left:1px;
+  border-radius:1px;
+  background:#7c4dff;
+  opacity:1;
+  animation:v63Cursor .8s ease-in-out infinite alternate;
+}
+.waiting-rotating-wrap.loop-in{
+  animation:v63LoopIn .8s ease-in-out forwards;
+}
+.waiting-rotating-wrap.loop-out{
+  animation:v63LoopOut .8s ease-in-out forwards;
+}
+@keyframes v63LoopIn{
+  0%{width:0;opacity:0}
+  100%{width:var(--loop-width,110px);opacity:1}
+}
+@keyframes v63LoopOut{
+  0%{width:var(--loop-width,110px);opacity:1}
+  100%{width:0;opacity:0}
+}
+@keyframes v63Cursor{
+  from{opacity:1}
+  to{opacity:.45}
+}

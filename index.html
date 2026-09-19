@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=64">
 </head>
 <body>
 <main>
@@ -36,7 +36,19 @@
             <div><div class="kicker">CANLI BAĞLANTILAR</div><h2>Bağlı Telefonlar</h2></div>
             <span id="deviceCount" class="count">0 cihaz</span>
           </div>
-          <div id="devices" class="devices"><div class="empty waiting-empty"><span id="waitingType"></span><span class="type-cursor"></span></div></div>
+          <div id="devices" class="devices">
+  <div class="empty waiting-empty">
+    <img class="waiting-live-icon" src="live-recording.svg" alt="">
+    <div class="waiting-loop">
+      <span class="waiting-static">Telefon</span>
+      <span class="waiting-rotating-wrap">
+        <span id="waitingType" class="waiting-rotating">Bekleniyor...</span>
+        <span class="waiting-gradient"></span>
+      </span>
+      <span class="type-cursor"></span>
+    </div>
+  </div>
+</div>
         </section>
 
         <section class="card recordings">
@@ -117,6 +129,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=62"></script>
+<script src="app.js?v=64"></script>
 </body>
 </html>
