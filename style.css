@@ -1348,3 +1348,6 @@ body.mobile-mode #mic.recording .mic-r.r1{animation-duration:4s}
 @keyframes siriSpin{to{transform:rotate(360deg)}}
 @keyframes siriPulse{0%,100%{transform:scale(.86);opacity:.88}50%{transform:scale(1.06);opacity:1}}
 @media(prefers-reduced-motion:reduce){body.mobile-mode #mic::before,body.mobile-mode #mic .mic-r.r1,body.mobile-mode #mic::after{animation:none!important}}
+
+/* v10.4 — kayıt tablosunda cihaz adının altında IP adresi */
+html body #desktop .rec-device .rec-ip{display:block;margin-top:2px;font-size:10px;font-weight:500;color:#7a90a3;letter-spacing:.2px}
