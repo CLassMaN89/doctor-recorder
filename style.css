@@ -1351,3 +1351,8 @@ body.mobile-mode #mic.recording .mic-r.r1{animation-duration:4s}
 
 /* v10.4 — kayıt tablosunda cihaz adının altında IP adresi */
 html body #desktop .rec-device .rec-ip{display:block;margin-top:2px;font-size:10px;font-weight:500;color:#7a90a3;letter-spacing:.2px}
+
+/* v10.6 — IP adresleri rozet olarak */
+html body .ip-badge{display:inline-block!important;margin:2px 0 0 2px;padding:2px 7px;border:1px solid #c8e1fa;border-radius:4px;background:#edf6ff;color:#176fc0!important;font-size:10px!important;font-weight:600;line-height:1.35;letter-spacing:.2px;font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:middle}
+html body .rec-device .ip-badge{display:table!important;margin:3px 0 0}
+html body[data-theme="dark"] .ip-badge,html[data-theme="dark"] .ip-badge{background:rgba(75,139,255,.16);border-color:rgba(120,170,255,.35);color:#9cc4ff!important}
