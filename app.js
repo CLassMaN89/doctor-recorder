@@ -227,6 +227,12 @@ function waveSeed(v){
  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
  return h>>>0;
 }
+// Dikte2 uygulamasındaki dalga paleti (soldan sağa: pembe → mor → mavi → turkuaz).
+const WAVE_PALETTE=[[232,58,154],[198,64,214],[129,82,240],[64,118,246],[24,168,236],[0,202,214]];
+function waveColor(p){
+ const sc=Math.min(Math.max(p,0),.9999)*(WAVE_PALETTE.length-1),i=Math.floor(sc),t=sc-i,a=WAVE_PALETTE[i],b=WAVE_PALETTE[i+1];
+ return `rgb(${Math.round(a[0]+(b[0]-a[0])*t)},${Math.round(a[1]+(b[1]-a[1])*t)},${Math.round(a[2]+(b[2]-a[2])*t)})`;
+}
 function waveBars(seed,count=72){
  let x=waveSeed(seed), vals=[];
  const centers=[.22,.38,.52,.69,.84];
@@ -242,10 +248,11 @@ function waveBars(seed,count=72){
  }
  // smooth neighboring bars
  vals=vals.map((v,i,a)=>(v+(a[i-1]??v)+(a[i+1]??v))/3);
+ vals=vals.map((v,i)=>v*(.55+.45*Math.sin(Math.PI*i/(count-1))));
  return vals.map((v,i)=>{
    const p=i/(count-1), h=Math.max(4,Math.round(5+31*v));
-   const hue=326 + p*72; // magenta -> violet -> blue/cyan via explicit CSS interpolation class
-   return `<i style="--h:${h}px;--p:${p};--hue:${hue};--i:${i}"></i>`;
+   const hue=326 + p*72; // canlı dalga (.live-apple-wave) hâlâ hue kullanır
+   return `<i style="--h:${h}px;--p:${p};--hue:${hue};--i:${i};--c:${waveColor(p)}"></i>`;
  }).join('');
 }
 function waveMarkup(seed,extra=''){
