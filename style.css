@@ -592,3 +592,56 @@
 .wave{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:8px 0!important;height:92px!important}.wave canvas{background:transparent!important}
 .mobile-history,.mrec{background:transparent!important;box-shadow:none!important}.mrec{border-left:0!important;border-right:0!important}
 @media(max-width:760px){.phone{background:#f8fbfd!important}.cardish{background:#fff!important}.connection{background:#fff!important}.qr-session-info{margin-left:auto}.mobile-mini-qr{border:1px solid #dce8f0}.live-status-loop{min-width:0}}
+
+/* ==========================================================
+   v7.6 — visible correction pass
+   ========================================================== */
+@media(min-width:761px){
+  body{background:#f3f8fc!important}
+  .desktop-shell{max-width:1360px!important;padding:0 18px 34px!important}
+  .dashboard-content{max-width:1320px!important;margin:0 auto!important}
+  .dashboard-top{grid-template-columns:minmax(0,1.48fr) minmax(360px,.72fr)!important;align-items:stretch!important}
+
+  /* Connection card must visibly differ from page background */
+  .connect-panel{background:#fff!important;border:1px solid #dce8f1!important;border-radius:16px!important;box-shadow:0 8px 24px rgba(32,72,104,.05)!important}
+  .connect-upper{grid-template-columns:minmax(260px,1fr) 154px 205px!important}
+  .mini-qr{width:150px!important;height:150px!important;background:#f7fafc!important;border:1px solid #e5edf3!important}
+  .mini-qr #qrcode,.mini-qr canvas,.mini-qr img{width:134px!important;height:134px!important}
+
+  /* device count has its own toolbar and can never overlap a doctor row */
+  .connected-area{padding-top:0!important}
+  .devices-toolbar{height:38px;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px}
+  #deviceCount.count{position:static!important;margin:0!important;padding:6px 10px!important;border-radius:999px!important;background:#eaf9f4!important;color:#07955b!important;font-size:10px!important;font-weight:800!important}
+  .refresh-qr{position:static!important;right:auto!important;bottom:auto!important;width:34px!important;height:34px!important}
+  .devices{display:flex!important;flex-direction:column!important;gap:9px!important;padding:0!important}
+  .device-card{display:grid!important;grid-template-columns:minmax(210px,1fr) minmax(150px,.72fr) minmax(245px,1.12fr)!important;width:100%!important;min-height:66px!important;padding:11px 14px!important;background:#fbfdff!important;border:1px solid #dce8f1!important;border-radius:11px!important}
+
+  /* Live card: no colored rectangle behind waveform */
+  .live-panel{background:#fff!important;border:1px solid #dce8f1!important;border-radius:16px!important;box-shadow:0 8px 24px rgba(32,72,104,.05)!important;padding:18px!important}
+  .live-apple-wave{height:88px;width:100%;display:flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;background:transparent!important;margin:8px 0 4px}
+  .live-apple-wave i{display:block;flex:1 1 0;min-width:2px;max-width:5px;height:var(--h);border-radius:999px;background:hsl(var(--hue) 96% 55%);opacity:.28;transform-origin:center}
+  .live-apple-wave.active i{opacity:1;animation:liveBars .62s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -13ms)}
+  @keyframes liveBars{0%{transform:scaleY(.46)}50%{transform:scaleY(1.18)}100%{transform:scaleY(.72)}}
+
+  .live-actions{display:flex!important;justify-content:center!important;gap:42px!important;margin:4px 0 10px!important}
+  .live-actions button{border:0!important;background:transparent!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;color:#143a60!important;cursor:pointer}
+  .live-actions button>span{width:46px;height:46px;border-radius:50%;background:#edf5fa;display:grid;place-items:center;font-size:17px;font-weight:900}
+  .live-actions button small{font-size:9px;color:#36536e}
+  .live-strip{height:36px!important;margin-top:auto!important;background:#effbf5!important;border-radius:9px!important;padding:0 11px!important;display:flex!important;align-items:center!important;gap:7px!important}
+  .live-strip>b{margin-left:auto!important;color:#0aa45e!important;font-size:10px!important}
+  .live-status-loop{font-size:10px!important;color:#0aa45e!important;min-width:210px!important}
+
+  /* Recording area remains a real white card */
+  .recordings-table{background:#fff!important;border:1px solid #dce8f1!important;box-shadow:0 8px 24px rgba(32,72,104,.04)!important}
+}
+
+/* recorded wave actually moves while audio is playing */
+.apple-wave.is-playing i{
+  animation:playbackBars .48s ease-in-out infinite alternate!important;
+  animation-delay:calc(var(--i) * -12ms)!important;
+}
+@keyframes playbackBars{
+  0%{transform:scaleY(.52)}
+  50%{transform:scaleY(1.25)}
+  100%{transform:scaleY(.72)}
+}

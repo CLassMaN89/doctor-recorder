@@ -149,7 +149,7 @@ function waveBars(seed,count=72){
  return vals.map((v,i)=>{
    const p=i/(count-1), h=Math.max(4,Math.round(5+31*v));
    const hue=326 + p*72; // magenta -> violet -> blue/cyan via explicit CSS interpolation class
-   return `<i style="--h:${h}px;--p:${p};--hue:${hue}"></i>`;
+   return `<i style="--h:${h}px;--p:${p};--hue:${hue};--i:${i}"></i>`;
  }).join('');
 }
 function waveMarkup(seed,extra=''){
@@ -194,6 +194,12 @@ function animatePlaybackWave(root,audio){
  const stop=()=>{wave.classList.remove('is-playing');cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
 }
 
+
+function renderLiveWave(recording){
+ const box=$('#liveWave'); if(!box)return;
+ if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',78);
+ box.classList.toggle('active',!!recording);
+}
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
  $('#deviceCount').textContent=`${devices.length} cihaz`;
@@ -208,7 +214,14 @@ function renderDashboard(d){
   devBox.appendChild(el);
  });
  const activeRec=devices.find(x=>x.status==='recording');
- const live=$('.live-panel'); if(live){live.classList.toggle('is-recording',!!activeRec); const title=live.querySelector('h2');if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor'; const lst=live.querySelector('#liveStatusText');if(lst)lst.textContent=activeRec?'Şuanda kayıt işlemi yapılıyor...':'Kayıt bekleniyor...';}
+ renderLiveWave(activeRec);
+ const live=$('.live-panel');
+ if(live){
+  live.classList.toggle('is-recording',!!activeRec);
+  const title=live.querySelector('h2'); if(title)title.textContent=activeRec?`${activeRec.doctor_first_name} ${activeRec.doctor_last_name}`:'Aktif Telefon Bekleniyor';
+  const lst=$('#liveStatusText'); if(lst)lst.textContent=activeRec?'Şuanda kayıt işlemi yapılıyor...':'Kayıt bekleniyor...';
+  const conn=$('#liveConnText'); if(conn)conn.textContent=activeRec?'Kayıt Aktif':(devices.length?'Bağlı':'Bekleniyor');
+ }
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';

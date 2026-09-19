@@ -132,3 +132,12 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Mobile shows a small QR plus short 9-character session code.
 - Live recording card reacts to phone recording state and animates only while a device is recording.
 - Doctor identity is requested per QR session and phone model can be entered explicitly.
+
+## v7.6 visible correction
+- Connection, live recording and recordings areas are visibly separated from the page background.
+- Device count moved to a dedicated toolbar above doctor rows; it cannot overlap rows.
+- Connected doctors remain stacked vertically.
+- Live waveform no longer has a pink/blue rectangular background; only colored bars are visible.
+- Live bars continuously animate while a doctor is recording.
+- REC SVG + animated `Şuanda kayıt işlemi yapılıyor...` remains in the green status strip.
+- Recorded waveform bars now carry animation indexes and visibly animate during audio playback on desktop and mobile.

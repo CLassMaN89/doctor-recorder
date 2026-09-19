@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=75">
+  <link rel="stylesheet" href="style.css?v=76">
 </head>
 <body>
 <main>
@@ -43,22 +43,24 @@
             </div>
             <div class="connect-divider"></div>
             <div class="connected-area">
+              <div class="devices-toolbar"><span id="deviceCount" class="count">0 cihaz</span><button id="newQr" class="refresh-qr" title="Yeni QR oluştur">↻</button></div>
               <div id="devices" class="devices">
                 <div class="empty waiting-empty">
                   <span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span>
                   <div class="waiting-loop"><span class="waiting-static">Telefon</span><div class="waiting-animated-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>
                 </div>
               </div>
-              <span id="deviceCount" class="count hidden-count">0 cihaz</span>
-              <button id="newQr" class="refresh-qr" title="Yeni QR oluştur">↻</button>
             </div>
           </section>
 
           <section class="dash-card live-panel">
-            <div class="live-head"><div><div class="kicker">CANLI SES KAYDI</div><h2>Aktif Telefon</h2></div><b class="live-clock">● CANLI</b></div>
-            <div class="desktop-demo-wave" aria-hidden="true"></div>
-            <div class="live-actions"><span class="live-pause">Ⅱ<small>Duraklat</small></span><span class="live-play">▶<small>Oynat</small></span></div>
-            <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText">Kayıt bekleniyor...</span><i></i></span><b>Bağlı</b></div>
+            <div class="live-head"><div><div class="kicker">CANLI SES KAYDI</div><h2>Aktif Telefon Bekleniyor</h2></div><b class="live-clock">● CANLI</b></div>
+            <div id="liveWave" class="live-apple-wave" aria-hidden="true"></div>
+            <div class="live-actions">
+              <button class="live-pause" type="button"><span>Ⅱ</span><small>Duraklat</small></button>
+              <button class="live-play" type="button"><span>▶</span><small>Oynat</small></button>
+            </div>
+            <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText">Kayıt bekleniyor...</span><i></i></span><b id="liveConnText">Bağlı</b></div>
           </section>
         </div>
 
@@ -150,6 +152,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=75"></script>
+<script src="app.js?v=76"></script>
 </body>
 </html>
