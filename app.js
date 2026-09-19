@@ -14,8 +14,14 @@ function isRecordingPlaybackActive(){
  return activePlaybackCount>0 || [...document.querySelectorAll('#recordings audio, #mobileHistory audio')].some(a=>!a.paused&&!a.ended);
 }
 
+// Telefon kimliği bu tarayıcıda kalıcıdır: sayfa yenilense de aynı cihaz sayılır, "Kayıtlarım" kaybolmaz.
+// (Ad/soyad ve telefon adı her bağlantıda yeniden girilir ve sunucuda güncellenir.)
 function deviceId(){
- return mobileConnectionId;
+ try{
+  let id=localStorage.getItem('dr_device_id');
+  if(!id){id=crypto.randomUUID();localStorage.setItem('dr_device_id',id)}
+  return id;
+ }catch{return mobileConnectionId}
 }
 // Gerçek cihaz adı: Android Chrome modeli User-Agent'ta gizler ("K"); userAgentData ile gerçek model istenir.
 // iOS tarayıcıları tam model vermez; ekran ölçüsünden seri tahmin edilir.
