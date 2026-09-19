@@ -206,7 +206,7 @@ function renderLiveWave(recording){
  const tick=()=>{
   const sec=liveStartedAt?Math.floor((Date.now()-liveStartedAt)/1000):0;
   const val=fmt(sec);
-  const a=$('#liveTimer'),b=$('#liveConnText'); if(a)a.textContent=val;if(b)b.textContent=val;
+  const a=$('#liveTimer'),b=$('#liveConnText'),c=$('#previewTimer'),e=$('#previewStateTime'); if(a)a.textContent=val;if(b)b.textContent=val;if(c)c.textContent=val;if(e)e.textContent=val;
   if(recording)liveTimerRAF=requestAnimationFrame(tick);
  };
  tick();
@@ -231,6 +231,34 @@ function startLiveTypeLoop(text){
    }
  };
  step();
+}
+
+function renderPhonePreview(d){
+ const devices=d.devices||[], recs=d.recordings||[];
+ const active=devices.find(x=>x.status==='recording');
+ const code=($('#sessionCode')?.textContent||'---').trim();
+ const q=$('#previewQrCode'); if(q)q.textContent=code;
+ const ct=$('#previewConnTitle'); if(ct)ct.textContent=devices.length?'Bağlandı':'Bekleniyor';
+ const st=$('#previewState'); if(st)st.textContent=active?'Kayıt yapılıyor...':'Kayıt bekleniyor...';
+ const wave=$('#previewWave');
+ if(wave && !wave.children.length) wave.innerHTML=waveBars('phone-preview-live',62);
+ if(wave) wave.classList.toggle('active',!!active);
+ const rows=$('#previewRecordings'); if(rows){
+   rows.innerHTML=recs.slice(0,5).map((r,i)=>{
+     const dev=devices.find(x=>x.id===r.device_connection_id);
+     const dt=new Date(r.created_at);
+     const date=dt.toLocaleDateString('tr-TR')+' · '+dt.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+     return `<div class="preview-rec-row"><span class="preview-rec-dot">● REC</span><div><small>${date} · ${fmt(r.duration_seconds||0)}</small><div class="preview-mini-wave">${waveBars(r.id+'-pv',34)}</div></div><button class="preview-play" data-url="${esc(r.signed_url||'')}">▶</button><b>⋮</b></div>`
+   }).join('')||'<div class="preview-empty">Henüz kayıt yok.</div>';
+   rows.querySelectorAll('.preview-play').forEach(btn=>btn.onclick=()=>{
+      const url=btn.dataset.url;if(!url)return;
+      if(window.__previewAudio){window.__previewAudio.pause();window.__previewAudio=null}
+      const a=new Audio(url);window.__previewAudio=a;
+      const row=btn.closest('.preview-rec-row');row?.classList.add('playing');btn.textContent='Ⅱ';
+      a.onended=()=>{row?.classList.remove('playing');btn.textContent='▶';window.__previewAudio=null};
+      a.play().catch(()=>{row?.classList.remove('playing');btn.textContent='▶'});
+   });
+ }
 }
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;

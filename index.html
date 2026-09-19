@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=80">
+  <link rel="stylesheet" href="style.css?v=81">
 </head>
 <body>
 <main>
@@ -64,9 +64,31 @@
             <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText"></span><i class="status-cursor"></i></span><b id="liveConnText">00:00</b></div>
           </section>
         </div>
-        <aside class="phone-preview-panel" aria-label="Telefon görünümü">
-          <div class="phone-preview-head"><div><span>TELEFON GÖRÜNÜMÜ</span><b>Doktor ekranı</b></div><small>Mobil önizleme</small></div>
-          <img src="phone-preview.png" alt="Doktor Kayıt mobil ekran önizlemesi">
+
+        <aside class="live-phone-preview" aria-label="Canlı mobil arayüz önizlemesi">
+          <div class="iphone-frame">
+            <div class="iphone-screen">
+              <div class="iphone-island"></div>
+              <div class="preview-statusbar"><b>11:53</b><span>▮▮▮ ◉ ▰</span></div>
+              <div class="preview-appbar"><span class="preview-menu">☰</span><div class="preview-brand"><span>🎙</span><div><b>Doktor Kayıt</b><small>Sesli Raporlama</small></div></div></div>
+              <div class="preview-body">
+                <div class="preview-connected"><span class="preview-green"></span><div><b id="previewConnTitle">Bağlandı</b><small>Masaüstü cihazına bağlı.</small></div><div class="preview-qr"><span>QR Kod</span><b id="previewQrCode">---</b></div></div>
+                <div class="preview-rec-card">
+                  <b id="previewTimer" class="preview-timer">00:00</b>
+                  <div id="previewWave" class="preview-wave"></div>
+                  <div class="preview-controls">
+                    <div><button>Ⅱ</button><small>Duraklat</small></div>
+                    <div><button class="preview-stop">■</button><small>Kaydı Bitir</small></div>
+                    <div><button>⚑</button><small>İşaretle</small></div>
+                  </div>
+                  <div class="preview-record-state"><span>🎙</span><b id="previewState">Kayıt bekleniyor...</b><strong id="previewStateTime">00:00</strong></div>
+                </div>
+                <div class="preview-recordings"><h3>Kayıtlarım</h3><div id="previewRecordings"></div></div>
+              </div>
+              <div class="preview-bottomnav"><div>🎙<small>Kayıt</small></div><div>▤<small>Kayıtlarım</small></div><div>⚙<small>Ayarlar</small></div></div>
+              <div class="preview-homebar"></div>
+            </div>
+          </div>
         </aside>
       </div>
 
@@ -158,6 +180,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=80"></script>
+<script src="app.js?v=81"></script>
 </body>
 </html>
