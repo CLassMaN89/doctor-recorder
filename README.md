@@ -1,30 +1,27 @@
-# DoctorRecorder
+# DoctorRecorder v2
 
-Uygulama kurmadan, QR kod üzerinden iPhone/Android tarayıcısında ses kaydı yapmaya yarayan statik demo.
+GitHub Pages + Supabase ile uygulamasız telefon dikta demosu.
 
-## Ne yapar?
+## Gerekli tek Supabase ayarı
 
-- PC ekranında tek kullanımlık oturum kodu ve QR üretir.
-- Doktor QR'ı telefon kamerasıyla okutur.
-- Telefon Safari/Chrome'da kayıt sayfasını açar.
-- Mikrofon izni sonrası kayıt başlat/duraklat/bitir yapılabilir.
-- Kayıt telefonda dinlenebilir ve dosya olarak kaydedilebilir.
+Supabase Dashboard > Authentication > Providers > Anonymous Sign-Ins seçeneğini açın.
 
-## Önemli
+Bu ayar PC tarafında kullanıcıya form göstermeden güvenli bir geçici oturum oluşturmak için kullanılır.
 
-Bu sürümde backend yoktur. Ses dosyası GitHub'a veya bir sunucuya otomatik gönderilmez. Demo amacıyla kayıt cihaz üzerinde oluşturulur.
+## Akış
 
-## GitHub Pages'e yayınlama
+1. PC GitHub Pages adresini açar.
+2. QR otomatik oluşturulur.
+3. Doktor QR kodu telefondan okutur.
+4. Safari/Chrome mikrofon izni ister.
+5. Doktor Kaydı Başlat / Kaydı Bitir yapar.
+6. Ses Supabase private Storage alanına yüklenir.
+7. Kayıt PC ekranında otomatik görünür ve dinlenebilir.
 
-1. GitHub'da `doctor-recorder` isminde yeni bir public repository oluşturun.
-2. Bu klasördeki `index.html`, `style.css`, `app.js` dosyalarını repository köküne yükleyin.
-3. Repository > Settings > Pages bölümüne gidin.
-4. Source: `Deploy from a branch` seçin.
-5. Branch: `main`, Folder: `/ (root)` seçip Save'e basın.
-6. Birkaç dakika sonra GitHub size HTTPS adresi verir, örneğin:
-   `https://KULLANICIADI.github.io/doctor-recorder/`
-7. Bu adresi PC'de açtığınızda QR kod otomatik olarak aynı GitHub Pages adresinin telefon kayıt sayfasını üretir.
+## GitHub'a yüklenecek dosyalar
 
-## Sonraki aşama
+- index.html
+- app.js
+- style.css
 
-Gerçek hastane kullanımında kayıtların otomatik PC'ye düşmesi için backend/API, kimlik doğrulama, tek kullanımlık kısa ömürlü token, yetkilendirme, audit log ve güvenli depolama eklenmelidir.
+README zorunlu değildir.

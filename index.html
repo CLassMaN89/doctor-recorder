@@ -21,7 +21,7 @@
       <div class="section-head">
         <div>
           <h2>Telefonla kayıt başlat</h2>
-          <p>Doktor QR kodu okutur, Safari/Chrome açılır ve uygulama kurmadan kayıt yapar.</p>
+          <p>QR kodu okutun. Doktor telefona uygulama yüklemeden Safari/Chrome üzerinden kayıt yapar; biten kayıt otomatik olarak bu ekrana gelir.</p>
         </div>
       </div>
 
@@ -38,7 +38,21 @@
         <div class="steps">
           <div class="step"><span>1</span><div><b>QR'ı okut</b><small>iPhone kamerası veya Android kamera</small></div></div>
           <div class="step"><span>2</span><div><b>Mikrofon izni ver</b><small>İlk kullanımda tarayıcı sorar</small></div></div>
-          <div class="step"><span>3</span><div><b>Kaydı başlat</b><small>Bitirince telefonda dinle veya kaydet</small></div></div>
+          <div class="step"><span>3</span><div><b>Kaydı bitir</b><small>Ses otomatik olarak PC ekranına gelir</small></div></div>
+
+          <div class="session-status">
+            <div>
+              <small>Oturum durumu</small>
+              <strong id="pcStatus">Hazırlanıyor…</strong>
+            </div>
+            <span id="pcStatusDot" class="status-dot waiting"></span>
+          </div>
+
+          <div id="recordingsPanel" class="recordings-panel hidden">
+            <div class="recordings-title">Gelen Ses Kayıtları</div>
+            <div id="recordingsList"></div>
+          </div>
+
           <div class="notice" id="hostNotice"></div>
         </div>
       </div>
@@ -66,14 +80,15 @@
         <button id="stopBtn" class="btn danger hidden">Kaydı Bitir</button>
       </div>
 
+      <div id="uploadState" class="upload-state hidden"></div>
+
       <div id="result" class="result hidden">
-        <h3>Kayıt hazır</h3>
+        <h3>Kayıt PC'ye gönderildi</h3>
         <audio id="playback" controls playsinline></audio>
         <div class="result-actions">
-          <a id="downloadBtn" class="btn primary" download>Kaydı Kaydet</a>
           <button id="againBtn" class="btn secondary">Yeni Kayıt</button>
         </div>
-        <p class="footnote">Bu demo sürümünde kayıt sunucuya gönderilmez; yalnızca bu cihazda oluşturulur.</p>
+        <p class="footnote">Ses dosyası güvenli depolama alanına yüklendi. Telefonda ayrıca dosya kaydetmeniz gerekmez.</p>
       </div>
 
       <div id="errorBox" class="error hidden"></div>
@@ -81,6 +96,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
