@@ -33,6 +33,15 @@
   .dot { width:9px; height:9px; border-radius:50%; background:#C7D3DD; }
   .dot.on { background:var(--green); }
   @media (prefers-reduced-motion:reduce) { .mic.live { animation:none; } }
+  .ended { text-align:center; }
+  .ended .big { width:88px; height:88px; margin:4px auto 12px; border-radius:50%; background:#EDF6FF; display:grid; place-items:center; }
+  .ended .big svg { width:42px; height:42px; stroke:#176FC0; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .ended h2 { font-size:18px; margin:0 0 6px; }
+  .ended p { margin:0 0 16px; color:var(--muted); font-size:14px; }
+  .scanner { position:fixed; inset:0; background:#0b1620; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:20px; }
+  .scanner video { width:100%; max-width:420px; aspect-ratio:1; object-fit:cover; border-radius:16px; background:#000; }
+  .scanner .msg { color:#fff; font-size:15px; text-align:center; min-height:22px; }
+  .scanner .btn { max-width:420px; background:#2b3b4a; }
 </style>
 </head>
 <body>
@@ -57,14 +66,27 @@
     <div class="err" id="liveErr"></div>
     <button class="btn stop" id="stop">Durdur</button>
   </section>
+  <section class="card ended hidden" id="ended">
+    <div class="big"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg></div>
+    <h2 id="endTitle">Oturum sona erdi</h2>
+    <p id="endText">Devam etmek için bilgisayardaki QR kodu tekrar okutun.</p>
+    <button class="btn" id="rescan">QR Kodu Okut</button>
+  </section>
   <div class="err" id="fatal"></div>
 </main>
+<div class="scanner hidden" id="scanner">
+  <video id="scanVideo" playsinline muted></video>
+  <canvas id="scanCanvas" class="hidden"></canvas>
+  <div class="msg" id="scanMsg">Kamera hazırlanıyor…</div>
+  <button class="btn" id="scanClose">Vazgeç</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <script type="module">
 import { joinRoom } from 'https://cdn.jsdelivr.net/npm/trystero@0.21.5/+esm';
 
-const SUPABASE_URL = 'https://sqqqjsmblelxqwalxzfq.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_lyGKCZxtN4LtEdE3U63FUg_1J4jXqbA';
+const SUPABASE_URL = 'https://gzkaeiqtocuwofolfpty.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_MOLr-P3BRpdkr710huL7MQ_wb6W4LMT';
 const API = `${SUPABASE_URL}/functions/v1/doctor-recorder-api`;
 const token = new URLSearchParams(location.search).get('token') || '';
 const $ = (id) => document.getElementById(id);
@@ -95,11 +117,49 @@ function model() {
   return m?.[1]?.trim() || (/Android/i.test(ua) ? 'Android Telefon' : 'Telefon');
 }
 const fatal = (msg) => { $('fatal').textContent = msg; $('identity').classList.add('hidden'); $('live').classList.add('hidden'); };
+// Oturum bittiğinde (PC durdurdu, süre doldu, telefondan durduruldu) yeni QR okutma ekranı.
+function showEnded(title, text) {
+  $('sub').textContent = ''; $('fatal').textContent = '';
+  $('identity').classList.add('hidden'); $('live').classList.add('hidden');
+  $('endTitle').textContent = title; $('endText').textContent = text;
+  $('ended').classList.remove('hidden');
+}
+
+let cam = null, scanRAF = null;
+async function openScanner() {
+  $('scanner').classList.remove('hidden'); $('scanMsg').textContent = 'Kamera hazırlanıyor…';
+  try {
+    cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    const v = $('scanVideo'); v.srcObject = cam; await v.play();
+    $('scanMsg').textContent = 'Bilgisayardaki QR kodu kameraya gösterin.';
+    scan();
+  } catch { $('scanMsg').textContent = 'Kamera izni verilmedi. Tarayıcı ayarlarından izin verin.'; }
+}
+function closeScanner() { cam?.getTracks().forEach(t => t.stop()); cam = null; if (scanRAF) cancelAnimationFrame(scanRAF); $('scanner').classList.add('hidden'); }
+function scan() {
+  const v = $('scanVideo'), c = $('scanCanvas'), g = c.getContext('2d', { willReadFrequently: true });
+  if (v.readyState >= 2) {
+    c.width = v.videoWidth; c.height = v.videoHeight; g.drawImage(v, 0, 0);
+    const im = g.getImageData(0, 0, c.width, c.height), q = window.jsQR && jsQR(im.data, im.width, im.height, { inversionAttempts: 'dontInvert' });
+    if (q && q.data) {
+      try {
+        const u = new URL(q.data);
+        // Aynı siteden, token taşıyan canlı mikrofon veya kayıt QR'ı kabul edilir.
+        if (u.origin === location.origin && u.searchParams.get('token') && (u.pathname === location.pathname || u.searchParams.get('mode') === 'record')) {
+          $('scanMsg').textContent = 'QR bulundu. Yeni oturum açılıyor…'; closeScanner(); location.assign(u.toString()); return;
+        }
+      } catch {}
+    }
+  }
+  scanRAF = requestAnimationFrame(scan);
+}
+$('rescan').onclick = openScanner;
+$('scanClose').onclick = closeScanner;
 
 async function init() {
-  if (!token) return fatal('Geçersiz bağlantı. Bilgisayardaki QR kodu okutun.');
+  if (!token) return showEnded('QR kod gerekli', 'Bilgisayardaki QR kodu okutarak başlayın.');
   try { await api('status'); }
-  catch { $('sub').textContent = ''; return fatal('Bu QR kod geçersiz veya süresi dolmuş. Bilgisayarda yeni QR oluşturun.'); }
+  catch { return showEnded('QR kod geçersiz', 'Bu QR kodun süresi dolmuş olabilir. Bilgisayardaki yeni QR kodu okutun.'); }
   $('sub').textContent = 'Adınızı girin ve mikrofonu başlatın.';
   try { const d = JSON.parse(localStorage.getItem('dr_doctor') || 'null'); if (d) { $('first').value = d.first || ''; $('last').value = d.last || ''; } } catch {}
   $('identity').classList.remove('hidden');
@@ -133,6 +193,9 @@ async function start() {
   watchLevel();
 
   room = joinRoom({ appId: 'dikte2-voice-hub' }, token);
+  // Bilgisayar "Aktarımı Durdur"a basınca ya da yeni QR oluşturunca alıcı "end" sinyali gönderir.
+  const [, onCtl] = room.makeAction('ctrl');
+  onCtl(msg => { if (msg === 'end' && running) { stop(); showEnded('Oturum sona erdi', 'Bilgisayar aktarımı sonlandırdı. Tekrar bağlanmak için QR kodu okutun.'); } });
   room.onPeerJoin((id) => { peers++; room.addStream(stream, id); pc(true); setState('recording'); });
   room.onPeerLeave(() => { peers = Math.max(0, peers - 1); if (!peers) { pc(false); setState('connected'); } });
 }
@@ -146,7 +209,7 @@ function pc(on) {
 }
 async function setState(status, quiet) {
   try { await api('device-state', { method: 'POST', body: { status } }); }
-  catch (e) { if (e.status === 410) { stop(); fatal('Oturum sona erdi. Devam etmek için yeni QR kodu okutun.'); } else if (!quiet) $('liveErr').textContent = 'Sunucuya ulaşılamıyor.'; }
+  catch (e) { if (e.status === 410) { stop(); showEnded('Oturum sona erdi', 'Devam etmek için bilgisayardaki QR kodu tekrar okutun.'); } else if (!quiet) $('liveErr').textContent = 'Sunucuya ulaşılamıyor.'; }
 }
 
 function watchLevel() {
@@ -158,7 +221,7 @@ function watchLevel() {
     if (!running) return;
     an.getByteTimeDomainData(buf);
     let s = 0; for (const v of buf) { const x = (v - 128) / 128; s += x * x; }
-    $('bar').style.width = Math.min(100, Math.round(Math.sqrt(s / buf.length) * 260)) + '%';
+    $('bar').style.width = (rms => rms > 0 ? Math.max(0, Math.min(100, Math.round((20 * Math.log10(rms) + 60) / 60 * 100))) : 0)(Math.sqrt(s / buf.length)) + '%';
     requestAnimationFrame(tick);
   };
   tick();
@@ -176,7 +239,7 @@ async function finish() {
   await setState('connected', true);
   stop();
   $('live').classList.add('hidden'); $('sub').textContent = '';
-  fatal('Aktarım durduruldu. Tekrar bağlanmak için QR kodu yeniden okutun.');
+  showEnded('Aktarım durduruldu', 'Tekrar bağlanmak için bilgisayardaki QR kodu okutun.');
 }
 
 $('go').onclick = start;

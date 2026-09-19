@@ -1239,3 +1239,10 @@ html[data-theme="dark"] #desktop .date-filter{color-scheme:dark}
 #desktop .table-refresh:hover{border-color:var(--th-blue)!important;background:var(--th-hover)!important;color:var(--th-blue)!important}
 #desktop .table-refresh:active{transform:rotate(25deg)}
 @media(max-width:760px){#desktop .doctor-select-wrap{width:min(100%,184px)}#desktop .date-picker-wrap{width:144px}}
+
+
+/* v9.4 live connection + fresh mobile identity */
+#desktop .online-dot.offline{background:#a9bac7!important;box-shadow:none!important}
+#mobile .tap.permission-needed{color:#d14b59!important;font-weight:800}
+#mobile .pill.permission{background:#fff1f2!important;color:#c84150!important}
+html[data-theme="dark"] #mobile .pill.permission{background:#3a2028!important;color:#ff8794!important}

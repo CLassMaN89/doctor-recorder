@@ -1,6 +1,6 @@
 (() => {
-const SUPABASE_URL='https://sqqqjsmblelxqwalxzfq.supabase.co';
-const SUPABASE_KEY='sb_publishable_lyGKCZxtN4LtEdE3U63FUg_1J4jXqbA';
+const SUPABASE_URL='https://gzkaeiqtocuwofolfpty.supabase.co';
+const SUPABASE_KEY='sb_publishable_MOLr-P3BRpdkr710huL7MQ_wb6W4LMT';
 const API=`${SUPABASE_URL}/functions/v1/doctor-recorder-api`;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=s=>document.querySelector(s);
@@ -9,13 +9,13 @@ const isMobile=params.get('mode')==='record';
 const token=params.get('token')||'';
 let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
 let activePlaybackCount=0;
+const mobileConnectionId=crypto.randomUUID();
 function isRecordingPlaybackActive(){
  return activePlaybackCount>0 || [...document.querySelectorAll('#recordings audio, #mobileHistory audio')].some(a=>!a.paused&&!a.ended);
 }
 
 function deviceId(){
- let id=localStorage.getItem('dr_device_id');
- if(!id){id=crypto.randomUUID();localStorage.setItem('dr_device_id',id)} return id;
+ return mobileConnectionId;
 }
 function model(){
  const ua=navigator.userAgent;
@@ -95,10 +95,37 @@ function syncDateFilterUI(){
  wrap.classList.toggle('has-value',!!input.value);
 }
 
+
+function clinicLogin(){
+ return new Promise(resolve=>{
+  const box=document.createElement('div');
+  box.style.cssText='position:fixed;inset:0;background:rgba(16,38,59,.55);display:grid;place-items:center;z-index:9999;font-family:inherit';
+  box.innerHTML=`<form style="background:#fff;border-radius:14px;padding:24px;width:min(380px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.25)">
+   <h2 style="margin:0 0 6px;font-size:19px;color:#10263B">Klinik Hesabı</h2>
+   <p style="margin:0 0 14px;color:#60778B;font-size:13px">Dikte2 ile aynı kayıt listesini görmek için giriş yapın.</p>
+   <input id="clEmail" type="email" placeholder="E-posta" autocomplete="username" style="width:100%;padding:11px;margin-bottom:10px;border:1px solid #DCE8EE;border-radius:9px;font:inherit">
+   <input id="clPass" type="password" placeholder="Şifre" autocomplete="current-password" style="width:100%;padding:11px;border:1px solid #DCE8EE;border-radius:9px;font:inherit">
+   <div id="clErr" style="color:#E53649;font-size:13px;min-height:20px;margin-top:8px"></div>
+   <button type="submit" style="width:100%;margin-top:6px;padding:12px;border:0;border-radius:10px;background:#0D98A6;color:#fff;font:inherit;font-weight:600;cursor:pointer">Giriş Yap</button>
+  </form>`;
+  document.body.appendChild(box);
+  const form=box.querySelector('form');
+  form.onsubmit=async e=>{
+   e.preventDefault();
+   const btn=form.querySelector('button');btn.disabled=true;box.querySelector('#clErr').textContent='';
+   const r=await sb.auth.signInWithPassword({email:box.querySelector('#clEmail').value.trim(),password:box.querySelector('#clPass').value});
+   if(r.error){box.querySelector('#clErr').textContent='E-posta veya şifre hatalı.';btn.disabled=false;return}
+   // Eski (anonim) oturuma ait kayıtlı QR başka kimliğe aitti; yenisi oluşturulsun.
+   localStorage.removeItem('dr_pc_session');
+   box.remove();resolve();
+  };
+  box.querySelector('#clEmail').focus();
+ });
+}
 async function initDesktop(){
  $('#desktop').classList.remove('hidden'); startWaitingLoop();
  let {data}=await sb.auth.getSession();
- if(!data.session){const r=await sb.auth.signInAnonymously(); if(r.error){alert('Oturum açılamadı');return}}
+ if(!data.session||data.session.user?.is_anonymous){await clinicLogin();}
  $('#newQr').onclick=createSession;
  $('#deviceFilter').onchange=()=>renderDashboard(window.__dash||{devices:[],recordings:[]});
  const dateInput=$('#recordingDateFilter');
@@ -147,7 +174,8 @@ async function loadDashboard(){
    // Never replace the audio element once playback has begun.
    if(isRecordingPlaybackActive())return;
    // Current QR session devices first, historical recordings remain persistent.
-   const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id);
+   const now=Date.now();
+   const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id && x.last_seen_at && now-new Date(x.last_seen_at).getTime()<45000);
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
    renderDashboard(window.__dash);
  }catch(e){console.error(e)}
@@ -287,8 +315,16 @@ function renderPhonePreview(d){
    });
  }
 }
+function setDesktopConnectionState(connected){
+ const title=$('#desktopConnTitle'),sub=$('#desktopConnSub'),dot=$('#desktopConnDot');
+ if(!title||!sub)return;
+ title.textContent=connected?'Masaüstüne Bağlandı':'Telefon Bekleniyor';
+ sub.textContent=connected?'Doktor cihazı aktif olarak bağlandı.':'QR kodunu doktor telefonundan okutun.';
+ if(dot)dot.classList.toggle('offline',!connected);
+}
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
+ setDesktopConnectionState(devices.length>0);
  $('#deviceCount').textContent=`${devices.length} cihaz`;
  const devBox=$('#devices'); devBox.innerHTML='';
  if(!devices.length){devBox.innerHTML=waitingMarkup();startWaitingLoop()}else stopWaitingLoop();
@@ -362,9 +398,8 @@ async function initMobile(){
  $('#closeScanner').onclick=closeScanner;
  const ok=await checkToken();
  if(!ok)return expired();
- const saved=JSON.parse(localStorage.getItem('dr_doctor')||'null');
- if(saved?.first)$('#firstName').value=saved.first;
- if(saved?.last)$('#lastName').value=saved.last;
+ $('#firstName').value='';
+ $('#lastName').value='';
  $('#identity').classList.remove('hidden');
  setInterval(async()=>{if(!(await checkToken()))expired()},5000);
 }
@@ -377,7 +412,6 @@ async function register(){
  const first=$('#firstName').value.trim(),last=$('#lastName').value.trim(); if(!first||!last){$('#identityError').textContent='Ad ve soyad alanlarını doldurun.';$('#identityError').classList.remove('hidden');return}
  try{
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
-  localStorage.setItem('dr_doctor',JSON.stringify({first,last}));
   $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
   lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
@@ -446,6 +480,7 @@ async function startRecording(){
   $('#mic').classList.add('recording');
   $('#statePill').className='pill recording';
   $('#statePill').textContent='Kaydediliyor';
+  $('#tapHint').classList.remove('permission-needed');
   $('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';
   $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
   $('#waveWrap').classList.remove('hidden');
@@ -459,11 +494,19 @@ async function startRecording(){
   console.error('Recorder start failed:',e?.name,e?.message,e);
   acquiredStream?.getTracks().forEach(t=>t.stop());
   stream=null;recorder=null;
+  if(e?.name==='NotAllowedError'||e?.name==='SecurityError'){
+   $('#uploadState').textContent='';
+   $('#uploadState').classList.add('hidden');
+   $('#tapHint').textContent='Mikrofon izni gerekli';
+   $('#tapHint').classList.add('permission-needed');
+   $('#statePill').textContent='İzin Gerekli';
+   $('#statePill').className='pill permission';
+   return;
+  }
   let msg=`Mikrofon başlatılamadı${e?.name?` (${e.name})`:''}${e?.message?`: ${e.message}`:''}.`;
-  if(e?.name==='NotAllowedError'||e?.name==='SecurityError') msg='Mikrofon erişimine izin verilmedi. Safari adres çubuğundaki site ayarlarından Mikrofon → İzin Ver seçin.';
-  else if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
+  if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
   else if(e?.name==='NotReadableError'||e?.name==='TrackStartError') msg='Mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
-  else if(e?.name==='NotSupportedError'||e?.stage==='recorder') msg='Mikrofon izni var, ancak bu Safari sürümünde ses kayıt biçimi başlatılamadı.';
+  else if(e?.name==='NotSupportedError'||e?.stage==='recorder') msg='Bu tarayıcıda ses kaydı başlatılamadı.';
   $('#uploadState').textContent=msg;
   $('#uploadState').classList.remove('hidden');
  }

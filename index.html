@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=93">
+  <link rel="stylesheet" href="style.css?v=94">
 </head>
 <body>
 <main>
@@ -37,7 +37,7 @@
         <div class="dashboard-showcase"><div class="dashboard-top">
           <section class="dash-card connect-panel">
             <div class="connect-upper">
-              <div class="connect-copy"><span class="online-dot"></span><div><h2>Masaüstüne Bağlandı</h2><p>Doktor cihazı aktif olarak bağlandı.</p></div></div>
+              <div class="connect-copy"><span id="desktopConnDot" class="online-dot offline"></span><div><h2 id="desktopConnTitle">Telefon Bekleniyor</h2><p id="desktopConnSub">QR kodunu doktor telefonundan okutun.</p></div></div>
               <div class="mini-qr"><div id="qrcode"></div></div>
               <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span><button id="newQr" class="new-qr-button" type="button"><span>↻</span> Yeni QR Oluştur</button></div>
             </div>
@@ -101,8 +101,8 @@
         <div class="kicker">İLK BAĞLANTI</div>
         <h1>Hoş Geldiniz</h1>
         <p>Ses kayıtlarının size ait olduğunu ayırabilmemiz için adınızı ve soyadınızı yazın.</p>
-        <label>Adınız<input id="firstName" autocomplete="given-name" placeholder="Ahmet"></label>
-        <label>Soyadınız<input id="lastName" autocomplete="family-name" placeholder="Yılmaz"></label>
+        <label>Adınız<input id="firstName" autocomplete="off" autocapitalize="words" placeholder="Ahmet"></label>
+        <label>Soyadınız<input id="lastName" autocomplete="off" autocapitalize="words" placeholder="Yılmaz"></label>
         <button id="identityContinue" class="primary">Devam Et →</button>
         <div id="identityError" class="error hidden"></div>
       </section>
@@ -157,6 +157,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=93"></script>
+<script src="app.js?v=95"></script>
 </body>
 </html>
