@@ -110,3 +110,13 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Added sidebar, top app bar, combined connection/QR/device card, live recording visual card, and full-width waveform recordings table.
 - Existing functional IDs and backend flows are preserved.
 - Mobile waveform history remains compact and consistent with desktop.
+
+## v7.3 functional exact-match pass
+- Removed the unnecessary top-right doctor profile.
+- Mobile always shows doctor identity form for each newly scanned QR; remembered values only prefill.
+- Added editable phone model field because Safari cannot reliably expose exact iPhone model.
+- Desktop connected-device area now shows doctor, entered phone model, server-observed IP, online/recording state, last-seen and successful-recording confirmation.
+- Recording table now has separate Doctor / Device / Date-Time / Duration / Waveform / Actions columns.
+- Rebuilt waveform envelope to match the supplied clustered Apple-style reference more closely.
+- Play buttons use actual audio elements with signed URLs, async error handling and refresh guidance.
+- Sidebar Home / Recordings / Doctors / Settings now perform real actions.
