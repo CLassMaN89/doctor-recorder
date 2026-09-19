@@ -8,6 +8,10 @@ const params=new URLSearchParams(location.search);
 const isMobile=params.get('mode')==='record';
 const token=params.get('token')||'';
 let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
+let activePlaybackCount=0;
+function isRecordingPlaybackActive(){
+ return activePlaybackCount>0 || [...document.querySelectorAll('#recordings audio, #mobileHistory audio')].some(a=>!a.paused&&!a.ended);
+}
 
 function deviceId(){
  let id=localStorage.getItem('dr_device_id');
@@ -121,10 +125,12 @@ async function loadDashboard(){
  // Do not rebuild the recordings DOM while a recording is playing.
  // The dashboard refreshes every 2.5 seconds; rebuilding the <audio> element
  // was stopping playback at each refresh.
- const playingAudio=[...document.querySelectorAll('#recordings audio')].some(a=>!a.paused&&!a.ended);
- if(playingAudio)return;
+ if(isRecordingPlaybackActive())return;
  try{
    const d=await api('history',{auth:true});
+   // Playback may have started while the async request was in flight.
+   // Never replace the audio element once playback has begun.
+   if(isRecordingPlaybackActive())return;
    // Current QR session devices first, historical recordings remain persistent.
    const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id);
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
@@ -171,9 +177,9 @@ function wireWavePlayer(root,audio,play,timeEl){
  audio.addEventListener('loadedmetadata',paint);
  audio.addEventListener('durationchange',paint);
  audio.addEventListener('timeupdate',paint);
- audio.addEventListener('ended',()=>{play.innerHTML=playIcon();paint()});
- audio.addEventListener('play',()=>play.innerHTML=pauseIcon());
- audio.addEventListener('pause',()=>{if(!audio.ended)play.innerHTML=playIcon()});
+ audio.addEventListener('ended',()=>{activePlaybackCount=0;play.innerHTML=playIcon();paint()});
+ audio.addEventListener('play',()=>{activePlaybackCount=1;play.innerHTML=pauseIcon()});
+ audio.addEventListener('pause',()=>{activePlaybackCount=0;if(!audio.ended)play.innerHTML=playIcon()});
  audio.addEventListener('error',()=>{play.classList.add('audio-error');play.title='Ses dosyası açılamadı. Listeyi yenileyin.'});
  play.innerHTML=playIcon();
  play.onclick=async()=>{
@@ -190,7 +196,7 @@ function wireWavePlayer(root,audio,play,timeEl){
  };
 }
 function playIcon(){return '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>'}
-function pauseIcon(){return '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" stroke="none"/></svg>'}
+function pauseIcon(){return '<img class="pause-control-icon" src="duraklat.png" alt="Duraklat">'}
 
 function animatePlaybackWave(root,audio){
  const wave=root.querySelector('.apple-wave'); if(!wave)return;

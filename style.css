@@ -1208,3 +1208,8 @@ html[data-theme="dark"] #mobile .history-empty,html[data-theme="dark"] #mobile .
   html body.desktop-mode #desktop .section-head.table-head{align-items:flex-start!important;flex-wrap:wrap!important}
   html body.desktop-mode #desktop .wave-rec-row{grid-template-columns:42px 100px 70px 118px 46px minmax(0,1fr)!important;column-gap:6px!important}
 }
+
+/* V9.2 playback controls */
+.duraklat-icon{width:30px;height:30px;object-fit:contain;display:block}
+.pause-control-icon{width:22px;height:22px;object-fit:contain;display:block;margin:auto}
+[data-theme="dark"] .duraklat-icon,[data-theme="dark"] .pause-control-icon{filter:invert(1)}
