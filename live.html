@@ -54,6 +54,7 @@
       <div><label for="first">Ad</label><input id="first" autocomplete="given-name"></div>
       <div><label for="last">Soyad</label><input id="last" autocomplete="family-name"></div>
     </div>
+    <div style="margin-top:12px"><label for="phoneModel">Telefon (marka / model)</label><input id="phoneModel" autocomplete="off" placeholder="Örn. Samsung S23, iPhone 15"></div>
     <div class="err" id="idErr"></div>
     <button class="btn" id="go">Mikrofonu Başlat</button>
   </section>
@@ -135,8 +136,19 @@ async function detectModel(){
   if(uad?.getHighEntropyValues){const h=await uad.getHighEntropyValues(['model']);const p=prettyModel(h.model);if(p)detectedModel=p}
  }catch{}
 }
-function model(){return detectedModel||baseModel()}
-detectModel();
+function model(){
+  const typed = (document.getElementById('phoneModel')?.value || '').trim();
+  return typed || detectedModel || baseModel();
+}
+function fillPhoneModel(){
+  const el = document.getElementById('phoneModel'); if (!el || el.dataset.touched) return;
+  const guess = detectedModel || baseModel();
+  // Tarayıcı modeli gizliyorsa alan boş kalır; doktor kendisi yazar.
+  el.value = (guess && guess.length > 2 && !/^(Android Telefon|Telefon)$/i.test(guess)) ? guess : '';
+}
+document.addEventListener('input', e => { if (e.target && e.target.id === 'phoneModel') e.target.dataset.touched = '1'; });
+detectModel().then(fillPhoneModel);
+window.addEventListener('load', fillPhoneModel);
 const fatal = (msg) => { $('fatal').textContent = msg; $('identity').classList.add('hidden'); $('live').classList.add('hidden'); };
 // Oturum bittiğinde (PC durdurdu, süre doldu, telefondan durduruldu) yeni QR okutma ekranı.
 function showEnded(title, text) {

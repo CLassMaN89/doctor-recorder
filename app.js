@@ -43,8 +43,19 @@ async function detectModel(){
   if(uad?.getHighEntropyValues){const h=await uad.getHighEntropyValues(['model']);const p=prettyModel(h.model);if(p)detectedModel=p}
  }catch{}
 }
-function model(){return detectedModel||baseModel()}
-detectModel();
+function model(){
+ const typed=(document.querySelector('#phoneModel')?.value||'').trim();
+ return typed||detectedModel||baseModel();
+}
+function fillPhoneModel(){
+ const el=document.querySelector('#phoneModel'); if(!el||el.dataset.touched)return;
+ const guess=detectedModel||baseModel();
+ // Tarayıcı modeli gizliyorsa ("K" gibi) alan boş bırakılır; doktor kendisi yazar.
+ el.value=(guess&&guess.length>2&&!/^(Android Telefon|Telefon)$/i.test(guess))?guess:'';
+}
+document.addEventListener('input',e=>{if(e.target?.id==='phoneModel')e.target.dataset.touched='1'});
+detectModel().then(fillPhoneModel);
+window.addEventListener('load',fillPhoneModel);
 function fmt(sec){sec=Math.max(0,Math.floor(sec||0));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`}
 async function api(action,{method='GET',body=null,auth=false,query={}}={}){
  const q=new URLSearchParams({action,...query});
