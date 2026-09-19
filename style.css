@@ -201,3 +201,96 @@
   width:27px;
   height:15px;
 }
+
+/* v6.7 - TextLoop structure from supplied component, red variant.
+   SVG remains physically fixed; Telefon is static; only Bekleniyor... width animates. */
+.waiting-empty{
+  display:grid!important;
+  grid-template-columns:68px auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  column-gap:9px!important;
+  min-height:86px;
+}
+.waiting-icon-slot{
+  grid-column:1;
+  width:68px!important;
+  height:32px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  overflow:visible!important;
+}
+.waiting-live-icon{
+  width:62px!important;
+  height:28px!important;
+  display:block!important;
+  flex:none!important;
+  animation:none!important;
+  transform:none!important;
+}
+.waiting-loop{
+  grid-column:2;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:220px!important; /* reserved width prevents SVG/static text shifting */
+  font-size:17px!important;
+  font-weight:700!important;
+  letter-spacing:-.02em!important;
+  line-height:1.15!important;
+}
+.waiting-static{
+  margin-right:7px!important;
+  white-space:nowrap!important;
+  color:#36566d!important;
+  flex:0 0 auto!important;
+}
+.waiting-animated-slot{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  width:122px!important;
+  height:24px!important;
+  flex:0 0 122px!important;
+}
+.waiting-rotating-wrap{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  width:0;
+  opacity:0;
+  flex:0 0 auto!important;
+  will-change:width,opacity;
+}
+.waiting-rotating{
+  position:relative!important;
+  z-index:2!important;
+  white-space:nowrap!important;
+  padding-right:2px!important;
+  background:linear-gradient(90deg,#ef4444 0%,#b91c1c 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  color:transparent!important;
+}
+.waiting-gradient{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  background:linear-gradient(90deg,rgba(254,226,226,0),rgba(254,202,202,.30),rgba(252,165,165,.58))!important;
+}
+.waiting-animated-slot .type-cursor{
+  display:inline-block!important;
+  width:3px!important;
+  min-width:3px!important;
+  height:1.10em!important;
+  margin-left:1px!important;
+  border-radius:1px!important;
+  background:#ef4444!important;
+  animation:v63Cursor .8s ease-in-out infinite alternate!important;
+}

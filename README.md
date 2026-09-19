@@ -64,3 +64,11 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Tamamlanmış her ses kaydının başında sabit Live Recording/REC SVG gösterilir.
 - İkon hem PC kayıt listesinde hem telefondaki Kayıtlarım alanında görünür.
 - Kayıt ikonları animasyonsuzdur; tamamlanmış kayıt göstergesidir.
+
+
+## v6.7
+- TextLoop supplied prompt structure restored: `Telefon` staticText, `Bekleniyor...` rotating text.
+- A visible space is preserved between Telefon and Bekleniyor.
+- Animated text, gradient background and cursor changed from violet to red.
+- REC SVG is in an independent fixed-width grid slot and does not move when text expands/collapses.
+- v6.6 recording REC icons and v6.4 iPhone microphone fixes remain.

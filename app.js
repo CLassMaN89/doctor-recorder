@@ -34,13 +34,13 @@ async function api(action,{method='GET',body=null,auth=false,query={}}={}){
 
 
 let waitingLoopTimer=null;
-const waitingLoopText='TelefonBekleniyor...';
+const waitingLoopText='Bekleniyor...';
 
 function stopWaitingLoop(){
  if(waitingLoopTimer){clearTimeout(waitingLoopTimer);waitingLoopTimer=null}
 }
 function waitingMarkup(){
- return '<div class="empty waiting-empty"><span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span><div class="waiting-text-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">TelefonBekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>';
+ return '<div class="empty waiting-empty"><span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span><div class="waiting-loop"><span class="waiting-static">Telefon</span><div class="waiting-animated-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div></div>';
 }
 function startWaitingLoop(){
  stopWaitingLoop();
