@@ -274,7 +274,7 @@ function waveBars(seed,count=72){
  }).join('');
 }
 function waveMarkup(seed,extra=''){
- return `<div class="apple-wave ${extra}" data-wave="${esc(seed)}">${waveBars(seed)}</div>`;
+ return `<div class="apple-wave ${extra}" data-wave="${esc(seed)}">${waveBars(seed,/mobile-wave/.test(extra)?42:72)}</div>`;
 }
 function wireWavePlayer(root,audio,play,timeEl){
  const bars=[...root.querySelectorAll('.apple-wave i')];
@@ -461,6 +461,8 @@ async function initMobile(){
  $('#mic').onclick=toggleRecording;
  $('#pauseBtn').onclick=togglePause;
  $('#finishBtn').onclick=finishRecording;
+ $('#markBtn').onclick=markMoment;
+ $('#pauseBtn').innerHTML=pauseBtnHtml(false);
  $('#scanQrBtn').onclick=openScanner;
  $('#closeScanner').onclick=closeScanner;
  const ok=await checkToken();
@@ -492,6 +494,22 @@ async function state(status,opts={}){
   if(e.status===410) expired();
   else if(!opts.heartbeat) throw e;
  }
+}
+function pauseBtnHtml(resume){
+ return resume
+  ? '<i class="rc-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" style="fill:currentColor;stroke:none"/></svg></i><span>Devam Et</span>'
+  : '<i class="rc-circle"><svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg></i><span>Duraklat</span>';
+}
+function setRecStatus(text,paused){
+ const b=$('#recStatus'); if(!b)return;
+ b.classList.remove('hidden'); b.classList.toggle('paused',!!paused);
+ $('#recStatusText').textContent=text;
+}
+let markToast=0;
+function markMoment(){
+ const t=$('#timer').textContent; navigator.vibrate?.(30);
+ const old=$('#recStatusText').textContent; $('#recStatusText').textContent='İşaretlendi · '+t;
+ clearTimeout(markToast); markToast=setTimeout(()=>{$('#recStatusText').textContent=isPaused?'Kayıt duraklatıldı':'Kayıt yapılıyor...'},1600);
 }
 async function startRecording(){
  setSentBadge(false);
@@ -552,8 +570,9 @@ async function startRecording(){
   $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
   $('#waveWrap').classList.remove('hidden');
   $('#recordControls').classList.remove('hidden');
+  setRecStatus('Kayıt yapılıyor...',false);
   $('#pauseBtn').classList.remove('resume');
-  $('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';
+  $('#pauseBtn').innerHTML=pauseBtnHtml(false);
   // Visualizer and server presence are auxiliary. Neither may cancel a valid mic recording.
   try{ startWave(stream); }catch(waveErr){ console.warn('Waveform unavailable:',waveErr); $('#waveWrap')?.classList.add('hidden'); }
   state('recording').catch(stateErr=>console.warn('Device state update failed:',stateErr));
@@ -656,15 +675,16 @@ function updateTimer(){
   else ms=elapsedBeforePause+(Date.now()-startedAt);
  }
  $('#timer').textContent=fmt(ms/1000);
+ const rs=$('#recStatusTime'); if(rs)rs.textContent=fmt(ms/1000);
 }
 async function togglePause(){
  if(!recorder||isFinishing)return;
  if(recorder.state==='recording'){
   recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
-  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');$('#pauseBtn').innerHTML='▶ <span>Devam Et</span>';stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
+  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');setRecStatus('Kayıt duraklatıldı',true);$('#pauseBtn').innerHTML=pauseBtnHtml(true);stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
  }else if(recorder.state==='paused'){
   recorder.resume(); startedAt=Date.now(); isPaused=false;
-  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
+  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');setRecStatus('Kayıt yapılıyor...',false);$('#pauseBtn').innerHTML=pauseBtnHtml(false);$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
  }
 }
 async function finishRecording(){
@@ -674,7 +694,7 @@ async function finishRecording(){
  const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
  recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
  clearInterval(timerInt); recorder.stop(); isPaused=false;
- $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
+ $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#recStatus')?.classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
 }
 async function toggleRecording(){
  if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;
@@ -689,9 +709,11 @@ async function loadMobileHistory(){
   $('#historyCount').textContent=`${recs.length} kayıt`;
   const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
   recs.forEach((r,i)=>{
-   const el=document.createElement('div');el.className='mrec wave-mrec';
-   const stamp=new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-   el.innerHTML=`<div class="mrec-wave-line"><div class="mrec-label"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><b>Kayıt ${recs.length-i}</b><small>${stamp} · ${fmt(r.duration_seconds)}</small></div>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}<button class="play mobile-play" aria-label="Oynat">▶</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+   const el=document.createElement('div');
+   const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+   el.className='mrow';
+   el.innerHTML=`<span class="mrow-rec"><i></i>REC</span><div class="mrow-mid"><small>${stamp} <em>${fmt(r.duration_seconds)}</em></small>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}</div><button class="play mrow-play" aria-label="Oynat"></button><button class="mrow-more" aria-label="Diğer" data-url="${esc(r.signed_url||'')}">⋮</button><audio preload="metadata" src="${r.signed_url||''}"></audio>`;
+   el.querySelector('.mrow-more').onclick=e=>{const u=e.currentTarget.dataset.url;if(u)window.open(u,'_blank')};
    const audio=el.querySelector('audio'),play=el.querySelector('.play');
    wireWavePlayer(el,audio,play,null); animatePlaybackWave(el,audio);
    box.appendChild(el);

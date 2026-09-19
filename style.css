@@ -1275,3 +1275,46 @@ html body .apple-wave i{opacity:.72!important}
 html body .apple-wave.is-playing i{opacity:.85!important}
 html body .apple-wave i.played{opacity:.98!important}
 html body .live-apple-wave i,html body .preview-wave i{opacity:.85!important}
+
+/* v10.2 — Doktor kayıt ekranı (QR sonrası): kayıt sırasında büyük sayaç, dalga, 3 düğme, yeşil durum çubuğu; Kayıtlarım satırları */
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)){display:flex!important;flex-direction:column;align-items:stretch}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) .rec-top{order:0}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #recordHelp,
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #mic,
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #tapHint{display:none!important}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #timer{order:1;font-size:40px!important;font-weight:800!important;text-align:center;margin:6px 0 4px!important;color:#10263b;letter-spacing:.5px}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #waveWrap{order:2;height:64px!important;margin:4px 0 12px!important}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #recordControls{order:3}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #recStatus{order:4}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #uploadState{order:5}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) #mobileHistory{order:9}
+body.mobile-mode #waveWrap canvas{width:100%!important;height:100%!important;display:block}
+body.mobile-mode #recordControls{display:grid!important;grid-template-columns:1fr 1.2fr 1fr;align-items:start;gap:6px;margin:6px 0 14px!important}
+body.mobile-mode #recordControls.hidden{display:none!important}
+body.mobile-mode .rc-btn{background:none!important;border:0!important;box-shadow:none!important;display:flex!important;flex-direction:column;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:600;color:#3d566a!important;padding:0!important;min-height:0!important;height:auto!important;border-radius:0!important}
+body.mobile-mode .rc-circle{width:56px;height:56px;border-radius:50%;background:#eaf3fb;display:grid;place-items:center}
+body.mobile-mode .rc-circle svg{width:22px;height:22px;stroke:#3d566a;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+body.mobile-mode .finish-btn .rc-circle{width:78px;height:78px;background:#ff4757;box-shadow:0 8px 22px rgba(255,71,87,.35)}
+body.mobile-mode .finish-btn .rc-circle em{display:block;width:26px;height:26px;border-radius:6px;background:#fff}
+body.mobile-mode .finish-btn span{font-weight:800;color:#10263b}
+body.mobile-mode .rec-status{display:flex;align-items:center;gap:9px;background:#e6f8ee;color:#159a6b;border-radius:12px;padding:12px 14px;margin:0 0 4px}
+body.mobile-mode .rec-status.hidden{display:none!important}
+body.mobile-mode .rec-status svg{width:20px;height:20px;stroke:#159a6b;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+body.mobile-mode .rec-status b{flex:1;font-size:14px;font-weight:700}
+body.mobile-mode .rec-status span{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+body.mobile-mode .rec-status.paused{background:#fff6e0;color:#c98214}
+body.mobile-mode .rec-status.paused svg{stroke:#c98214}
+/* Kayıtlarım */
+body.mobile-mode .history-head h2{font-size:20px!important;font-weight:800!important;margin:0!important;color:#10263b}
+body.mobile-mode .mrow{display:grid;grid-template-columns:48px minmax(0,1fr) 40px 20px;align-items:center;gap:8px;padding:11px 0;border-top:1px solid #edf2f5}
+body.mobile-mode .mrow:first-child{border-top:0}
+body.mobile-mode .mrow audio{display:none!important}
+body.mobile-mode .mrow-rec{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#ff3c5a}
+body.mobile-mode .mrow-rec i{width:9px;height:9px;border-radius:50%;background:#ff3c5a;flex:none}
+body.mobile-mode .mrow-mid{min-width:0}
+body.mobile-mode .mrow-mid small{display:block;font-size:11.5px;color:#4a6379;margin-bottom:3px;white-space:nowrap}
+body.mobile-mode .mrow-mid small em{font-style:normal;font-size:9.5px;color:#8fa3b3;margin-left:4px}
+body.mobile-mode .mrow .apple-wave{height:28px!important;width:100%!important}
+body.mobile-mode .mrow-play{width:38px!important;height:38px!important;border-radius:50%!important;border:0!important;padding:0!important;background:linear-gradient(135deg,#25b7e8,#2b7fe6)!important;color:#fff!important;display:grid!important;place-items:center;box-shadow:0 4px 12px rgba(43,127,230,.3)}
+body.mobile-mode .mrow-play svg{width:16px;height:16px}
+body.mobile-mode .mrow-more{background:none;border:0;font-size:22px;line-height:1;color:#6d8194;padding:0;text-align:center}
