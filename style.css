@@ -1364,3 +1364,10 @@ html body .locked-field{background:#eef3f7!important;color:#5b7386!important;cur
 body.mobile-mode .rec-top-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 body.mobile-mode .logout-btn{border:1px solid #d5e2ec;background:#fff;color:#5b7386;border-radius:999px;padding:5px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 body.mobile-mode .logout-btn:active{background:#eef3f7}
+
+/* v10.9 — Mikrofon düğmesi: hareketli AI küresi (ai-orb.svg). Siri küresi CSS'i devre dışı. */
+body.mobile-mode #mic{width:150px!important;height:150px!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;border-radius:50%;margin:8px auto 4px!important;-webkit-tap-highlight-color:transparent}
+body.mobile-mode #mic::before,body.mobile-mode #mic::after,body.mobile-mode #mic .mic-r,body.mobile-mode #mic svg{display:none!important}
+/* SVG'nin kenarlarında geniş boşluk var; küre düğmeyi dolduracak şekilde büyütülür */
+body.mobile-mode #mic .mic-orb{display:block;position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;transform:scale(1.9);transform-origin:50% 50%;pointer-events:none;-webkit-user-drag:none;user-select:none;transition:transform .12s ease}
+body.mobile-mode #mic:active .mic-orb{transform:scale(1.8)}
