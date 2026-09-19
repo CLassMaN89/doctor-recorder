@@ -889,3 +889,49 @@ html,body{overflow-x:hidden}
   #desktop .recording-columns{display:none!important}
   #desktop .wave-rec-row{grid-template-columns:42px minmax(90px,.8fr) 68px 112px 45px minmax(190px,1.8fr)!important;font-size:10px!important}
 }
+\n\n/* v8.6 — keep desktop and doctor/mobile layouts strictly separated */\n.delete-rec{width:34px!important;height:34px!important;border:1px solid #ffd5da!important;border-radius:9px!important;background:#fff1f3!important;color:#e5394f!important;display:grid!important;place-items:center!important;padding:0!important;cursor:pointer!important;transition:.18s ease!important}\n.delete-rec:hover{background:#ffe3e7!important;border-color:#ffb9c2!important;color:#c91f38!important;transform:translateY(-1px)}\n.delete-rec svg{width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}\n\n/* mode isolation: responsive desktop rules must never restyle the doctor recorder */\nbody.mobile-mode #desktop{display:none!important}\nbody.mobile-mode #mobile{display:grid!important}\nbody.mobile-mode .phone{width:min(100%,430px)!important;max-width:430px!important;min-height:100dvh!important;margin:0 auto!important;padding:max(14px,env(safe-area-inset-top)) 13px max(18px,env(safe-area-inset-bottom))!important}\nbody.mobile-mode .mobile-head{display:flex!important}\nbody.mobile-mode .connection{display:flex!important}\nbody.mobile-mode .cardish{display:block}\n\nbody.desktop-mode #mobile{display:none!important}\nbody.desktop-mode #desktop:not(.hidden){display:grid!important}\n\n@media(max-width:760px){\n  body.desktop-mode #desktop.desktop-shell{display:block!important}\n  body.mobile-mode #desktop{display:none!important}\n  body.mobile-mode #mobile{display:grid!important}\n}\n
+/* v8.7 — desktop geometry reset: one coordinate system, no inherited table drift */
+@media (min-width: 761px){
+  html,body{overflow-x:hidden!important}
+  #desktop.desktop-shell{width:100%!important;max-width:none!important;padding:0 24px 36px!important;box-sizing:border-box!important}
+  #desktop .dashboard-content{width:100%!important;max-width:1240px!important;margin:0 auto!important;padding:10px 0 30px!important;box-sizing:border-box!important}
+  #desktop .dashboard-showcase{display:block!important;width:100%!important;margin:0!important}
+  #desktop .dashboard-top{display:grid!important;grid-template-columns:minmax(0,1.62fr) minmax(340px,.98fr)!important;gap:18px!important;width:100%!important;margin:0 0 18px!important;align-items:stretch!important}
+  #desktop .connect-panel,#desktop .live-panel,#desktop .recordings-table{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+  #desktop .connect-upper{display:grid!important;grid-template-columns:minmax(220px,1fr) 150px 190px!important;gap:16px!important;align-items:center!important;overflow:hidden!important}
+  #desktop .qr-detail{min-width:0!important;overflow:hidden!important}
+  #desktop .qr-detail b{font-size:23px!important;letter-spacing:.045em!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+  #desktop .recordings-table{margin:0!important;padding:20px 22px!important;overflow:hidden!important}
+  #desktop .section-head.table-head{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:16px!important}
+  #desktop .table-filters{display:flex!important;flex-wrap:nowrap!important;gap:8px!important;flex:0 0 auto!important}
+  #desktop #recordings{width:100%!important;min-width:0!important;overflow:hidden!important}
+  #desktop .recording-columns,#desktop .wave-rec-row{
+    display:grid!important;
+    grid-template-columns:56px 140px 105px 160px 60px minmax(0,1fr)!important;
+    column-gap:14px!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    align-items:center!important;
+  }
+  #desktop .recording-columns{padding:16px 0 9px!important}
+  #desktop .wave-rec-row{padding:10px 0!important;min-height:62px!important}
+  #desktop .rec-id,#desktop .rec-doctor,#desktop .rec-device,#desktop .rec-date,#desktop .rec-duration,#desktop .wave-player{min-width:0!important}
+  #desktop .rec-doctor,#desktop .rec-device,#desktop .rec-date,#desktop .rec-duration{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  #desktop .wave-player{display:grid!important;grid-template-columns:minmax(0,1fr) 38px 34px!important;gap:10px!important;align-items:center!important;width:100%!important}
+  #desktop .apple-wave{width:100%!important;min-width:0!important;overflow:hidden!important}
+  #desktop .wave-player .play,#desktop .delete-rec{flex:0 0 auto!important}
+}
+@media (min-width:761px) and (max-width:1100px){
+  #desktop.desktop-shell{padding-left:16px!important;padding-right:16px!important}
+  #desktop .dashboard-top{grid-template-columns:1fr!important}
+  #desktop .connect-upper{grid-template-columns:minmax(200px,1fr) 132px 180px!important}
+  #desktop .recording-columns,#desktop .wave-rec-row{grid-template-columns:48px 115px 82px 135px 52px minmax(0,1fr)!important;column-gap:9px!important}
+  #desktop .wave-player{grid-template-columns:minmax(0,1fr) 36px 32px!important;gap:7px!important}
+}
+@media (min-width:761px) and (max-width:880px){
+  #desktop .recording-columns{display:none!important}
+  #desktop .wave-rec-row{grid-template-columns:44px 105px 72px 118px 48px minmax(0,1fr)!important;column-gap:7px!important}
+  #desktop .recordings-table{padding-left:14px!important;padding-right:14px!important}
+}
