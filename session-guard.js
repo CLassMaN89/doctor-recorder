@@ -15,6 +15,8 @@
   const connectionSub = document.querySelector('#mobileConnectionSub');
   const errorBox = document.querySelector('#errorBox');
   const recorderCard = document.querySelector('.mobile-record-card');
+  const expiredPrompt = document.querySelector('#expiredPrompt');
+  const micTapHint = document.querySelector('#micTapHint');
 
   let guardTimer = null;
   let sessionUsable = false;
@@ -60,6 +62,9 @@
     if (pauseBtn) pauseBtn.disabled = false;
     if (stopBtn) stopBtn.disabled = false;
     hideGuardError();
+    if (expiredPrompt) expiredPrompt.classList.add('hidden');
+    if (micTapHint) micTapHint.classList.remove('hidden');
+    recorderCard?.classList.remove('session-expired');
     setConnection(
       'Masaüstüne Bağlandı',
       'Kayıtlar otomatik olarak bilgisayara aktarılır.',
@@ -84,6 +89,8 @@
     );
 
     recorderCard?.classList.add('session-expired');
+    if (micTapHint) micTapHint.classList.add('hidden');
+    if (expiredPrompt) expiredPrompt.classList.remove('hidden');
     showGuardError('Bu QR artık geçerli değil. Lütfen bilgisayar ekranındaki yeni QR kodunu okutun.');
 
     if (guardTimer) {

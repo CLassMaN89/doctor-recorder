@@ -1325,3 +1325,701 @@ body:has(#recorderView:not(.hidden)){
   0%,100%{opacity:.55;transform:scale(.96)}
   50%{opacity:1;transform:scale(1.04)}
 }
+
+
+/* =========================================================
+   v5.6 - ACIK TEMA + SIRI TARZI GERCEK SES DALGASI
+   ========================================================= */
+
+:root{
+  color-scheme:light;
+  --light-bg:#f3f7fb;
+  --light-bg-2:#edf4fa;
+  --light-card:#ffffff;
+  --light-card-soft:#f8fbfd;
+  --light-line:#d7e4ee;
+  --light-line-strong:#c7d9e7;
+  --light-text:#18324a;
+  --light-muted:#657f94;
+  --light-blue:#2478e9;
+  --light-cyan:#21b7df;
+  --light-teal:#18b9a7;
+}
+
+html,body{background:#f3f7fb}
+body{
+  color:var(--light-text);
+  background:
+    radial-gradient(circle at 78% -8%,rgba(63,157,235,.12),transparent 32%),
+    linear-gradient(180deg,#f8fbfd 0%,#eef5fa 100%);
+}
+
+.topbar{
+  color:var(--light-text);
+}
+
+.brand-name{color:#17324a}
+.brand-name strong{color:#2387d9}
+.brand-sub{color:#6f899d}
+
+.top-status{
+  background:#effaf7;
+  border-color:#c9eae0;
+}
+.top-status b{color:#168f7f}
+.top-status small{color:#688b87}
+.secure-dot{background:#20bea8}
+
+.page-intro{
+  border-bottom-color:#dce8f0;
+}
+.eyebrow,.card-kicker{color:#2087c6}
+.page-intro h1{color:#18324a}
+.page-intro p{color:#647f94}
+
+.card{
+  color:var(--light-text);
+  background:rgba(255,255,255,.96);
+  border-color:var(--light-line);
+  box-shadow:0 14px 38px rgba(54,87,111,.08);
+}
+.card p{color:var(--light-muted)}
+.icon-box{
+  color:#247de0;
+  background:#edf5ff;
+  border-color:#d2e4f7;
+}
+
+.session-line{
+  background:#f1f6fa;
+  border-color:#d8e5ee;
+}
+.session-line span{color:#58758b}
+.session-line small{color:#8ba0af}
+.session-line strong{color:#18324a}
+
+.tip{color:#6f899d}
+.tip-icon{
+  color:#3187c9;
+  border-color:#bcd7ea;
+  background:#f3f9fd;
+}
+
+.how-card .step{
+  background:#f8fbfd;
+  border-color:#dce8f0;
+}
+.step-no{
+  background:linear-gradient(145deg,#34bddd,#2879e9);
+  color:#fff;
+}
+.step-ico{
+  color:#287bd4;
+  background:#ebf4fd;
+}
+.step b{color:#1d3850}
+.step small{color:#72899b}
+.ready-badge{
+  color:#2679bd;
+  background:#eef7ff;
+  border-color:#d1e5f5;
+}
+
+.status-card{
+  background:linear-gradient(100deg,#ffffff,#f7fbfd);
+}
+.status-copy strong{color:#18324a}
+.status-copy small{color:#758da0}
+.live-pill{
+  background:#ebfaf5;
+  border-color:#caeee1;
+  color:#138f79;
+}
+.live-pill span{background:#25c29f}
+
+.recordings-card{
+  background:#fff;
+}
+.recording-row{
+  border-color:#dce7ee;
+  background:#f9fbfd;
+}
+.recording-meta b{color:#1d3850}
+.recording-meta small{color:#7890a2}
+.wave-mark i{
+  background:linear-gradient(#24c4c9,#2d79e8)
+}
+
+.notice{
+  color:#755710;
+  background:#fff8dc;
+  border-color:#ead894;
+}
+
+/* QR card stays white and crisp */
+.qr-wrap{
+  background:#fff;
+  border-color:#d9e5ed;
+  box-shadow:0 7px 20px rgba(45,77,102,.06);
+}
+
+/* Custom desktop audio player */
+.native-audio-hidden{
+  display:none!important;
+}
+
+.recording-row{
+  grid-template-columns:120px minmax(0,1fr);
+}
+
+.custom-audio-player{
+  min-width:0;
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) 34px;
+  gap:10px;
+  align-items:center;
+}
+
+.audio-play-btn,
+.audio-open-btn{
+  appearance:none;
+  border:1px solid #d6e4ee;
+  background:#fff;
+  color:#2679d9;
+  border-radius:11px;
+  width:36px;height:36px;
+  display:grid;place-items:center;
+  cursor:pointer;
+  font-size:.82rem;
+  font-weight:900;
+  box-shadow:0 4px 11px rgba(46,80,106,.06);
+}
+
+.audio-play-btn{
+  border:0;
+  color:#fff;
+  background:linear-gradient(145deg,#24cbbb,#2b78eb);
+}
+
+.audio-player-center{min-width:0}
+.audio-track{
+  position:relative;
+  height:8px;
+  border-radius:99px;
+  background:#e2ebf2;
+  cursor:pointer;
+  outline:none;
+}
+.audio-track-fill{
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:0;
+  border-radius:99px;
+  background:linear-gradient(90deg,#24c9b9,#2d7de8);
+}
+.audio-track-knob{
+  position:absolute;
+  top:50%;left:0;
+  width:13px;height:13px;
+  border-radius:50%;
+  background:#fff;
+  border:3px solid #2687dc;
+  transform:translate(-50%,-50%);
+  box-shadow:0 2px 7px rgba(35,91,132,.18);
+}
+.audio-time-row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:5px;
+  color:#8196a7;
+  font-size:.66rem;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ==================== MOBILE LIGHT THEME ==================== */
+body:has(#recorderView:not(.hidden)){
+  color:var(--light-text);
+  background:
+    radial-gradient(circle at 50% -6%,rgba(49,145,222,.14),transparent 34%),
+    linear-gradient(180deg,#f8fbfd,#edf4f9);
+}
+
+.mobile-app{
+  background:
+    radial-gradient(circle at 50% 8%,rgba(45,151,230,.09),transparent 27%),
+    linear-gradient(180deg,#f8fbfd,#eff5f9);
+  border-color:#d4e2ec;
+  box-shadow:0 24px 65px rgba(38,73,99,.13);
+}
+
+.mobile-brand b{color:#17324a}
+.mobile-brand small{color:#7891a4}
+.mobile-brand-icon{
+  color:#2189d3;
+  background:#edf7fc;
+}
+
+.mobile-secure{
+  color:#118d78;
+  background:#ebfaf5;
+  border-color:#c9eadf;
+}
+.lock-mark{color:#20b99f}
+
+.mobile-connection{
+  background:#ffffff;
+  border-color:#d7e4ed;
+  box-shadow:0 8px 24px rgba(49,79,101,.06);
+}
+.mobile-connection-copy b{color:#1c374e}
+.mobile-connection-copy small{color:#7690a3}
+.mobile-session-code small{color:#7891a4}
+.mobile-session-code strong{color:#1c374e}
+.desktop-link-icon{
+  color:#247ed5;
+  background:#edf5fd;
+}
+
+.mobile-connection.connection-checking{
+  background:#fffaf0;
+  border-color:#eadfb9;
+}
+.mobile-connection.connection-checking .desktop-link-icon{color:#d79a24}
+.mobile-connection.connection-ok{
+  background:#f5fcfa;
+  border-color:#cceae1;
+}
+.mobile-connection.connection-expired{
+  background:#fff4f4;
+  border-color:#f0c8cc;
+}
+
+.mobile-record-card{
+  color:#17324a;
+  border-color:#d5e3ec;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(36,137,212,.07),transparent 34%),
+    #ffffff;
+  box-shadow:0 13px 34px rgba(47,79,102,.08);
+}
+.record-eyebrow{color:#218ac7}
+.mobile-record-card>h2{color:#17324a}
+.record-help{color:#748da0}
+
+.mobile-record-card .mic-orb{
+  cursor:pointer;
+  outline:none;
+  background:radial-gradient(circle at 50% 34%,#39cfd0,#2877e9 72%);
+  border-color:rgba(31,162,211,.45);
+  box-shadow:
+    0 0 0 8px rgba(37,184,203,.07),
+    0 14px 30px rgba(42,99,153,.18);
+  transition:transform .15s ease,box-shadow .2s ease;
+}
+.mobile-record-card .mic-orb:hover{
+  transform:translateY(-1px) scale(1.015);
+}
+.mobile-record-card .mic-orb:active{
+  transform:scale(.97);
+}
+.mobile-record-card .mic-orb:focus-visible{
+  box-shadow:
+    0 0 0 5px rgba(255,255,255,.9),
+    0 0 0 9px rgba(40,127,225,.24),
+    0 14px 30px rgba(42,99,153,.18);
+}
+.mobile-record-card .mic-icon{
+  background:rgba(255,255,255,.16);
+  box-shadow:none;
+}
+
+/* No fake waveform before recording */
+.mobile-idle-wave{display:none!important}
+.mobile-wave-wrap{
+  height:84px;
+  margin:4px 0 9px;
+  overflow:hidden;
+  border-radius:15px;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(112,78,255,.14),transparent 45%),
+    linear-gradient(180deg,#09101b,#05080e);
+  border:1px solid #d9e4ed;
+  box-shadow:inset 0 0 24px rgba(68,65,174,.09);
+}
+
+#siriWave{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+#meter{
+  display:none!important;
+}
+
+.mic-tap-hint{
+  margin:-2px 0 5px;
+  color:#668399;
+  font-size:.72rem;
+  font-weight:600;
+  transition:color .2s ease;
+}
+.mic-tap-hint.recording-hint{
+  color:#18a993;
+}
+
+.mobile-record-card .timer{
+  color:#17324a;
+}
+
+/* Start button stays in DOM for app.js, but doctor starts by tapping microphone */
+#recorderView #startBtn{
+  display:none!important;
+}
+
+.mobile-controls{
+  grid-template-columns:1fr 1fr;
+  margin-top:5px;
+}
+#recorderView #pauseBtn,
+#recorderView #stopBtn{
+  min-height:44px;
+}
+
+#recorderView .btn.secondary{
+  color:#31566f;
+  background:#f4f8fb;
+  border-color:#d5e3ed;
+}
+#recorderView .btn.danger{
+  color:#c34452;
+  background:#fff3f4;
+  border-color:#f0cdd1;
+}
+
+.mobile-mini-card{
+  background:#fff;
+  border-color:#d7e4ed;
+  box-shadow:0 6px 18px rgba(49,79,101,.05);
+}
+.mobile-mini-card b{color:#1c374e}
+.mobile-mini-card small{color:#7891a4}
+.mini-ico{
+  color:#277dd2;
+  background:#edf5fd;
+}
+
+.mobile-security-note{
+  background:#f2fbf8;
+  border-color:#d1ebe3;
+}
+.mobile-security-note b{color:#1f4f47}
+.mobile-security-note small{color:#71928b}
+.shield-dot{
+  color:#18a98f;
+  background:#e5f8f2;
+}
+
+.mobile-result{
+  background:#f6fbfd;
+  border-color:#d5e3ec;
+}
+.mobile-result h3{color:#1c374e}
+
+.upload-state{
+  color:#31566f;
+  background:#f1f7fb;
+  border-color:#d5e3ed;
+}
+.upload-state.success{
+  color:#147e68;
+  background:#eefaf6;
+  border-color:#cde9df;
+}
+.upload-state.error-state{
+  color:#b33c49;
+  background:#fff2f3;
+  border-color:#efcbd0;
+}
+
+.error{
+  color:#ae3946;
+  background:#fff2f3;
+  border-color:#edc8cd;
+}
+
+@keyframes mobileMicPulse{
+  0%,100%{
+    transform:scale(1);
+    box-shadow:
+      0 0 0 8px rgba(37,184,203,.06),
+      0 14px 30px rgba(42,99,153,.18);
+  }
+  50%{
+    transform:scale(1.035);
+    box-shadow:
+      0 0 0 13px rgba(37,184,203,.08),
+      0 0 30px rgba(42,139,211,.12),
+      0 14px 30px rgba(42,99,153,.18);
+  }
+}
+
+@media(max-width:620px){
+  .mobile-app{
+    background:linear-gradient(180deg,#f8fbfd,#edf4f9);
+  }
+}
+
+
+
+/* =========================================================
+   v5.7 - OTURUM SONA ERDI / QR BEKLEME GOSTERGESI
+   ========================================================= */
+
+.expired-prompt{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  min-height:32px;
+  margin:-2px 0 7px;
+  color:#d34d5b;
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.01em;
+  animation:expiredPromptBlink 1.65s ease-in-out infinite;
+}
+
+.expired-loader{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:2px solid rgba(211,77,91,.18);
+  border-top-color:#d34d5b;
+  border-right-color:#ef8a94;
+  box-shadow:0 0 10px rgba(211,77,91,.10);
+  animation:expiredLoaderSpin 1s linear infinite;
+  flex:0 0 auto;
+}
+
+.mobile-record-card.session-expired .mic-orb{
+  opacity:.48;
+  filter:grayscale(.18) saturate(.55);
+}
+
+.mobile-record-card.session-expired .mic-ring{
+  animation:none!important;
+  opacity:.12;
+}
+
+.mobile-record-card.session-expired .mobile-wave-wrap{
+  opacity:.22;
+}
+
+@keyframes expiredLoaderSpin{
+  to{transform:rotate(360deg)}
+}
+
+@keyframes expiredPromptBlink{
+  0%,100%{opacity:.42}
+  50%{opacity:1}
+}
+
+
+/* =========================================================
+   v5.8 - ESKI OTURUMDA KAMERADAN YENI QR OKUMA
+   ========================================================= */
+
+.expired-prompt{
+  appearance:none;
+  border:0;
+  background:transparent;
+  width:100%;
+  cursor:pointer;
+  font-family:inherit;
+  transition:transform .15s ease;
+}
+.expired-prompt:hover{transform:translateY(-1px)}
+.expired-prompt:active{transform:scale(.985)}
+
+.expired-qr-icon{
+  width:24px;height:24px;
+  border-radius:8px;
+  display:grid;place-items:center;
+  color:#c74250;
+  background:#fff1f2;
+  border:1px solid #efc9ce;
+  flex:0 0 auto;
+  animation:expiredQrPulse 1.65s ease-in-out infinite;
+}
+.expired-qr-icon svg{width:15px;height:15px}
+.expired-qr-icon svg *{
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.expired-prompt-text{
+  text-decoration:underline;
+  text-decoration-color:rgba(211,77,91,.28);
+  text-underline-offset:3px;
+}
+
+.qr-scanner-open{overflow:hidden}
+.qr-scanner-modal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:grid;
+  place-items:end center;
+  padding:14px;
+  background:rgba(8,19,31,.56);
+  backdrop-filter:blur(8px);
+}
+.qr-scanner-sheet{
+  width:min(100%,430px);
+  max-height:calc(100dvh - 24px);
+  overflow:auto;
+  padding:14px;
+  border-radius:22px;
+  background:#fff;
+  border:1px solid #d7e4ed;
+  box-shadow:0 24px 70px rgba(15,45,68,.24);
+}
+.qr-scanner-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.qr-scanner-head h3{
+  margin:3px 0 0;
+  color:#19344b;
+  font-size:1.08rem;
+}
+.qr-scanner-head p{
+  margin:4px 0 0;
+  color:#71899a;
+  font-size:.74rem;
+  line-height:1.4;
+}
+.qr-scanner-close{
+  appearance:none;
+  border:1px solid #d9e5ed;
+  background:#f7fafc;
+  color:#48677e;
+  width:34px;height:34px;
+  border-radius:10px;
+  font-size:1.4rem;
+  line-height:1;
+  cursor:pointer;
+  flex:0 0 auto;
+}
+.qr-camera-frame{
+  position:relative;
+  overflow:hidden;
+  aspect-ratio:3 / 4;
+  border-radius:18px;
+  background:#06111c;
+  border:1px solid #d1e1eb;
+}
+#qrScannerVideo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.qr-scan-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.qr-scan-overlay:before{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:68%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 0 0 999px rgba(0,0,0,.30);
+}
+.qr-scan-overlay .corner{
+  position:absolute;
+  width:38px;height:38px;
+  filter:drop-shadow(0 0 5px rgba(53,225,193,.28));
+}
+.qr-scan-overlay .c1{
+  left:16%;top:25%;
+  border-left:4px solid #35e1c1;
+  border-top:4px solid #35e1c1;
+  border-top-left-radius:12px;
+}
+.qr-scan-overlay .c2{
+  right:16%;top:25%;
+  border-right:4px solid #35e1c1;
+  border-top:4px solid #35e1c1;
+  border-top-right-radius:12px;
+}
+.qr-scan-overlay .c3{
+  left:16%;bottom:25%;
+  border-left:4px solid #35e1c1;
+  border-bottom:4px solid #35e1c1;
+  border-bottom-left-radius:12px;
+}
+.qr-scan-overlay .c4{
+  right:16%;bottom:25%;
+  border-right:4px solid #35e1c1;
+  border-bottom:4px solid #35e1c1;
+  border-bottom-right-radius:12px;
+}
+.scan-beam{
+  position:absolute;
+  left:17%;right:17%;
+  top:31%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,#43edce,transparent);
+  box-shadow:0 0 12px rgba(67,237,206,.6);
+  animation:qrBeam 2s ease-in-out infinite;
+}
+.qr-scanner-status{
+  margin-top:9px;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 10px;
+  border-radius:11px;
+  color:#557489;
+  background:#f3f8fb;
+  border:1px solid #deebf2;
+  text-align:center;
+  font-size:.74rem;
+  font-weight:700;
+}
+.qr-scanner-status.success{
+  color:#127d69;
+  background:#ecfaf5;
+  border-color:#cceade;
+}
+.qr-scanner-status.error{
+  color:#b83f4c;
+  background:#fff2f3;
+  border-color:#efcbd0;
+}
+.qr-retry-btn{width:100%;margin-top:9px}
+
+@keyframes expiredQrPulse{
+  0%,100%{opacity:.62;box-shadow:0 0 0 0 rgba(211,77,91,.08)}
+  50%{opacity:1;box-shadow:0 0 0 6px rgba(211,77,91,.06)}
+}
+@keyframes qrBeam{
+  0%{top:31%;opacity:.35}
+  50%{top:68%;opacity:1}
+  100%{top:31%;opacity:.35}
+}
+@media(min-width:621px){
+  .qr-scanner-modal{place-items:center}
+}
