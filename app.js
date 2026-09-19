@@ -612,4 +612,17 @@ function scan(){
  if(v.readyState>=2){c.width=v.videoWidth;c.height=v.videoHeight;ctx.drawImage(v,0,0);const im=ctx.getImageData(0,0,c.width,c.height),q=jsQR(im.data,im.width,im.height,{inversionAttempts:'dontInvert'});if(q?.data){try{const u=new URL(q.data);if(u.origin===location.origin&&u.pathname===location.pathname&&u.searchParams.get('mode')==='record'&&u.searchParams.get('token')){$('#scanStatus').textContent='QR bulundu. Yeni oturum açılıyor…';$('#scanStatus').className='scan-status ok';closeScanner();location.assign(u.toString());return}}catch{}}}
  scanRAF=requestAnimationFrame(scan);
 }
+
+// v8.9 theme preference
+function applyTheme(theme){
+ const value=theme==='dark'?'dark':'light';
+ document.documentElement.dataset.theme=value;
+ try{localStorage.setItem('dr_theme',value)}catch{}
+ const meta=document.getElementById('themeColorMeta'); if(meta)meta.content=value==='dark'?'#09111c':'#f4f8fc';
+ document.getElementById('themeLight')?.classList.toggle('active',value==='light');
+ document.getElementById('themeDark')?.classList.toggle('active',value==='dark');
+}
+applyTheme((()=>{try{return localStorage.getItem('dr_theme')||'light'}catch{return 'light'}})());
+document.getElementById('themeLight')?.addEventListener('click',()=>applyTheme('light'));
+document.getElementById('themeDark')?.addEventListener('click',()=>applyTheme('dark'));
 })();
