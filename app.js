@@ -233,6 +233,24 @@ function waveColor(p){
  const sc=Math.min(Math.max(p,0),.9999)*(WAVE_PALETTE.length-1),i=Math.floor(sc),t=sc-i,a=WAVE_PALETTE[i],b=WAVE_PALETTE[i+1];
  return `rgb(${Math.round(a[0]+(b[0]-a[0])*t)},${Math.round(a[1]+(b[1]-a[1])*t)},${Math.round(a[2]+(b[2]-a[2])*t)})`;
 }
+// Dikte2'deki "aktif dalga" animasyonu: çubuk boyları zamanla akan bir desenle salınır (WaveformControl ile aynı formül).
+function flowHeights(bars,H,t){
+ const n=bars.length; if(!n)return;
+ bars.forEach((b,i)=>{
+  const r=i/Math.max(1,n-1),env=.48+.52*Math.sin(Math.PI*r);
+  const primary=Math.abs(Math.sin(i*.27+t)),detail=Math.abs(Math.sin(i*.071-t*.63));
+  const pulse=.78+.22*Math.sin(t*1.7+r*8);
+  b.style.height=Math.max(4,Math.min(H-2,(5+H*(.18+.52*primary*detail)*env)*pulse))+'px';
+ });
+}
+function setFlow(el,on){
+ if(!el)return;
+ if(el.__flow){cancelAnimationFrame(el.__flow);el.__flow=0}
+ const bars=[...el.querySelectorAll('i')];
+ if(!on){bars.forEach(b=>b.style.height='');return}
+ const tick=()=>{flowHeights(bars,el.clientHeight||46,performance.now()*.003);el.__flow=requestAnimationFrame(tick)};
+ tick();
+}
 function waveBars(seed,count=72){
  let x=waveSeed(seed), vals=[];
  const centers=[.22,.38,.52,.69,.84];
@@ -291,18 +309,18 @@ function pauseIcon(){return '<img class="pause-control-icon" src="duraklat.png" 
 
 function animatePlaybackWave(root,audio){
  const wave=root.querySelector('.apple-wave'); if(!wave)return;
- const bars=[...wave.querySelectorAll('i')]; let raf=0;
- const tick=()=>{const t=performance.now()/180;bars.forEach((b,i)=>{const base=parseFloat(getComputedStyle(b).getPropertyValue('--h'))||10;const pulse=.72+.34*Math.abs(Math.sin(t+i*.43));b.style.height=`${Math.max(4,base*pulse)}px`});raf=requestAnimationFrame(tick)};
- audio.addEventListener('play',()=>{wave.classList.add('is-playing');cancelAnimationFrame(raf);tick()});
- const stop=()=>{wave.classList.remove('is-playing');cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
+ audio.addEventListener('play',()=>{wave.classList.add('is-playing');setFlow(wave,true)});
+ const stop=()=>{wave.classList.remove('is-playing');setFlow(wave,false)};
+ audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
 }
 
 
 let liveStartedAt=0,liveTimerRAF=0;
 function renderLiveWave(recording){
  const box=$('#liveWave'); if(!box)return;
- if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',78);
+ if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',92);
  box.classList.toggle('active',!!recording);
+ setFlow(box,!!recording);
  if(recording && !liveStartedAt) liveStartedAt=Date.now();
  if(!recording) liveStartedAt=0;
  cancelAnimationFrame(liveTimerRAF);
@@ -345,7 +363,7 @@ function renderPhonePreview(d){
  const st=$('#previewState'); if(st)st.textContent=active?'Kayıt yapılıyor...':'Kayıt bekleniyor...';
  const wave=$('#previewWave');
  if(wave && !wave.children.length) wave.innerHTML=waveBars('phone-preview-live',62);
- if(wave) wave.classList.toggle('active',!!active);
+ if(wave) {wave.classList.toggle('active',!!active);setFlow(wave,!!active)}
  const rows=$('#previewRecordings'); if(rows){
    rows.innerHTML=recs.slice(0,5).map((r,i)=>{
      const dev=devices.find(x=>x.id===r.device_connection_id);
@@ -700,8 +718,7 @@ function startWave(s){
    const p=i/(bars-1), fi=Math.min(freq.length-1,Math.floor(p*freq.length*.72));
    const energy=freq[fi]/255, env=.32+.68*Math.pow(Math.sin(Math.PI*p),.72);
    const bh=Math.max(4*dpr,(8+energy*h*.78)*env);
-   const hue=330+p*210; // pink -> violet -> blue -> cyan
-   ctx.fillStyle=`hsl(${hue%360} 92% 56%)`;
+   ctx.fillStyle=waveColor(p); // Dikte2 paleti: pembe -> mor -> mavi -> turkuaz
    const x=i*(bw+gap),y=cy-bh/2,r=Math.min(bw/2,3*dpr);
    ctx.beginPath();
    if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,r);else ctx.rect(x,y,bw,bh);
