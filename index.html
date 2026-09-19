@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Doctor Recorder</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">DOCTOR RECORDER</div>
+        <h1 id="pageTitle">Telefondan Dikta</h1>
+      </div>
+      <div class="secure">HTTPS</div>
+    </header>
+
+    <section id="desktopView" class="card hidden">
+      <div class="section-head">
+        <div>
+          <h2>Telefonla kayıt başlat</h2>
+          <p>Doktor QR kodu okutur, Safari/Chrome açılır ve uygulama kurmadan kayıt yapar.</p>
+        </div>
+      </div>
+
+      <div class="desktop-grid">
+        <div class="qr-panel">
+          <div id="qrcode" class="qr"></div>
+          <div class="session-line">
+            <span>Oturum</span>
+            <strong id="sessionCode">--------</strong>
+          </div>
+          <button id="newSessionBtn" class="btn primary">Yeni QR Oluştur</button>
+        </div>
+
+        <div class="steps">
+          <div class="step"><span>1</span><div><b>QR'ı okut</b><small>iPhone kamerası veya Android kamera</small></div></div>
+          <div class="step"><span>2</span><div><b>Mikrofon izni ver</b><small>İlk kullanımda tarayıcı sorar</small></div></div>
+          <div class="step"><span>3</span><div><b>Kaydı başlat</b><small>Bitirince telefonda dinle veya kaydet</small></div></div>
+          <div class="notice" id="hostNotice"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="recorderView" class="card hidden recorder-card">
+      <div class="recorder-head">
+        <div>
+          <div class="eyebrow">DİKTA OTURUMU</div>
+          <h2 id="mobileSession">--------</h2>
+        </div>
+        <div id="statusPill" class="pill idle">Hazır</div>
+      </div>
+
+      <div class="mic-orb" id="micOrb">
+        <div class="mic-icon">🎙️</div>
+      </div>
+
+      <div id="timer" class="timer">00:00</div>
+      <canvas id="meter" width="640" height="120" aria-label="Ses seviyesi"></canvas>
+
+      <div class="controls">
+        <button id="startBtn" class="btn primary big">Kaydı Başlat</button>
+        <button id="pauseBtn" class="btn secondary hidden">Duraklat</button>
+        <button id="stopBtn" class="btn danger hidden">Kaydı Bitir</button>
+      </div>
+
+      <div id="result" class="result hidden">
+        <h3>Kayıt hazır</h3>
+        <audio id="playback" controls playsinline></audio>
+        <div class="result-actions">
+          <a id="downloadBtn" class="btn primary" download>Kaydı Kaydet</a>
+          <button id="againBtn" class="btn secondary">Yeni Kayıt</button>
+        </div>
+        <p class="footnote">Bu demo sürümünde kayıt sunucuya gönderilmez; yalnızca bu cihazda oluşturulur.</p>
+      </div>
+
+      <div id="errorBox" class="error hidden"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
