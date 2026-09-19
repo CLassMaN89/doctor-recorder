@@ -2023,3 +2023,171 @@ body:has(#recorderView:not(.hidden)){
 @media(min-width:621px){
   .qr-scanner-modal{place-items:center}
 }
+
+
+/* =========================================================
+   v5.9 - MOBIL YERLESIM DUZELTMESI + CACHE SAFE
+   ========================================================= */
+
+/*
+  Önceki sürümde Siri dalga canvas'ı absolute olduğu halde ebeveyni
+  position:relative değildi. Bu bazı telefonlarda canvas'ın kartın
+  tamamının üzerine taşmasına ve ekranın "dağılmış" görünmesine yol açıyordu.
+*/
+.mobile-wave-wrap{
+  position:relative!important;
+  isolation:isolate;
+}
+
+#siriWave{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:1;
+  pointer-events:none;
+}
+
+#meter{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0;
+  pointer-events:none;
+}
+
+.mic-tap-hint,
+.expired-prompt,
+.mobile-controls,
+.upload-state,
+.mobile-result,
+.error{
+  position:relative;
+  z-index:5;
+}
+
+/* :has desteğine güvenmeden QR ile açılan sayfayı kesin olarak mobil moda al. */
+html.recorder-mode,
+html.recorder-mode body{
+  width:100%;
+  min-width:0;
+  min-height:100%;
+  background:
+    radial-gradient(circle at 50% -6%,rgba(49,145,222,.14),transparent 34%),
+    linear-gradient(180deg,#f8fbfd,#edf4f9)!important;
+}
+
+html.recorder-mode body{
+  overflow-x:hidden;
+}
+
+html.recorder-mode .topbar,
+html.recorder-mode .page-intro,
+html.recorder-mode #desktopView{
+  display:none!important;
+}
+
+html.recorder-mode .shell{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+html.recorder-mode #recorderView:not(.hidden){
+  display:grid!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  place-items:stretch!important;
+}
+
+html.recorder-mode .mobile-app{
+  width:min(100%,430px)!important;
+  max-width:430px!important;
+  min-height:100dvh;
+  margin:0 auto!important;
+}
+
+/* Gerçek telefonda uygulama çerçevesiz ve ekranı tamamen doldursun. */
+@media(max-width:620px){
+  html.recorder-mode .mobile-app{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100dvh!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    padding:
+      max(12px,env(safe-area-inset-top))
+      12px
+      max(14px,env(safe-area-inset-bottom))!important;
+  }
+
+  html.recorder-mode .doctor-mobile-page{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100dvh!important;
+    margin:0!important;
+    padding:0!important;
+  }
+}
+
+/* QR uyarısı kesin görünür ve dalganın altında kaybolmaz. */
+.expired-prompt:not(.hidden){
+  display:flex!important;
+  z-index:20;
+}
+
+.qr-scanner-modal:not(.hidden){
+  display:grid!important;
+}
+
+/* Mobil kartların taşmasını engelle. */
+.mobile-app,
+.mobile-connection,
+.mobile-record-card,
+.mobile-bottom-grid,
+.mobile-security-note,
+.qr-scanner-sheet{
+  min-width:0;
+}
+
+.mobile-connection{
+  grid-template-columns:42px minmax(0,1fr) auto;
+}
+
+.mobile-connection-copy,
+.mobile-session-code{
+  min-width:0;
+}
+
+.mobile-connection-copy b,
+.mobile-connection-copy small{
+  overflow-wrap:anywhere;
+}
+
+/* Daha dar iPhone ekranlarında oturum kodu yüzünden kart genişlemesin. */
+@media(max-width:390px){
+  .mobile-connection{
+    grid-template-columns:38px minmax(0,1fr);
+  }
+
+  .mobile-session-code{
+    grid-column:2;
+    text-align:left;
+    padding-left:0;
+  }
+
+  .mobile-session-code strong{
+    font-size:.68rem;
+    letter-spacing:.06em;
+  }
+
+  .mobile-secure{
+    font-size:.58rem;
+    padding:6px 7px;
+  }
+}

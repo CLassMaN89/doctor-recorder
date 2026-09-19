@@ -1,24 +1,36 @@
-Doktor Kayıt v5.2 - Ortalanmış / Roboto / Animasyonlu
+Doktor Kayıt v5.9 - Mobil Ekran Düzeltmesi
 
-Hedef:
-https://classman89.github.io/doctor-recorder/
+SORUNUN KAYNAĞI
+- Siri tarzı ses dalgasındaki #siriWave canvas absolute konumdaydı.
+- Fakat .mobile-wave-wrap position:relative değildi.
+- Bazı telefonlarda canvas kartın dışına taşıp mobil ekranı bozabiliyordu.
+- Ayrıca GitHub Pages / telefon tarayıcısı eski CSS veya JS dosyalarını cache'te tutabiliyordu.
 
-Yapılanlar:
-- Arayüz tamamen Türkçeleştirildi.
-- Ana içerik maksimum 1060px genişliğe alındı ve ekranın ortasında tutuldu.
-- 1920px gibi geniş ekranlarda sayfa gereksiz yere sağa-sola yayılmaz.
-- Ekran çözünürlüğüne göre responsive küçülür.
-- 900px altında tek kolona geçer.
-- Düşük ekran yüksekliğinde otomatik kompaktlaşır.
-- Font Roboto yapıldı.
-- "Telefon bekleniyor" metni sürekli typewriter efektiyle yazılıp silinir.
-- Bekleme noktası yavaşça yanıp söner.
-- Logo ve ses dalgası ikonları yumuşak animasyonludur.
-- Mevcut çalışan app.js ve Supabase akışı değiştirilmedi.
+BU SÜRÜMDE
+- Mobil waveform kapsayıcısı düzeltildi.
+- Canvas artık yalnızca kendi ses dalgası alanında kalır.
+- QR ile açılan ?mode=record sayfasına HTML seviyesinde recorder-mode sınıfı verilir.
+- Mobil görünüm artık :has() desteğine bağımlı değildir.
+- Telefon ekranında masaüstü header ve masaüstü panel kesinlikle gizlenir.
+- Gerçek telefonda arayüz ekran genişliğini tam kullanır.
+- "Lütfen QR kodunu okutun" QR butonu üst katmanda kalır ve görünür.
+- QR kamera modalı korunur.
+- Oturum bittiğinde QR ikonuna/yazıya dokununca arka kamera açılır.
+- Tüm local CSS/JS dosyalarına ?v=59 cache-busting eklendi.
 
-GitHub'da değiştir:
+GITHUB'A YÜKLE
 - index.html
 - style.css
+- session-guard.js
+- stream-bridge.js
+- mobile-ui.js
+- player-skin.js
+- qr-scanner.js
 
-Dokunma:
-- app.js
+app.js dosyasını değiştirmeyin.
+
+Yükledikten sonra:
+1. GitHub Pages deployment'ın bitmesini bekleyin.
+2. Masaüstünde Ctrl+F5 yapın.
+3. Telefonda açık eski sekmeyi tamamen kapatın.
+4. Yeni QR okutun.
