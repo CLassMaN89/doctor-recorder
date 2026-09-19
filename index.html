@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=78">
+  <link rel="stylesheet" href="style.css?v=79">
 </head>
 <body>
 <main>
@@ -39,11 +39,11 @@
             <div class="connect-upper">
               <div class="connect-copy"><span class="online-dot"></span><div><h2>Masaüstüne Bağlandı</h2><p>Doktor cihazı aktif olarak bağlandı.</p></div></div>
               <div class="mini-qr"><div id="qrcode"></div></div>
-              <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span></div>
+              <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span><button id="newQr" class="new-qr-button" type="button"><span>↻</span> Yeni QR Oluştur</button></div>
             </div>
             <div class="connect-divider"></div>
             <div class="connected-area">
-              <div class="devices-toolbar"><span id="deviceCount" class="count">0 cihaz</span><button id="newQr" class="refresh-qr" title="Yeni QR oluştur">↻</button></div>
+              <div class="devices-toolbar"><span id="deviceCount" class="count">0 cihaz</span></div>
               <div id="devices" class="devices">
                 <div class="empty waiting-empty">
                   <span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span>
@@ -153,6 +153,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=78"></script>
+<script src="app.js?v=79"></script>
 </body>
 </html>

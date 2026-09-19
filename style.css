@@ -740,3 +740,64 @@
   }
   @keyframes v78CursorBlink{0%,48%{opacity:1}49%,100%{opacity:0}}
 }
+
+/* ==========================================================
+   v7.9 — QR card/background correction
+   ========================================================== */
+@media(min-width:761px){
+  /* The whole connection card is white */
+  .connect-panel{
+    background:#fff!important;
+  }
+
+  /* ONLY this upper block gets the requested #f5fafe background */
+  .connect-upper{
+    background:#f5fafe!important;
+    border:1px solid #e1edf5!important;
+    border-radius:13px!important;
+    padding:16px 18px!important;
+  }
+
+  /* Device/waiting section stays white */
+  .connected-area{
+    background:#fff!important;
+  }
+  .connect-divider{
+    background:#e6eef4!important;
+    margin:15px 0!important;
+  }
+
+  /* QR itself stays clean white inside the tinted upper area */
+  .mini-qr{
+    background:#fff!important;
+    border:1px solid #dce8f1!important;
+  }
+
+  .qr-detail{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+  }
+  .new-qr-button{
+    margin-top:10px!important;
+    height:31px!important;
+    padding:0 11px!important;
+    border:1px solid #cfe1ef!important;
+    border-radius:8px!important;
+    background:#fff!important;
+    color:#1777bd!important;
+    font:700 10px Roboto,Arial,sans-serif!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    cursor:pointer!important;
+    box-shadow:0 2px 6px rgba(25,78,116,.04)!important;
+  }
+  .new-qr-button:hover{background:#f8fcff!important;border-color:#afd3eb!important}
+  .new-qr-button span{font-size:15px!important;line-height:1!important}
+
+  .devices-toolbar{
+    height:30px!important;
+    margin:0 0 6px!important;
+  }
+}
