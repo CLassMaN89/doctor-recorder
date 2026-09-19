@@ -3,20 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#081829" />
+  <meta name="theme-color" content="#071625" />
   <meta name="color-scheme" content="dark" />
-  <title>Doctor Recorder</title>
+  <title>Doktor Kayıt</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-logo" aria-hidden="true">
+        <div class="brand-logo sound-bars" aria-hidden="true">
           <span></span><span></span><span></span><span></span><span></span>
         </div>
         <div>
-          <div class="brand-name">DOCTOR <strong>RECORDER</strong></div>
+          <div class="brand-name">DOKTOR <strong>KAYIT</strong></div>
           <div class="brand-sub">Telefon üzerinden güvenli doktor dikta sistemi</div>
         </div>
       </div>
@@ -82,6 +87,7 @@
                 <span class="card-kicker">3 ADIM</span>
                 <h2>Nasıl çalışır?</h2>
               </div>
+              <span class="ready-badge">3 adımda hazır</span>
             </div>
 
             <div class="steps">
@@ -91,7 +97,7 @@
                   <svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10.5 18.5h3"/></svg>
                 </span>
                 <div>
-                  <b>QR'ı okut</b>
+                  <b>QR kodunu okut</b>
                   <small>iPhone veya Android kamerasıyla QR kodunu tarayın.</small>
                 </div>
               </div>
@@ -114,7 +120,7 @@
                 </span>
                 <div>
                   <b>Kaydı bitir</b>
-                  <small>Ses otomatik olarak PC ekranına gelir.</small>
+                  <small>Ses otomatik olarak bilgisayar ekranına gelir.</small>
                 </div>
               </div>
             </div>
@@ -125,7 +131,7 @@
               <div class="status-orb">
                 <span id="pcStatusDot" class="status-dot waiting"></span>
               </div>
-              <div>
+              <div class="status-copy">
                 <span class="card-kicker">OTURUM DURUMU</span>
                 <strong id="pcStatus">Hazırlanıyor…</strong>
                 <small>Telefon bağlantısı ve kayıt durumu burada görünür.</small>
@@ -133,7 +139,7 @@
             </div>
             <div class="live-pill">
               <span></span>
-              Canlı
+              Canlı durum
             </div>
           </section>
 
@@ -144,7 +150,7 @@
                 <h2>Gelen Ses Kayıtları</h2>
                 <p>Telefondan tamamlanan kayıtlar otomatik olarak listelenir.</p>
               </div>
-              <div class="wave-mark" aria-hidden="true">
+              <div class="wave-mark sound-bars" aria-hidden="true">
                 <i></i><i></i><i></i><i></i><i></i>
               </div>
             </div>
@@ -186,7 +192,7 @@
 
         <div id="result" class="result hidden">
           <div class="result-icon">✓</div>
-          <h3>Kayıt PC'ye gönderildi</h3>
+          <h3>Kayıt bilgisayara gönderildi</h3>
           <audio id="playback" controls playsinline></audio>
           <div class="result-actions">
             <button id="againBtn" class="btn secondary">Yeni Kayıt</button>
@@ -202,5 +208,26 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
+
+  <script>
+    // "Telefon bekleniyor" durumunda sürekli typewriter görünümü.
+    (() => {
+      const status = document.getElementById('pcStatus');
+      if (!status) return;
+
+      const refresh = () => {
+        const waiting = status.textContent.trim().toLocaleLowerCase('tr-TR').startsWith('telefon bekleniyor');
+        status.classList.toggle('typewriter-waiting', waiting);
+      };
+
+      new MutationObserver(refresh).observe(status, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+
+      refresh();
+    })();
+  </script>
 </body>
 </html>

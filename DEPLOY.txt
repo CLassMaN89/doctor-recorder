@@ -1,20 +1,24 @@
-Doctor Recorder Clean v5.1
+Doktor Kayıt v5.2 - Ortalanmış / Roboto / Animasyonlu
 
 Hedef:
 https://classman89.github.io/doctor-recorder/
 
-Bu sürümde:
-- Ekran genel olarak yaklaşık %10-15 küçültüldü.
-- QR alanı 264px -> 228px indirildi.
-- Kart padding ve boşlukları azaltıldı.
-- Başlık, açıklama ve adım yazıları küçültüldü.
-- Tercih edilen font: "Record".
-- Eğer ziyaretçinin sisteminde Record font kuruluysa otomatik kullanılır.
-- Web üzerinde herkeste kesin görünmesi için Record font dosyasının ayrıca projeye eklenmesi gerekir.
+Yapılanlar:
+- Arayüz tamamen Türkçeleştirildi.
+- Ana içerik maksimum 1060px genişliğe alındı ve ekranın ortasında tutuldu.
+- 1920px gibi geniş ekranlarda sayfa gereksiz yere sağa-sola yayılmaz.
+- Ekran çözünürlüğüne göre responsive küçülür.
+- 900px altında tek kolona geçer.
+- Düşük ekran yüksekliğinde otomatik kompaktlaşır.
+- Font Roboto yapıldı.
+- "Telefon bekleniyor" metni sürekli typewriter efektiyle yazılıp silinir.
+- Bekleme noktası yavaşça yanıp söner.
+- Logo ve ses dalgası ikonları yumuşak animasyonludur.
+- Mevcut çalışan app.js ve Supabase akışı değiştirilmedi.
 
-Değiştir:
+GitHub'da değiştir:
 - index.html
 - style.css
 
-Değiştirme:
+Dokunma:
 - app.js
