@@ -754,3 +754,517 @@ body{
 .page-intro p{
   overflow-wrap:anywhere;
 }
+
+
+/* =========================================================
+   v5.4 - DOKTOR TELEFON EKRANI / PREMIUM MOBILE RECORDER
+   ========================================================= */
+
+.doctor-mobile-page{
+  width:100%;
+  min-height:calc(100dvh - 80px);
+  display:grid;
+  place-items:start center;
+  padding:8px 0 28px;
+}
+
+.mobile-app{
+  width:min(100%, 430px);
+  margin:0 auto;
+  border:1px solid rgba(50,117,164,.42);
+  border-radius:28px;
+  padding:14px;
+  background:
+    radial-gradient(circle at 50% 14%,rgba(24,123,195,.18),transparent 30%),
+    linear-gradient(180deg,#071c31 0%,#061728 100%);
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.mobile-top{
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:3px 3px 12px;
+}
+
+.mobile-brand{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+
+.mobile-brand-icon{
+  width:34px;height:34px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  background:rgba(37,203,218,.10);
+  color:#42e4ef;
+  flex:0 0 auto;
+}
+
+.mobile-brand-icon svg{width:20px;height:20px}
+.mobile-brand-icon svg *{
+  fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round
+}
+
+.mobile-brand b{
+  display:block;
+  font-size:1rem;
+  line-height:1.1;
+}
+.mobile-brand small{
+  display:block;
+  margin-top:2px;
+  color:#6f98b3;
+  font-size:.68rem;
+}
+
+.mobile-secure{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid rgba(43,212,174,.28);
+  background:rgba(12,84,69,.34);
+  color:#69ebcd;
+  border-radius:999px;
+  padding:7px 9px;
+  font-size:.67rem;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.lock-mark{
+  color:#44e5c0;
+  font-size:.72rem;
+  animation:mobileSecurePulse 2.1s ease-in-out infinite;
+}
+
+.mobile-connection{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:11px;
+  border:1px solid rgba(53,109,153,.42);
+  background:rgba(10,39,67,.72);
+  border-radius:15px;
+  margin-bottom:10px;
+}
+
+.desktop-link-icon{
+  width:40px;height:40px;
+  border-radius:12px;
+  display:grid;place-items:center;
+  color:#7edcff;
+  background:linear-gradient(145deg,rgba(31,123,201,.34),rgba(17,72,119,.46));
+}
+.desktop-link-icon svg{width:22px;height:22px}
+.desktop-link-icon svg *{
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round
+}
+
+.mobile-connection-copy b{
+  display:block;
+  font-size:.83rem;
+  line-height:1.15;
+}
+.mobile-connection-copy small{
+  display:block;
+  color:#7695ab;
+  margin-top:3px;
+  font-size:.67rem;
+}
+
+.mobile-session-code{
+  text-align:right;
+  padding-left:8px;
+}
+.mobile-session-code small{
+  display:block;
+  color:#5f8199;
+  font-size:.62rem;
+}
+.mobile-session-code strong{
+  display:block;
+  margin-top:3px;
+  font-size:.78rem;
+  letter-spacing:.10em;
+}
+
+.mobile-record-card{
+  position:relative;
+  overflow:hidden;
+  text-align:center;
+  padding:15px 14px 14px;
+  border:1px solid rgba(54,124,177,.46);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(17,91,151,.18),transparent 34%),
+    linear-gradient(180deg,rgba(9,40,69,.94),rgba(7,29,50,.96));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.record-card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-height:26px;
+}
+
+.record-eyebrow{
+  color:#55dcee;
+  font-size:.62rem;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+
+.mobile-record-card>h2{
+  margin:6px 0 0;
+  font-size:1.32rem;
+  line-height:1.15;
+}
+
+.record-help{
+  margin:5px auto 0;
+  color:#83a3b9;
+  font-size:.76rem;
+  line-height:1.45;
+}
+
+.mic-stage{
+  position:relative;
+  width:150px;
+  height:150px;
+  display:grid;
+  place-items:center;
+  margin:9px auto 0;
+}
+
+.mic-ring{
+  position:absolute;
+  inset:50%;
+  border-radius:50%;
+  border:1px solid rgba(37,214,220,.16);
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.mic-ring-one{width:106px;height:106px}
+.mic-ring-two{width:126px;height:126px;opacity:.65}
+.mic-ring-three{width:146px;height:146px;opacity:.35}
+
+.mobile-record-card .mic-orb{
+  width:94px;height:94px;
+  margin:0;
+  position:relative;
+  z-index:2;
+  border-color:rgba(69,214,234,.55);
+  background:radial-gradient(circle at 50% 36%,#167ac6,#0b3761 72%);
+  box-shadow:
+    0 0 0 7px rgba(31,194,211,.06),
+    0 12px 28px rgba(0,0,0,.24);
+}
+
+.mobile-record-card .mic-orb.live{
+  animation:mobileMicPulse 1.55s ease-in-out infinite;
+}
+
+.mobile-record-card:has(.mic-orb.live) .mic-ring-one{
+  animation:ringPulse 1.55s ease-out infinite;
+}
+.mobile-record-card:has(.mic-orb.live) .mic-ring-two{
+  animation:ringPulse 1.55s .28s ease-out infinite;
+}
+.mobile-record-card:has(.mic-orb.live) .mic-ring-three{
+  animation:ringPulse 1.55s .56s ease-out infinite;
+}
+
+.mobile-record-card .mic-icon{
+  width:50px;height:50px;
+  background:linear-gradient(145deg,#20d5d0,#267eff);
+  box-shadow:0 9px 22px rgba(27,126,245,.25);
+}
+.mobile-record-card .mic-icon svg{width:24px;height:24px}
+
+.mobile-record-card .timer{
+  margin:0;
+  font-size:2rem;
+  line-height:1;
+  letter-spacing:.025em;
+  font-weight:800;
+}
+
+.mobile-wave-wrap{
+  position:relative;
+  height:62px;
+  margin:7px 0 9px;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.mobile-idle-wave{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:3px;
+  padding:0 10px;
+  opacity:.72;
+  transition:opacity .2s ease;
+}
+
+.mobile-idle-wave i{
+  display:block;
+  width:3px;
+  height:10px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#1cdde2,#198ddd);
+  transform-origin:center;
+  animation:mobileWave 1.35s ease-in-out infinite;
+}
+
+.mobile-idle-wave i:nth-child(1),
+.mobile-idle-wave i:nth-child(17){height:5px;animation-delay:0s}
+.mobile-idle-wave i:nth-child(2),
+.mobile-idle-wave i:nth-child(16){height:7px;animation-delay:.06s}
+.mobile-idle-wave i:nth-child(3),
+.mobile-idle-wave i:nth-child(15){height:10px;animation-delay:.12s}
+.mobile-idle-wave i:nth-child(4),
+.mobile-idle-wave i:nth-child(14){height:15px;animation-delay:.18s}
+.mobile-idle-wave i:nth-child(5),
+.mobile-idle-wave i:nth-child(13){height:21px;animation-delay:.24s}
+.mobile-idle-wave i:nth-child(6),
+.mobile-idle-wave i:nth-child(12){height:28px;animation-delay:.30s}
+.mobile-idle-wave i:nth-child(7),
+.mobile-idle-wave i:nth-child(11){height:36px;animation-delay:.36s}
+.mobile-idle-wave i:nth-child(8),
+.mobile-idle-wave i:nth-child(10){height:26px;animation-delay:.42s}
+.mobile-idle-wave i:nth-child(9){height:43px;animation-delay:.48s}
+
+.mobile-wave-wrap #meter{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:62px;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  z-index:2;
+}
+
+.mobile-record-card:has(.mic-orb.live) .mobile-idle-wave{
+  opacity:.16;
+}
+
+.mobile-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.mobile-primary{
+  grid-column:1/-1;
+  min-height:48px;
+  margin-top:0!important;
+  border-radius:13px;
+  font-size:.95rem;
+}
+
+.play-triangle{
+  font-size:.85rem;
+}
+
+.mobile-half{
+  width:100%;
+  min-height:44px;
+}
+
+.mobile-record-card .upload-state{
+  margin-top:10px;
+}
+
+.mobile-result{
+  margin-top:10px;
+  text-align:center;
+  border-radius:14px;
+}
+
+.result-copy{
+  color:#82a1b7!important;
+  font-size:.74rem!important;
+  margin:5px 0 9px!important;
+}
+
+.mobile-bottom-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:9px;
+}
+
+.mobile-mini-card{
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:9px;
+  border:1px solid rgba(55,110,150,.34);
+  background:rgba(9,35,60,.64);
+  border-radius:13px;
+}
+
+.mini-ico{
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border-radius:9px;
+  color:#7fddff;
+  background:rgba(28,105,162,.25);
+  font-size:.9rem;
+  flex:0 0 auto;
+}
+
+.mobile-mini-card b{
+  display:block;
+  font-size:.72rem;
+}
+.mobile-mini-card small{
+  display:block;
+  margin-top:2px;
+  color:#718da2;
+  font-size:.62rem;
+  line-height:1.3;
+}
+
+.mobile-security-note{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:9px;
+  align-items:center;
+  margin-top:9px;
+  padding:10px;
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(7,54,58,.78),rgba(7,31,52,.75));
+  border:1px solid rgba(45,191,170,.20);
+}
+
+.shield-dot{
+  width:36px;height:36px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(34,201,167,.11);
+  color:#46e4c0;
+}
+.shield-dot svg{width:19px;height:19px}
+.shield-dot svg *{
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round
+}
+
+.mobile-security-note b{
+  display:block;
+  font-size:.72rem;
+}
+.mobile-security-note small{
+  display:block;
+  color:#6e8da2;
+  margin-top:2px;
+  font-size:.62rem;
+}
+
+@keyframes mobileMicPulse{
+  0%,100%{
+    transform:scale(1);
+    box-shadow:
+      0 0 0 7px rgba(31,194,211,.06),
+      0 12px 28px rgba(0,0,0,.24);
+  }
+  50%{
+    transform:scale(1.035);
+    box-shadow:
+      0 0 0 12px rgba(31,194,211,.08),
+      0 0 30px rgba(30,202,216,.16),
+      0 12px 28px rgba(0,0,0,.24);
+  }
+}
+
+@keyframes ringPulse{
+  0%{transform:translate(-50%,-50%) scale(.82);opacity:.72}
+  80%,100%{transform:translate(-50%,-50%) scale(1.18);opacity:0}
+}
+
+@keyframes mobileWave{
+  0%,100%{transform:scaleY(.58);opacity:.56}
+  50%{transform:scaleY(1.08);opacity:1}
+}
+
+@keyframes mobileSecurePulse{
+  0%,100%{opacity:.65;transform:scale(.9)}
+  50%{opacity:1;transform:scale(1.08)}
+}
+
+/* QR ile acilan telefon ekraninda masaustu header / intro gosterilmesin */
+body:has(#recorderView:not(.hidden)) .topbar,
+body:has(#recorderView:not(.hidden)) .page-intro{
+  display:none;
+}
+
+body:has(#recorderView:not(.hidden)) .shell{
+  width:100%;
+  max-width:none;
+  padding:0;
+}
+
+body:has(#recorderView:not(.hidden)){
+  background:
+    radial-gradient(circle at 50% 0%,rgba(22,109,179,.19),transparent 34%),
+    linear-gradient(180deg,#061827,#030d17);
+}
+
+/* Gercek telefon ekraninda uygulama kenarlari tum ekrana otursun */
+@media(max-width:620px){
+  .doctor-mobile-page{
+    min-height:100dvh;
+    padding:0;
+    place-items:stretch;
+  }
+
+  .mobile-app{
+    width:100%;
+    min-height:100dvh;
+    border:0;
+    border-radius:0;
+    padding:max(12px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom));
+    box-shadow:none;
+  }
+
+  .mobile-top{
+    padding-top:2px;
+  }
+
+  .mobile-record-card{
+    border-radius:18px;
+  }
+}
+
+@media(max-width:370px){
+  .mobile-app{padding-left:9px;padding-right:9px}
+  .mobile-secure{font-size:.60rem;padding:6px 7px}
+  .mobile-connection{grid-template-columns:36px minmax(0,1fr) auto}
+  .desktop-link-icon{width:35px;height:35px}
+  .mobile-session-code strong{font-size:.70rem}
+  .mic-stage{width:136px;height:136px}
+  .mic-ring-one{width:98px;height:98px}
+  .mic-ring-two{width:116px;height:116px}
+  .mic-ring-three{width:134px;height:134px}
+  .mobile-record-card .mic-orb{width:88px;height:88px}
+}
