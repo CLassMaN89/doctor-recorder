@@ -1371,3 +1371,34 @@ body.mobile-mode #mic::before,body.mobile-mode #mic::after,body.mobile-mode #mic
 /* SVG'nin kenarlarında geniş boşluk var; küre düğmeyi dolduracak şekilde büyütülür */
 body.mobile-mode #mic .mic-orb{display:block;position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;transform:scale(1.9);transform-origin:50% 50%;pointer-events:none;-webkit-user-drag:none;user-select:none;transition:transform .12s ease}
 body.mobile-mode #mic:active .mic-orb{transform:scale(1.8)}
+
+/* v11.0 — İşletim sistemi logoları (Android / Apple / diğer), yazı boyutuyla orantılı */
+html body .os-ico{display:inline-block;width:1.25em;height:1.25em;vertical-align:-.26em;margin-right:6px;flex:none}
+html body .os-android{fill:#3ddc84}
+html body .os-android .os-eye{fill:#fff}
+html body .os-apple{fill:#1d2b36}
+html body .os-other{color:#6d8194}
+html body[data-theme="dark"] .os-apple,html[data-theme="dark"] .os-apple{fill:#e8eef4}
+html body[data-theme="dark"] .os-android .os-eye,html[data-theme="dark"] .os-android .os-eye{fill:#10263b}
+html body .rec-device{display:block}
+html body .rec-device .os-ico{width:1.35em;height:1.35em}
+
+/* v11.1 — Temaya uygun onay penceresi (silme, çıkış) */
+.dr-modal-back{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(10,24,38,.48);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:drFade .16s ease}
+.dr-modal{width:min(100%,380px);background:var(--th-card,#fff);color:var(--th-text,#14324e);border:1px solid var(--th-line,#dce8f1);border-radius:18px;padding:24px 22px 20px;box-shadow:0 24px 60px rgba(10,24,38,.28);text-align:center;font-family:inherit;animation:drPop .18s ease}
+.dr-modal-ico{width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:var(--th-card-tint,#eaf3fb);color:var(--th-blue,#087de0)}
+.dr-modal-ico.danger{background:rgba(229,72,77,.12);color:var(--th-red,#e13e51)}
+.dr-modal-ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dr-modal h3{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--th-text,#14324e)}
+.dr-modal p{margin:0 0 20px;font-size:14px;line-height:1.5;color:var(--th-muted,#5f7488)}
+.dr-modal-actions{display:flex;gap:10px}
+.dr-btn{flex:1;font:inherit;font-size:14.5px;font-weight:700;border-radius:12px;padding:12px 14px;cursor:pointer;border:1px solid transparent;transition:filter .12s ease,transform .12s ease}
+.dr-btn:active{transform:scale(.98)}
+.dr-btn.ghost{background:transparent;border-color:var(--th-line,#dce8f1);color:var(--th-text,#14324e)}
+.dr-btn.ghost:hover{background:var(--th-hover,#eef6fc)}
+.dr-btn.primary{background:linear-gradient(135deg,#13a8d8,#087de0);color:#fff}
+.dr-btn.danger{background:linear-gradient(135deg,#ff6b78,#e13e51);color:#fff}
+.dr-btn:focus-visible{outline:2px solid var(--th-blue,#087de0);outline-offset:2px}
+@keyframes drFade{from{opacity:0}to{opacity:1}}
+@keyframes drPop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.dr-modal-back,.dr-modal{animation:none}}

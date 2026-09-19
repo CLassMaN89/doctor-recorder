@@ -187,7 +187,7 @@ function renderDoctorPanel(){
  box.innerHTML=(d.devices||[]).length?'':'<div class="empty">Bağlı doktor yok.</div>';
  (d.devices||[]).forEach(x=>{
   const el=document.createElement('div');el.className='doctor-panel-row';
-  el.innerHTML=`<div><b>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)}</b><small>${esc(x.device_model||'Telefon')} <span class="ip-badge">${esc(x.ip_address||'IP alınamadı')}</span></small></div><span>${esc(x.status||'connected')}</span>`;
+  el.innerHTML=`<div><b>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)}</b><small>${osIcon(x.device_model)}${esc(x.device_model||'Telefon')} <span class="ip-badge">${esc(x.ip_address||'IP alınamadı')}</span></small></div><span>${esc(x.status||'connected')}</span>`;
   box.appendChild(el);
  });
 }
@@ -409,7 +409,7 @@ function renderDashboard(d){
   const active=Date.now()-new Date(x.last_seen_at).getTime()<45000;
   const st=x.status==='recording'?'Kayıt yapıyor':x.status==='uploading'?'Gönderiliyor':active?'Bağlı':'Bağlantı bekleniyor';
   const latest=recs.find(r=>r.device_connection_id===x.id);
-  el.innerHTML=`<div class="device-phone"><span class="phone-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg></span><div><b>${esc(x.device_model||'Telefon')}</b><small>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)} <span class="ip-badge">${esc(x.ip_address||'IP alınamadı')}</span></small></div></div><div class="device-presence"><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${st}</b><small>Son görülme: ${active?'şimdi':Math.round((Date.now()-new Date(x.last_seen_at))/1000)+' sn önce'}</small></div><div class="device-sent ${latest?'':'muted'}"><span>✓</span><div><b>${latest?'Ses kaydı bilgisayara gönderildi':'Henüz kayıt gönderilmedi'}</b><small>${latest?'Son kayıt: '+new Date(latest.created_at).toLocaleString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Kayıt bekleniyor'}</small></div></div>`;
+  el.innerHTML=`<div class="device-phone"><span class="phone-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg></span><div><b>${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}</b><small>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)} <span class="ip-badge">${esc(x.ip_address||'IP alınamadı')}</span></small></div></div><div class="device-presence"><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${st}</b><small>Son görülme: ${active?'şimdi':Math.round((Date.now()-new Date(x.last_seen_at))/1000)+' sn önce'}</small></div><div class="device-sent ${latest?'':'muted'}"><span>✓</span><div><b>${latest?'Ses kaydı bilgisayara gönderildi':'Henüz kayıt gönderilmedi'}</b><small>${latest?'Son kayıt: '+new Date(latest.created_at).toLocaleString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Kayıt bekleniyor'}</small></div></div>`;
   devBox.appendChild(el);
  });
  const activeRec=devices.find(x=>x.status==='recording');
@@ -424,9 +424,40 @@ function renderDashboard(d){
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
  const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  shown.forEach((r,ri)=>{const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row';const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
- row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
- const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!confirm('Bu ses kaydı kalıcı olarak silinsin mi?'))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){alert('Kayıt silinemedi.')}};box.appendChild(row)});
+ row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+ const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};box.appendChild(row)});
 }
+// İşletim sistemi logosu: cihaz adının yanında, yazı boyutuyla orantılı (em) küçük simge.
+function osKind(m){
+ m=String(m||'');
+ if(/iOS|iPhone|iPad|iPod|Apple/i.test(m))return 'apple';
+ if(/Android|SM-|CPH|Pixel|Redmi|Xiaomi|Huawei|OnePlus|Samsung|Galaxy|Oppo|Vivo|Realme|Motorola|Nokia|Infinix|Tecno/i.test(m))return 'android';
+ return 'other';
+}
+const OS_SVG={
+ android:'<svg class="os-ico os-android" viewBox="0 0 24 24" aria-label="Android" role="img"><path d="M5.5 15.5a6.5 6.5 0 0 1 13 0z"/><path d="M8.6 9.2 7.2 6.8M15.4 9.2l1.4-2.4" stroke="#3ddc84" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="9.7" cy="12.6" r=".95" class="os-eye"/><circle cx="14.3" cy="12.6" r=".95" class="os-eye"/><rect x="5.5" y="16.6" width="13" height="5.2" rx="1.4"/></svg>',
+ apple:'<svg class="os-ico os-apple" viewBox="0 0 24 24" aria-label="Apple" role="img"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>',
+ other:'<svg class="os-ico os-other" viewBox="0 0 24 24" aria-label="Telefon" role="img"><rect x="7" y="2.5" width="10" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 18.5h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+};
+function osIcon(m){return OS_SVG[osKind(m)]}
+// Site temasına uygun onay / bilgi penceresi (tarayıcının kendi confirm/alert kutuları yerine).
+function askConfirm({title='Emin misiniz?',text='',okText='Evet',cancelText='Vazgeç',danger=false}={}){
+ return new Promise(resolve=>{
+  const back=document.createElement('div'); back.className='dr-modal-back';
+  const ico=danger
+   ? '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>'
+   : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>';
+  back.innerHTML=`<div class="dr-modal" role="dialog" aria-modal="true"><div class="dr-modal-ico ${danger?'danger':''}">${ico}</div><h3>${esc(title)}</h3><p>${esc(text).replace(/\n/g,'<br>')}</p><div class="dr-modal-actions">${cancelText?`<button type="button" class="dr-btn ghost" data-r="0">${esc(cancelText)}</button>`:''}<button type="button" class="dr-btn ${danger?'danger':'primary'}" data-r="1">${esc(okText)}</button></div></div>`;
+  const onKey=e=>{if(e.key==='Escape')close(false);if(e.key==='Enter')close(true)};
+  const close=v=>{document.removeEventListener('keydown',onKey);back.remove();resolve(v)};
+  back.addEventListener('click',e=>{if(e.target===back&&cancelText)close(false)});
+  back.querySelectorAll('button').forEach(b=>b.onclick=()=>close(b.dataset.r==='1'));
+  document.addEventListener('keydown',onKey);
+  document.body.appendChild(back);
+  back.querySelector('.dr-btn:last-child').focus();
+ });
+}
+const showNotice=(title,text)=>askConfirm({title,text,okText:'Tamam',cancelText:''});
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 
@@ -494,10 +525,11 @@ function readLogin(){try{return JSON.parse(localStorage.getItem('dr_login')||'nu
 function saveLogin(first,last){try{localStorage.setItem('dr_login',JSON.stringify({token,first,last}))}catch{}}
 // Çıkış: uyarı verir; onaylanırsa giriş silinir, "Kayıtlarım" listesi bu telefondan temizlenir ve ad-soyad ekranı gelir.
 // Kayıtların kendisi sisteme gönderilmiştir, silinmez.
-function logout(){
- if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){alert('Önce kaydı bitirin, sonra çıkış yapabilirsiniz.');return}
- if(isFinishing){alert('Kayıt gönderiliyor, lütfen bekleyin.');return}
- if(!confirm('Çıkış yaparsanız "Kayıtlarım" listesi bu telefondan silinir.\n\nSes kayıtlarınız sisteme gönderilmiştir, kaybolmaz.\n\nÇıkış yapılsın mı?'))return;
+async function logout(){
+ if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){await showNotice('Kayıt sürüyor','Önce kaydı bitirin, sonra çıkış yapabilirsiniz.');return}
+ if(isFinishing){await showNotice('Kayıt gönderiliyor','Lütfen gönderim bitene kadar bekleyin.');return}
+ const ok=await askConfirm({title:'Çıkış yapılsın mı?',text:'Çıkış yaparsanız "Kayıtlarım" listesi bu telefondan silinir.'+'\n\n'+'Ses kayıtlarınız sisteme gönderilmiştir, kaybolmaz.',okText:'Çıkış Yap',cancelText:'Vazgeç',danger:true});
+ if(!ok)return;
  try{localStorage.removeItem('dr_login');localStorage.setItem('dr_list_since',String(Date.now()))}catch{}
  location.reload();
 }
