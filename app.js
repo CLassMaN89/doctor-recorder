@@ -37,15 +37,24 @@ function prettyModel(v){
  v=String(v||'').trim(); if(!v||v.length<2)return null;
  if(/^SM-/i.test(v))return 'Samsung '+v; if(/^Pixel/i.test(v))return 'Google '+v; return v;
 }
+let detectedOs='';
+function baseOs(){
+ const ua=navigator.userAgent;
+ const ios=ua.match(/OS (\d+)[_.](\d+)/); if(/iPhone|iPad/i.test(ua)&&ios) return 'iOS '+ios[1]+'.'+ios[2];
+  // Android User-Agent sürümü dondurulmuş (hep 10) olduğundan yalnızca userAgentData'dan gelen gerçek sürüm kullanılır.
+ return '';
+}
 async function detectModel(){
  try{
   const uad=navigator.userAgentData;
-  if(uad?.getHighEntropyValues){const h=await uad.getHighEntropyValues(['model']);const p=prettyModel(h.model);if(p)detectedModel=p}
+  if(uad?.getHighEntropyValues){const h=await uad.getHighEntropyValues(['model']);const p=prettyModel(h.model);if(p)detectedModel=p;const pv=(await uad.getHighEntropyValues(['platformVersion'])).platformVersion;if(pv&&/android/i.test(navigator.userAgent))detectedOs='Android '+String(pv).split('.')[0]}
  }catch{}
 }
 function model(){
  const typed=(document.querySelector('#phoneModel')?.value||'').trim();
- return typed||detectedModel||baseModel();
+ const name=typed||detectedModel||baseModel();
+ const os=detectedOs||baseOs();
+ return os&&!name.includes(os)?name+' · '+os:name;
 }
 function fillPhoneModel(){
  const el=document.querySelector('#phoneModel'); if(!el||el.dataset.touched)return;
