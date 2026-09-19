@@ -113,7 +113,7 @@ function renderDashboard(d){
  }
  devices.forEach(x=>{
   const el=document.createElement('div'); el.className='device';
-  const active=Date.now()-new Date(x.last_seen_at).getTime()<20000;
+  const active=Date.now()-new Date(x.last_seen_at).getTime()<45000;
   const st=x.status==='recording'?'Kayıt yapıyor':x.status==='uploading'?'Gönderiliyor':active?'Bağlı':'Bağlantı bekleniyor';
   el.innerHTML=`<div class="device-top"><div><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)}</b><small>${esc(x.device_model||'Telefon')} · ${esc(x.ip_address||'IP alınamadı')}</small></div><span class="device-status">${st}</span></div>`;
   el.onclick=()=>{$('#deviceFilter').value=x.id;renderDashboard(d)};
@@ -136,8 +136,40 @@ function renderDashboard(d){
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
+
+let heartbeatTimer=null;
+let lastDeviceStatus='connected';
+let mobilePageHidden=false;
+
+function qrLabel(){
+ const raw=(token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+ return raw ? raw.slice(0,6) : '------';
+}
+function setSentBadge(show){
+ const el=$('#sentBadge'); if(!el)return;
+ el.classList.toggle('hidden',!show);
+}
+function startHeartbeat(){
+ if(heartbeatTimer) clearInterval(heartbeatTimer);
+ const beat=()=>{ if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{}); };
+ beat();
+ heartbeatTimer=setInterval(beat,5000);
+}
+function stopHeartbeat(){
+ if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}
+}
 async function initMobile(){
  $('#mobile').classList.remove('hidden');
+ const qrEl=$('#mobileQrCode'); if(qrEl) qrEl.textContent=qrLabel();
+ document.addEventListener('visibilitychange',()=>{
+  mobilePageHidden=document.hidden;
+  if(!document.hidden && device){
+   state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{});
+   loadMobileHistory().catch(()=>{});
+  }
+ });
+ window.addEventListener('pageshow',()=>{if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{})});
+ window.addEventListener('online',()=>{if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{})});
  $('#identityContinue').onclick=register;
  $('#mic').onclick=toggleRecording;
  $('#pauseBtn').onclick=togglePause;
@@ -161,11 +193,21 @@ async function register(){
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
   localStorage.setItem('dr_doctor',JSON.stringify({first,last}));
   $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;$('#deviceInfo').textContent=`${model()} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
-  await state('connected'); await loadMobileHistory();
+  lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
 }
-async function state(status){if(!device)return;try{await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}})}catch(e){if(e.status===410)expired()}}
+async function state(status,opts={}){
+ if(!device)return;
+ if(!opts.heartbeat) lastDeviceStatus=status;
+ try{
+  await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}});
+ }catch(e){
+  if(e.status===410) expired();
+  else if(!opts.heartbeat) throw e;
+ }
+}
 async function startRecording(){
+ setSentBadge(false);
  let acquiredStream=null;
  try{
   if(!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('getUserMedia_not_supported'),{stage:'permission'});
@@ -272,6 +314,7 @@ async function uploadRecording(){
   });
 
   $('#uploadState').textContent='Kayıt başarıyla gönderildi.';
+  setSentBadge(true);
   $('#statePill').className='pill';
   $('#statePill').textContent='Hazır';
   $('#tapHint').textContent='Yeni kayıt için mikrofona dokunun';
@@ -350,12 +393,12 @@ async function loadMobileHistory(){
   const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
   recs.forEach((r,i)=>{
    const el=document.createElement('div');el.className='mrec';
-   el.innerHTML=`<div class="mrec-top"><b class="recording-title"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı">Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><audio controls preload="metadata" src="${r.signed_url||''}"></audio>`;
+   el.innerHTML=`<div class="mrec-one-line"><b class="recording-title"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı">Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small><audio controls preload="metadata" src="${r.signed_url||''}"></audio></div>`;
    box.appendChild(el);
   });
  }catch(e){console.error('mobile history',e)}
 }
-function expired(){
+function expired(){stopHeartbeat();
  setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
 }
 function startWave(s){

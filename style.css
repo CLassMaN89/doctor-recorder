@@ -294,3 +294,63 @@
   background:#ef4444!important;
   animation:v63Cursor .8s ease-in-out infinite alternate!important;
 }
+
+/* v7.0 mobile connection + presence + one-line recordings */
+.connection{
+  display:grid!important;
+  grid-template-columns:auto 1fr auto!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.conn-copy{min-width:0;display:flex;flex-direction:column}
+.qr-session-info{
+  margin-left:auto;
+  min-width:66px;
+  padding:6px 8px;
+  border:1px solid rgba(30,64,175,.12);
+  border-radius:9px;
+  background:rgba(255,255,255,.72);
+  text-align:center;
+  line-height:1.05;
+}
+.qr-session-info span{display:block;font-size:9px;font-weight:800;letter-spacing:.12em;color:#8193a2}
+.qr-session-info b{display:block;margin-top:3px;font-size:11px;letter-spacing:.08em;color:#31526a}
+
+.doctor-block{min-width:0;flex:1}
+.device-status-row{
+  margin-top:2px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-width:0;
+}
+.device-status-row #deviceInfo{white-space:nowrap}
+.sent-badge{
+  color:#16a34a;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.15;
+  text-align:right;
+  white-space:nowrap;
+}
+.mrec-one-line{
+  display:grid;
+  grid-template-columns:auto auto minmax(150px,1fr);
+  align-items:center;
+  gap:9px;
+  width:100%;
+}
+.mrec-one-line small{white-space:nowrap;color:#718291}
+.mrec-one-line audio{
+  width:100%;
+  min-width:0;
+  height:34px;
+}
+@media(max-width:430px){
+ .sent-badge{font-size:9.5px;white-space:normal;max-width:138px}
+ .mrec-one-line{grid-template-columns:auto auto minmax(115px,1fr);gap:6px}
+ .mrec-one-line .recording-title{font-size:11px}
+ .mrec-one-line small{font-size:9px}
+ .mrec-one-line audio{height:30px}
+}

@@ -86,3 +86,12 @@ Not: Bu prototip hâlâ PC tarafında anonymous Supabase auth kullanıyor. Klini
 - Restored upload handler with Safari MIME/extension handling.
 - Successful upload resets recorder/timer and refreshes mobile history.
 - Future generic errors display both exception name and message.
+
+## v7.0
+- Phone sends a 5-second device heartbeat while the page is alive; desktop stale threshold increased to 45 seconds.
+- Foreground/pageshow/online immediately refresh device presence after iOS background throttling.
+- Mobile connection card shows a short QR/session reference on the right.
+- Device row shows a green `Ses kaydı bilgisayara gönderildi` confirmation after successful upload.
+- Starting a new recording clears the previous success confirmation.
+- Mobile recording history is rendered as one-line rows.
+- v6.9 microphone ReferenceError fix, red TextLoop, and REC SVG indicators are preserved.

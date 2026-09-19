@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=69">
+  <link rel="stylesheet" href="style.css?v=70">
 </head>
 <body>
 <main>
@@ -73,7 +73,9 @@
       </header>
 
       <div id="connection" class="connection checking">
-        <span class="pcico">▣</span><div><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
+        <span class="pcico">▣</span>
+        <div class="conn-copy"><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
+        <div class="qr-session-info"><span>QR</span><b id="mobileQrCode">------</b></div>
       </div>
 
       <section id="identity" class="identity cardish hidden">
@@ -87,7 +89,12 @@
       </section>
 
       <section id="recorder" class="recorder cardish hidden">
-        <div class="rec-top"><div><div class="kicker">SES KAYDI</div><h1 id="doctorName">Doktor</h1><small id="deviceInfo">Telefon</small></div><span id="statePill" class="pill">Hazır</span></div>
+        <div class="rec-top">
+          <div class="doctor-block"><div class="kicker">SES KAYDI</div><h1 id="doctorName">Doktor</h1>
+            <div class="device-status-row"><small id="deviceInfo">Telefon</small><span id="sentBadge" class="sent-badge hidden">✓ Ses kaydı bilgisayara gönderildi</span></div>
+          </div>
+          <span id="statePill" class="pill">Hazır</span>
+        </div>
         <p id="recordHelp">Kayda başlamak için mikrofona dokunun.</p>
 
         <button id="mic" class="mic" aria-label="Kaydı başlat">
@@ -131,6 +138,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=69"></script>
+<script src="app.js?v=70"></script>
 </body>
 </html>
