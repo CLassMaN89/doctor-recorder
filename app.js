@@ -57,18 +57,15 @@ async function detectModel(){
  }catch{}
 }
 function model(){
- const typed=(document.querySelector('#phoneModel')?.value||'').trim();
- const name=typed||detectedModel||baseModel();
+ const name=detectedModel||baseModel();
  const os=detectedOs||baseOs();
  return os&&!name.includes(os)?name+' · '+os:name;
 }
+// Telefon alanı pasif: değeri kullanıcı değil cihaz belirler (tarayıcının verdiği model + işletim sistemi).
 function fillPhoneModel(){
- const el=document.querySelector('#phoneModel'); if(!el||el.dataset.touched)return;
- const guess=detectedModel||baseModel();
- // Tarayıcı modeli gizliyorsa ("K" gibi) alan boş bırakılır; doktor kendisi yazar.
- el.value=(guess&&guess.length>2&&!/^(Android Telefon|Telefon)$/i.test(guess))?guess:'';
+ const el=document.querySelector('#phoneModel'); if(!el)return;
+ el.value=model();
 }
-document.addEventListener('input',e=>{if(e.target?.id==='phoneModel')e.target.dataset.touched='1'});
 detectModel().then(fillPhoneModel);
 window.addEventListener('load',fillPhoneModel);
 function fmt(sec){sec=Math.max(0,Math.floor(sec||0));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`}

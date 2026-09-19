@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=106">
+  <link rel="stylesheet" href="style.css?v=107">
 </head>
 <body>
 <main>
@@ -103,7 +103,7 @@
         <p>Ses kayıtlarının size ait olduğunu ayırabilmemiz için adınızı ve soyadınızı yazın.</p>
         <label>Adınız<input id="firstName" autocomplete="off" autocapitalize="words" placeholder="Ahmet"></label>
         <label>Soyadınız<input id="lastName" autocomplete="off" autocapitalize="words" placeholder="Yılmaz"></label>
-        <label>Telefon (marka / model)<input id="phoneModel" autocomplete="off" placeholder="Örn. Samsung S23, iPhone 15"></label>
+        <label>Telefon (marka / model)<input id="phoneModel" class="locked-field" readonly tabindex="-1" aria-readonly="true" autocomplete="off" placeholder="Otomatik algılanıyor…"></label>
         <button id="identityContinue" class="primary">Devam Et →</button>
         <div id="identityError" class="error hidden"></div>
       </section>
@@ -160,6 +160,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=106"></script>
+<script src="app.js?v=107"></script>
 </body>
 </html>

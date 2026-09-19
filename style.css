@@ -1356,3 +1356,6 @@ html body #desktop .rec-device .rec-ip{display:block;margin-top:2px;font-size:10
 html body .ip-badge{display:inline-block!important;margin:2px 0 0 2px;padding:2px 7px;border:1px solid #c8e1fa;border-radius:4px;background:#edf6ff;color:#176fc0!important;font-size:10px!important;font-weight:600;line-height:1.35;letter-spacing:.2px;font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:middle}
 html body .rec-device .ip-badge{display:table!important;margin:3px 0 0}
 html body[data-theme="dark"] .ip-badge,html[data-theme="dark"] .ip-badge{background:rgba(75,139,255,.16);border-color:rgba(120,170,255,.35);color:#9cc4ff!important}
+
+/* v10.7 — Telefon (marka / model) alanı pasif: kullanıcı değiştiremez */
+html body .locked-field{background:#eef3f7!important;color:#5b7386!important;cursor:not-allowed;pointer-events:none;-webkit-text-fill-color:#5b7386;opacity:1}
