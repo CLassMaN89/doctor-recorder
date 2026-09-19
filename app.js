@@ -527,6 +527,7 @@ async function initMobile(){
  $('#logoutBtn').onclick=logout;
  // Aynı QR oturumunda sayfa yenilenirse giriş korunur; kayıt ekranı açık kalır. Çıkış için "Çıkış" düğmesi kullanılır.
  const savedLogin=readLogin();
+ if(savedLogin&&savedLogin.token!==token){try{localStorage.removeItem('dr_login')}catch{}}
  if(savedLogin&&savedLogin.token===token){
   $('#firstName').value=savedLogin.first; $('#lastName').value=savedLogin.last;
   await register();
@@ -550,7 +551,7 @@ async function logout(){
 }
 async function checkToken(){
  if(!token)return false;
- try{await api('status',{query:{token}});setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
+ try{const st=await api('status',{query:{token}});if(st&&st.status==='expired')return false;setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
 }
 function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textContent=b;$('#connection').className=`connection ${state||''}`}
 async function register(){
@@ -728,6 +729,7 @@ async function uploadRecording(){
  }catch(e){
   console.error('Upload failed:',e);
   stream?.getTracks().forEach(t=>t.stop());
+  if(e&&e.status===410){try{localStorage.removeItem('dr_login')}catch{} isFinishing=false; expired(); return;}
   recorder=null;
   chunks=[];
   stream=null;
@@ -800,7 +802,7 @@ async function loadMobileHistory(){
   });
  }catch(e){console.error('mobile history',e)}
 }
-function expired(){stopHeartbeat();
+function expired(){stopHeartbeat();try{localStorage.removeItem('dr_login')}catch{}
  setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
 }
 function startWave(s){

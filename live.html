@@ -198,7 +198,7 @@ $('scanClose').onclick = closeScanner;
 
 async function init() {
   if (!token) return showEnded('QR kod gerekli', 'Bilgisayardaki QR kodu okutarak başlayın.');
-  try { await api('status'); }
+  try { const st = await api('status'); if (st && st.status === 'expired') throw new Error('expired'); }
   catch { return showEnded('QR kod geçersiz', 'Bu QR kodun süresi dolmuş olabilir. Bilgisayardaki yeni QR kodu okutun.'); }
   $('sub').textContent = 'Adınızı girin ve mikrofonu başlatın.';
   try { const d = JSON.parse(localStorage.getItem('dr_doctor') || 'null'); if (d) { $('first').value = d.first || ''; $('last').value = d.last || ''; } } catch {}
