@@ -7,7 +7,7 @@ const $=s=>document.querySelector(s);
 const params=new URLSearchParams(location.search);
 const isMobile=params.get('mode')==='record';
 const token=params.get('token')||'';
-let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
+let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null, recorderMode='idle';
 
 function deviceId(){
  let id=localStorage.getItem('dr_device_id');
@@ -34,46 +34,40 @@ async function api(action,{method='GET',body=null,auth=false,query={}}={}){
 
 
 let waitingLoopTimer=null;
-const waitingLoopText='Bekleniyor...';
+let waitingLoopIndex=0;
+let waitingLoopDeleting=false;
+const waitingLoopText='Telefon Bekleniyor...';
 
 function stopWaitingLoop(){
  if(waitingLoopTimer){clearTimeout(waitingLoopTimer);waitingLoopTimer=null}
-}
-function waitingMarkup(){
- return '<div class="empty waiting-empty"><span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span><div class="waiting-loop"><span class="waiting-static">Telefon</span><div class="waiting-animated-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div></div>';
+ waitingLoopIndex=0;waitingLoopDeleting=false;
 }
 function startWaitingLoop(){
  stopWaitingLoop();
- const wrap=document.querySelector('.waiting-rotating-wrap');
- const textEl=document.getElementById('waitingType');
- if(!wrap||!textEl)return;
- textEl.textContent=waitingLoopText;
- // Measure the real text width so the animation behaves like Motion width: 0 -> auto.
- const probe=textEl.cloneNode(true);
- probe.style.cssText='position:absolute;visibility:hidden;width:auto;white-space:nowrap;pointer-events:none;';
- document.body.appendChild(probe);
- const width=Math.ceil(probe.getBoundingClientRect().width+3);
- probe.remove();
- wrap.style.setProperty('--loop-width',`${width}px`);
-
- const reveal=()=>{
-  wrap.classList.remove('loop-out');
-  void wrap.offsetWidth;
-  wrap.classList.add('loop-in');
-  waitingLoopTimer=setTimeout(()=>{
-   wrap.classList.remove('loop-in');
-   wrap.style.width=`${width}px`; wrap.style.opacity='1';
-   waitingLoopTimer=setTimeout(()=>{
-    wrap.style.width='';wrap.style.opacity='';
-    wrap.classList.add('loop-out');
-    waitingLoopTimer=setTimeout(()=>{
-     wrap.classList.remove('loop-out');
-     reveal();
-    },820);
-   },2200);
-  },820);
+ const tick=()=>{
+  const el=document.getElementById('waitingType');
+  if(!el){waitingLoopTimer=setTimeout(tick,250);return}
+  if(!waitingLoopDeleting){
+   waitingLoopIndex=Math.min(waitingLoopText.length,waitingLoopIndex+1);
+   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
+   if(waitingLoopIndex===waitingLoopText.length){
+    waitingLoopDeleting=true;
+    waitingLoopTimer=setTimeout(tick,1500);
+    return;
+   }
+   waitingLoopTimer=setTimeout(tick,72);
+  }else{
+   waitingLoopIndex=Math.max(0,waitingLoopIndex-1);
+   el.textContent=waitingLoopText.slice(0,waitingLoopIndex);
+   if(waitingLoopIndex===0){
+    waitingLoopDeleting=false;
+    waitingLoopTimer=setTimeout(tick,420);
+    return;
+   }
+   waitingLoopTimer=setTimeout(tick,34);
+  }
  };
- reveal();
+ tick();
 }
 
 if(isMobile) initMobile(); else initDesktop();
@@ -84,261 +78,68 @@ async function initDesktop(){
  if(!data.session){const r=await sb.auth.signInAnonymously(); if(r.error){alert('Oturum açılamadı');return}}
  $('#newQr').onclick=createSession;
  $('#deviceFilter').onchange=()=>renderDashboard(window.__dash||{devices:[],recordings:[]});
- $('#topRefresh') && ($('#topRefresh').onclick=loadDashboard);
- const saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
- if(saved?.id&&saved?.token){session=saved;showSessionQR();await loadDashboard();dashboardInt=setInterval(loadDashboard,2500)}
- else await createSession();
-}
-
-function renderDoctorPanel(){
- const d=window.__dash||{devices:[]}, box=$('#doctorListPanel');
- if(!box)return;
- box.innerHTML=(d.devices||[]).length?'':'<div class="empty">Bağlı doktor yok.</div>';
- (d.devices||[]).forEach(x=>{
-  const el=document.createElement('div');el.className='doctor-panel-row';
-  el.innerHTML=`<div><b>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)}</b><small>${esc(x.device_model||'Telefon')} · ${esc(x.ip_address||'IP alınamadı')}</small></div><span>${esc(x.status||'connected')}</span>`;
-  box.appendChild(el);
- });
-}
-function showSessionQR(){
- if(!session)return;
- const code=(session.token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
- $('#sessionCode').textContent=code.match(/.{1,3}/g)?.slice(0,3).join(' ')||'--------';
- const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
- $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:150,height:150,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+ await createSession();
 }
 async function createSession(){
  try{
   session=await api('create-session',{method:'POST',auth:true,body:{}});
-  localStorage.setItem('dr_pc_session',JSON.stringify(session)); showSessionQR();
+  $('#sessionCode').textContent=session.token.slice(0,8).toUpperCase();
+  const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
+  $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:220,height:220,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
   if(dashboardInt)clearInterval(dashboardInt);
   await loadDashboard(); dashboardInt=setInterval(loadDashboard,2500);
  }catch(e){console.error(e);alert('QR oluşturulamadı.')}
 }
 async function loadDashboard(){
  if(!session)return;
- try{
-   const d=await api('history',{auth:true});
-   // Current QR session devices first, historical recordings remain persistent.
-   const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id);
-   window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
-   renderDashboard(window.__dash);
- }catch(e){console.error(e)}
-}
-
-function waveSeed(v){
- let h=2166136261; const s=String(v||'recording');
- for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
- return h>>>0;
-}
-function waveBars(seed,count=72){
- let x=waveSeed(seed), vals=[];
- const centers=[.22,.38,.52,.69,.84];
- const amps=[];
- for(let k=0;k<centers.length;k++){x=(Math.imul(x,1664525)+1013904223)>>>0;amps.push(.35+(x/4294967295)*.65)}
- for(let i=0;i<count;i++){
-  const p=i/(count-1);
-  let shape=.10;
-  centers.forEach((c,k)=>{const width=.035+(k%3)*.014;shape+=amps[k]*Math.exp(-Math.pow(p-c,2)/(2*width*width))});
-  x=(Math.imul(x,1664525)+1013904223)>>>0;
-  const micro=.82+(x/4294967295)*.28;
-  vals.push(Math.min(1,shape*micro));
- }
- // smooth neighboring bars
- vals=vals.map((v,i,a)=>(v+(a[i-1]??v)+(a[i+1]??v))/3);
- return vals.map((v,i)=>{
-   const p=i/(count-1), h=Math.max(4,Math.round(5+31*v));
-   const hue=326 + p*72; // magenta -> violet -> blue/cyan via explicit CSS interpolation class
-   return `<i style="--h:${h}px;--p:${p};--hue:${hue};--i:${i}"></i>`;
- }).join('');
-}
-function waveMarkup(seed,extra=''){
- return `<div class="apple-wave ${extra}" data-wave="${esc(seed)}">${waveBars(seed)}</div>`;
-}
-function wireWavePlayer(root,audio,play,timeEl){
- const bars=[...root.querySelectorAll('.apple-wave i')];
- const paint=()=>{
-  const ratio=(Number.isFinite(audio.duration)&&audio.duration>0)?audio.currentTime/audio.duration:0;
-  bars.forEach((b,i)=>b.classList.toggle('played',i/bars.length<=ratio));
-  if(timeEl)timeEl.textContent=`${fmt(audio.currentTime)} / ${fmt(Number.isFinite(audio.duration)?audio.duration:0)}`;
- };
- audio.addEventListener('loadedmetadata',paint);
- audio.addEventListener('durationchange',paint);
- audio.addEventListener('timeupdate',paint);
- audio.addEventListener('ended',()=>{play.innerHTML=playIcon();paint()});
- audio.addEventListener('play',()=>play.innerHTML=pauseIcon());
- audio.addEventListener('pause',()=>{if(!audio.ended)play.innerHTML=playIcon()});
- audio.addEventListener('error',()=>{play.classList.add('audio-error');play.title='Ses dosyası açılamadı. Listeyi yenileyin.'});
- play.innerHTML=playIcon();
- play.onclick=async()=>{
-  try{
-   document.querySelectorAll('audio').forEach(a=>{if(a!==audio)a.pause()});
-   if(audio.paused){if(audio.readyState===0)audio.load();await audio.play()}else audio.pause();
-  }catch(err){console.error('Audio play failed',err);play.classList.add('audio-error');play.title='Ses oynatılamadı. Kayıt bağlantısını yenileyin.'}
- };
- const wave=root.querySelector('.apple-wave');
- if(wave)wave.onclick=e=>{
-  if(!Number.isFinite(audio.duration)||audio.duration<=0)return;
-  const b=e.currentTarget.getBoundingClientRect();
-  audio.currentTime=Math.max(0,Math.min(audio.duration,((e.clientX-b.left)/b.width)*audio.duration));
- };
-}
-function playIcon(){return '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>'}
-function pauseIcon(){return '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" stroke="none"/></svg>'}
-
-function animatePlaybackWave(root,audio){
- const wave=root.querySelector('.apple-wave'); if(!wave)return;
- const bars=[...wave.querySelectorAll('i')]; let raf=0;
- const tick=()=>{const t=performance.now()/180;bars.forEach((b,i)=>{const base=parseFloat(getComputedStyle(b).getPropertyValue('--h'))||10;const pulse=.72+.34*Math.abs(Math.sin(t+i*.43));b.style.height=`${Math.max(4,base*pulse)}px`});raf=requestAnimationFrame(tick)};
- audio.addEventListener('play',()=>{wave.classList.add('is-playing');cancelAnimationFrame(raf);tick()});
- const stop=()=>{wave.classList.remove('is-playing');cancelAnimationFrame(raf);bars.forEach(b=>b.style.height='var(--h)')}; audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
-}
-
-
-let liveStartedAt=0,liveTimerRAF=0;
-function renderLiveWave(recording){
- const box=$('#liveWave'); if(!box)return;
- if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',78);
- box.classList.toggle('active',!!recording);
- if(recording && !liveStartedAt) liveStartedAt=Date.now();
- if(!recording) liveStartedAt=0;
- cancelAnimationFrame(liveTimerRAF);
- const tick=()=>{
-  const sec=liveStartedAt?Math.floor((Date.now()-liveStartedAt)/1000):0;
-  const val=fmt(sec);
-  const a=$('#liveTimer'),b=$('#liveConnText'),c=$('#previewTimer'),e=$('#previewStateTime'); if(a)a.textContent=val;if(b)b.textContent=val;if(c)c.textContent=val;if(e)e.textContent=val;
-  if(recording)liveTimerRAF=requestAnimationFrame(tick);
- };
- tick();
-}
-
-let liveTypingTimer=0,liveTypingKey="";
-function startLiveTypeLoop(text){
- const el=$('#liveStatusText'), cursor=$('.status-cursor'); if(!el)return;
- if(liveTypingKey===text && liveTypingTimer)return;
- clearTimeout(liveTypingTimer); liveTypingTimer=0; liveTypingKey=text;
- let pos=0, deleting=false;
- el.textContent="";
- const step=()=>{
-   if(!deleting){
-     pos=Math.min(text.length,pos+1); el.textContent=text.slice(0,pos);
-     if(pos===text.length){deleting=true;liveTypingTimer=setTimeout(step,1500);return}
-     liveTypingTimer=setTimeout(step,58);
-   }else{
-     pos=Math.max(0,pos-1); el.textContent=text.slice(0,pos);
-     if(pos===0){deleting=false;liveTypingTimer=setTimeout(step,420);return}
-     liveTypingTimer=setTimeout(step,30);
-   }
- };
- step();
-}
-
-function renderPhonePreview(d){
- const devices=d.devices||[], recs=d.recordings||[];
- const active=devices.find(x=>x.status==='recording');
- const code=($('#sessionCode')?.textContent||'---').trim();
- const q=$('#previewQrCode'); if(q)q.textContent=code;
- const ct=$('#previewConnTitle'); if(ct)ct.textContent=devices.length?'Bağlandı':'Bekleniyor';
- const st=$('#previewState'); if(st)st.textContent=active?'Kayıt yapılıyor...':'Kayıt bekleniyor...';
- const wave=$('#previewWave');
- if(wave && !wave.children.length) wave.innerHTML=waveBars('phone-preview-live',62);
- if(wave) wave.classList.toggle('active',!!active);
- const rows=$('#previewRecordings'); if(rows){
-   rows.innerHTML=recs.slice(0,5).map((r,i)=>{
-     const dev=devices.find(x=>x.id===r.device_connection_id);
-     const dt=new Date(r.created_at);
-     const date=dt.toLocaleDateString('tr-TR')+' · '+dt.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-     return `<div class="preview-rec-row"><span class="preview-rec-dot">● REC</span><div><small>${date} · ${fmt(r.duration_seconds||0)}</small><div class="preview-mini-wave">${waveBars(r.id+'-pv',34)}</div></div><button class="preview-play" data-url="${esc(r.signed_url||'')}">▶</button><b>⋮</b></div>`
-   }).join('')||'<div class="preview-empty">Henüz kayıt yok.</div>';
-   rows.querySelectorAll('.preview-play').forEach(btn=>btn.onclick=()=>{
-      const url=btn.dataset.url;if(!url)return;
-      if(window.__previewAudio){window.__previewAudio.pause();window.__previewAudio=null}
-      const a=new Audio(url);window.__previewAudio=a;
-      const row=btn.closest('.preview-rec-row');row?.classList.add('playing');btn.textContent='Ⅱ';
-      a.onended=()=>{row?.classList.remove('playing');btn.textContent='▶';window.__previewAudio=null};
-      a.play().catch(()=>{row?.classList.remove('playing');btn.textContent='▶'});
-   });
- }
+ try{const d=await api('dashboard',{auth:true,query:{session_id:session.id}});window.__dash=d;renderDashboard(d)}catch(e){console.error(e)}
 }
 function renderDashboard(d){
- const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
+ const devices=d.devices||[], recs=d.recordings||[];
  $('#deviceCount').textContent=`${devices.length} cihaz`;
- const devBox=$('#devices'); devBox.innerHTML='';
- if(!devices.length){devBox.innerHTML=waitingMarkup();startWaitingLoop()}else stopWaitingLoop();
+ const devBox=$('#devices');
+ if(devices.length){
+  stopWaitingLoop();
+  devBox.innerHTML='';
+ }else{
+  devBox.innerHTML='<div class="empty waiting-empty"><span id="waitingType"></span><span class="type-cursor"></span></div>';
+  startWaitingLoop();
+ }
  devices.forEach(x=>{
-  const el=document.createElement('div');el.className='device device-card';
-  const active=Date.now()-new Date(x.last_seen_at).getTime()<45000;
+  const el=document.createElement('div'); el.className='device';
+  const active=Date.now()-new Date(x.last_seen_at).getTime()<20000;
   const st=x.status==='recording'?'Kayıt yapıyor':x.status==='uploading'?'Gönderiliyor':active?'Bağlı':'Bağlantı bekleniyor';
-  const latest=recs.find(r=>r.device_connection_id===x.id);
-  el.innerHTML=`<div class="device-phone"><span class="phone-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg></span><div><b>${esc(x.device_model||'Telefon')}</b><small>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)} · ${esc(x.ip_address||'IP alınamadı')}</small></div></div><div class="device-presence"><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${st}</b><small>Son görülme: ${active?'şimdi':Math.round((Date.now()-new Date(x.last_seen_at))/1000)+' sn önce'}</small></div><div class="device-sent ${latest?'':'muted'}"><span>✓</span><div><b>${latest?'Ses kaydı bilgisayara gönderildi':'Henüz kayıt gönderilmedi'}</b><small>${latest?'Son kayıt: '+new Date(latest.created_at).toLocaleString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Kayıt bekleniyor'}</small></div></div>`;
+  el.innerHTML=`<div class="device-top"><div><b><span class="dot ${x.status==='recording'?'recording':''}"></span>${esc(x.doctor_first_name)} ${esc(x.doctor_last_name)}</b><small>${esc(x.device_model||'Telefon')} · ${esc(x.ip_address||'IP alınamadı')}</small></div><span class="device-status">${st}</span></div>`;
+  el.onclick=()=>{$('#deviceFilter').value=x.id;renderDashboard(d)};
   devBox.appendChild(el);
  });
- const activeRec=devices.find(x=>x.status==='recording');
- renderLiveWave(activeRec);
- const live=$('.live-panel');
- if(live){
-  live.classList.toggle('is-recording',!!activeRec);
-  startLiveTypeLoop(activeRec?'Şuanda kayıt işlemi yapılıyor...':'Telefon bekleniyor...');
- }
- const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
- const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
- const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
- const shown=recs.filter(r=>!filter.value||r.device_connection_id===filter.value),box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
- shown.forEach((r,ri)=>{const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row';const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
- row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${esc(x.device_model||'Telefon')}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil">⌫</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
- const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!confirm('Bu ses kaydı kalıcı olarak silinsin mi?'))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){alert('Kayıt silinemedi.')}};box.appendChild(row)});
+ const filter=$('#deviceFilter'), old=filter.value; filter.innerHTML='<option value="">Tüm doktorlar</option>';
+ devices.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=devices.some(x=>x.id===old)?old:'';
+ const map=Object.fromEntries(devices.map(x=>[x.id,x]));
+ const shown=recs.filter(r=>!filter.value||r.device_connection_id===filter.value);
+ const box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ shown.forEach(r=>{
+  const x=map[r.device_connection_id]||{}; const row=document.createElement('div');row.className='rec-row';
+  row.innerHTML=`<div class="rec-meta"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><small>${esc(x.device_model||'')} · ${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><div class="player"><button class="play">▶</button><div class="track"><div class="fill"></div></div><span class="ptime">00:00 / ${fmt(r.duration_seconds)}</span><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+  const audio=row.querySelector('audio'), play=row.querySelector('.play'), fill=row.querySelector('.fill'), pt=row.querySelector('.ptime'), track=row.querySelector('.track');
+  play.onclick=()=>{document.querySelectorAll('audio').forEach(a=>{if(a!==audio)a.pause()});audio.paused?audio.play():audio.pause()};
+  audio.onplay=()=>play.textContent='❚❚';audio.onpause=()=>play.textContent='▶';audio.ontimeupdate=()=>{fill.style.width=`${audio.duration?audio.currentTime/audio.duration*100:0}%`;pt.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||r.duration_seconds)}`};
+  track.onclick=e=>{if(audio.duration){const b=track.getBoundingClientRect();audio.currentTime=((e.clientX-b.left)/b.width)*audio.duration}};
+  box.appendChild(row);
+ });
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-
-let heartbeatTimer=null;
-let lastDeviceStatus='connected';
-let mobilePageHidden=false;
-
-function qrLabel(){
- const raw=(token||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
- if(!raw)return '------';
- return raw.slice(0,9).match(/.{1,3}/g).join(' ');
-}
-
-function setSentBadge(show){
- const el=$('#sentBadge'); if(!el)return;
- el.classList.toggle('hidden',!show);
-}
-function startHeartbeat(){
- if(heartbeatTimer) clearInterval(heartbeatTimer);
- const beat=()=>{ if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{}); };
- beat();
- heartbeatTimer=setInterval(beat,5000);
-}
-function stopHeartbeat(){
- if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}
-}
 async function initMobile(){
  $('#mobile').classList.remove('hidden');
- const qrEl=$('#mobileQrCode'); if(qrEl) qrEl.textContent=qrLabel();
- const mini=$('#mobileMiniQr'); if(mini){mini.innerHTML='';new QRCode(mini,{text:location.href,width:54,height:54,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
- document.addEventListener('visibilitychange',()=>{
-  mobilePageHidden=document.hidden;
-  if(!document.hidden && device){
-   state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{});
-   loadMobileHistory().catch(()=>{});
-  }
- });
- window.addEventListener('pageshow',()=>{if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{})});
- window.addEventListener('online',()=>{if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{})});
  $('#identityContinue').onclick=register;
- $('#mic').onclick=toggleRecording;
- $('#pauseBtn').onclick=togglePause;
- $('#finishBtn').onclick=finishRecording;
+ $('#mic').onclick=toggleRecording; $('#pauseBtn').onclick=pauseRecording; $('#resumeBtn').onclick=resumeRecording; $('#finishBtn').onclick=finishRecording;
  $('#scanQrBtn').onclick=openScanner;
  $('#closeScanner').onclick=closeScanner;
  const ok=await checkToken();
  if(!ok)return expired();
  const saved=JSON.parse(localStorage.getItem('dr_doctor')||'null');
- if(saved?.first)$('#firstName').value=saved.first;
- if(saved?.last)$('#lastName').value=saved.last;
- $('#identity').classList.remove('hidden');
+ if(saved?.first&&saved?.last){$('#firstName').value=saved.first;$('#lastName').value=saved.last;await register()}else $('#identity').classList.remove('hidden');
  setInterval(async()=>{if(!(await checkToken()))expired()},5000);
 }
 async function checkToken(){
@@ -351,246 +152,105 @@ async function register(){
  try{
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
   localStorage.setItem('dr_doctor',JSON.stringify({first,last}));
-  $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;const chosenModel=model(); $('#deviceInfo').textContent=`${chosenModel} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
-  lastDeviceStatus='connected'; await state('connected'); startHeartbeat(); await loadMobileHistory();
+  $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;$('#deviceInfo').textContent=`${model()} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
+  await state('connected'); await loadMyRecordings();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
 }
-async function state(status,opts={}){
- if(!device)return;
- if(!opts.heartbeat) lastDeviceStatus=status;
- try{
-  await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}});
- }catch(e){
-  if(e.status===410) expired();
-  else if(!opts.heartbeat) throw e;
- }
+async function state(status){if(!device)return;try{await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}})}catch(e){if(e.status===410)expired()}}
+async function toggleRecording(){
+ if(!device||$('#recorder').classList.contains('expired-mode'))return;
+ if(recorderMode==='idle') await startRecording();
+ else if(recorderMode==='recording') pauseRecording();
+ else if(recorderMode==='paused') resumeRecording();
 }
+function setRecorderUI(mode){
+ recorderMode=mode;
+ const mic=$('#mic'),pill=$('#statePill'),controls=$('#recordControls'),pause=$('#pauseBtn'),resume=$('#resumeBtn'),finish=$('#finishBtn');
+ mic.classList.remove('recording','paused');pill.className='pill';controls.classList.add('hidden');pause.classList.add('hidden');resume.classList.add('hidden');finish.classList.add('hidden');
+ if(mode==='idle'){pill.textContent='Hazır';$('#recordHelp').textContent='Kayda başlamak için mikrofona dokunun.';$('#tapHint').textContent='Mikrofona dokunun';$('#timer').textContent='00:00'}
+ if(mode==='recording'){mic.classList.add('recording');pill.classList.add('recording');pill.textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Durdurmak için turuncu Durdur butonuna dokunun';controls.classList.remove('hidden');pause.classList.remove('hidden');finish.classList.remove('hidden')}
+ if(mode==='paused'){mic.classList.add('paused');pill.classList.add('paused');pill.textContent='Durduruldu';$('#recordHelp').textContent='Kayıt beklemede. Devam edebilir veya bitirebilirsiniz.';$('#tapHint').textContent='Kayıt durduruldu';controls.classList.remove('hidden');resume.classList.remove('hidden');finish.classList.remove('hidden')}
+ if(mode==='uploading'){pill.textContent='Gönderiliyor';$('#recordHelp').textContent='Ses kaydı bilgisayara gönderiliyor.';$('#tapHint').textContent='Lütfen bekleyin…'}
+}
+function currentElapsed(){return elapsedBeforePause+(recorderMode==='recording'?(Date.now()-startedAt)/1000:0)}
+function startTimer(){clearInterval(timerInt);timerInt=setInterval(()=>$('#timer').textContent=fmt(currentElapsed()),200)}
 async function startRecording(){
- setSentBadge(false);
- let acquiredStream=null;
  try{
-  if(!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('getUserMedia_not_supported'),{stage:'permission'});
-  // iPhone/Safari: first request the simplest audio stream. Some Safari versions
-  // reject otherwise valid sessions when optional constraints/codecs are forced.
-  try{
-   acquiredStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(err){
-   err.stage='permission'; throw err;
-  }
-  stream=acquiredStream;
-  if(typeof window.MediaRecorder==='undefined'){
-   const err=new Error('MediaRecorder_not_supported'); err.name='NotSupportedError'; err.stage='recorder'; throw err;
-  }
-
-  // Safari/iOS MediaRecorder support differs by version. Try candidates one by one
-  // and finally let the browser choose its own default MIME type.
-  const candidates=[
-   'audio/mp4',
-   'audio/mp4;codecs=mp4a.40.2',
-   'audio/webm;codecs=opus',
-   'audio/webm'
-  ];
-  recorder=null;
-  let lastRecorderError=null;
-  for(const type of candidates){
-   try{
-    if(window.MediaRecorder?.isTypeSupported && !MediaRecorder.isTypeSupported(type)) continue;
-    recorder=new MediaRecorder(stream,{mimeType:type});
-    break;
-   }catch(err){lastRecorderError=err}
-  }
-  if(!recorder){
-   try{recorder=new MediaRecorder(stream)}
-   catch(err){err.stage='recorder';err.cause=lastRecorderError;throw err}
-  }
-
-  chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;
-  recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-  recorder.onerror=e=>{
-   console.error('MediaRecorder error',e);
-   $('#uploadState').textContent='Kayıt sırasında tarayıcı hatası oluştu.';
-   $('#uploadState').classList.remove('hidden');
-  };
-  recorder.onstop=uploadRecording;
-  recorder.start(500);
-  startedAt=Date.now();
-  timerInt=setInterval(updateTimer,100);
-  $('#timer').textContent='00:00';
-  $('#mic').classList.add('recording');
-  $('#statePill').className='pill recording';
-  $('#statePill').textContent='Kaydediliyor';
-  $('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';
-  $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
-  $('#waveWrap').classList.remove('hidden');
-  $('#recordControls').classList.remove('hidden');
-  $('#pauseBtn').classList.remove('resume');
-  $('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';
-  // Visualizer and server presence are auxiliary. Neither may cancel a valid mic recording.
-  try{ startWave(stream); }catch(waveErr){ console.warn('Waveform unavailable:',waveErr); $('#waveWrap')?.classList.add('hidden'); }
-  state('recording').catch(stateErr=>console.warn('Device state update failed:',stateErr));
- }catch(e){
-  console.error('Recorder start failed:',e?.name,e?.message,e);
-  acquiredStream?.getTracks().forEach(t=>t.stop());
-  stream=null;recorder=null;
-  let msg=`Mikrofon başlatılamadı${e?.name?` (${e.name})`:''}${e?.message?`: ${e.message}`:''}.`;
-  if(e?.name==='NotAllowedError'||e?.name==='SecurityError') msg='Mikrofon erişimine izin verilmedi. Safari adres çubuğundaki site ayarlarından Mikrofon → İzin Ver seçin.';
-  else if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError') msg='Bu cihazda kullanılabilir mikrofon bulunamadı.';
-  else if(e?.name==='NotReadableError'||e?.name==='TrackStartError') msg='Mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
-  else if(e?.name==='NotSupportedError'||e?.stage==='recorder') msg='Mikrofon izni var, ancak bu Safari sürümünde ses kayıt biçimi başlatılamadı.';
-  $('#uploadState').textContent=msg;
-  $('#uploadState').classList.remove('hidden');
- }
+  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  const mime=['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm'].find(x=>MediaRecorder.isTypeSupported(x))||'';
+  recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];elapsedBeforePause=0;
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=uploadRecording;
+  recorder.start(350);startedAt=Date.now();setRecorderUI('recording');startTimer();$('#waveWrap').classList.remove('hidden');startWave(stream);await state('recording');
+ }catch(e){$('#uploadState').textContent='Mikrofon izni gerekli.';$('#uploadState').classList.remove('hidden')}
 }
-
-async function uploadRecording(){
- const finishedRecorder=recorder;
- try{
-  $('#uploadState').textContent='Ses kaydı gönderiliyor…';
-  $('#uploadState').classList.remove('hidden');
-
-  const duration=finishedRecorder?.__finalDuration ||
-    Math.max(1,Math.round(elapsedBeforePause/1000));
-
-  const actualType=(finishedRecorder?.mimeType || chunks[0]?.type || 'audio/mp4').split(';')[0];
-  const blob=new Blob(chunks,{type:actualType});
-  stream?.getTracks().forEach(t=>t.stop());
-
-  if(!blob.size) throw new Error('empty_recording');
-
-  const ext=actualType.includes('mp4')?'m4a':
-            actualType.includes('mpeg')?'mp3':
-            actualType.includes('wav')?'wav':
-            actualType.includes('aac')?'aac':'webm';
-
-  const form=new FormData();
-  form.append('file',blob,`recording.${ext}`);
-  form.append('duration_seconds',String(duration));
-
-  await api('upload',{
-   method:'POST',
-   query:{token,device_token:device.device_token},
-   body:form
-  });
-
-  $('#uploadState').textContent='';
-  $('#uploadState').classList.add('hidden');
-  setSentBadge(true);
-  $('#statePill').className='pill';
-  $('#statePill').textContent='Hazır';
-  $('#tapHint').textContent='Yeni kayıt için mikrofona dokunun';
-  $('#recordHelp').textContent='Ses kaydı bilgisayara gönderildi.';
-  $('#timer').textContent='00:00';
-
-  recorder=null;
-  chunks=[];
-  stream=null;
-  elapsedBeforePause=0;
-  pauseStartedAt=0;
-  startedAt=0;
-  isPaused=false;
-  isFinishing=false;
-
-  state('idle').catch(e=>console.warn('Device state update failed:',e));
-  await loadMobileHistory();
- }catch(e){
-  console.error('Upload failed:',e);
-  stream?.getTracks().forEach(t=>t.stop());
-  recorder=null;
-  chunks=[];
-  stream=null;
-  elapsedBeforePause=0;
-  pauseStartedAt=0;
-  startedAt=0;
-  isPaused=false;
-  isFinishing=false;
-  $('#timer').textContent='00:00';
-  $('#statePill').className='pill';
-  $('#statePill').textContent='Gönderilemedi';
-  $('#uploadState').textContent='Ses kaydı gönderilemedi. Tekrar kayıt alabilirsiniz.';
-  $('#uploadState').classList.remove('hidden');
-  state('idle').catch(()=>{});
- }
+async function pauseRecording(){
+ if(recorder?.state!=='recording')return;
+ elapsedBeforePause+=(Date.now()-startedAt)/1000;recorder.pause();clearInterval(timerInt);setRecorderUI('paused');stopWave(false);await state('idle');
 }
-
-function updateTimer(){
- let ms=0;
- if(recorder){
-  if(isPaused) ms=elapsedBeforePause;
-  else ms=elapsedBeforePause+(Date.now()-startedAt);
- }
- $('#timer').textContent=fmt(ms/1000);
-}
-async function togglePause(){
- if(!recorder||isFinishing)return;
- if(recorder.state==='recording'){
-  recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
-  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');$('#pauseBtn').innerHTML='▶ <span>Devam Et</span>';stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
- }else if(recorder.state==='paused'){
-  recorder.resume(); startedAt=Date.now(); isPaused=false;
-  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
- }
+async function resumeRecording(){
+ if(recorder?.state!=='paused')return;
+ recorder.resume();startedAt=Date.now();setRecorderUI('recording');startTimer();$('#waveWrap').classList.remove('hidden');startWave(stream);await state('recording');
 }
 async function finishRecording(){
- if(!recorder||isFinishing)return;
- isFinishing=true;
- if(recorder.state==='paused') recorder.resume();
- const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
- recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
- clearInterval(timerInt); recorder.stop(); isPaused=false;
- $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
+ if(!recorder||!['recording','paused'].includes(recorder.state))return;
+ if(recorder.state==='recording')elapsedBeforePause+=(Date.now()-startedAt)/1000;
+ clearInterval(timerInt);setRecorderUI('uploading');stopWave();await state('uploading');recorder.stop();
 }
-async function toggleRecording(){
- if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;
- if(!recorder) return startRecording();
- if(recorder.state==='recording'||recorder.state==='paused') return togglePause();
+async function uploadRecording(){
+ const duration=Math.max(1,Math.round(elapsedBeforePause)), blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});stream?.getTracks().forEach(t=>t.stop());
+ const form=new FormData();form.append('file',blob,`recording.${blob.type.includes('mp4')?'m4a':'webm'}`);form.append('duration_seconds',String(duration));
+ try{
+  await api('upload',{method:'POST',query:{token,device_token:device.device_token},body:form});
+  $('#uploadState').textContent='✓ Ses kaydı bilgisayara gönderildi';$('#uploadState').classList.remove('hidden');setRecorderUI('idle');await loadMyRecordings();setTimeout(()=>$('#uploadState').classList.add('hidden'),3500);
+ }catch(e){$('#uploadState').textContent=e.status===410?'Oturum sona erdi.':'Kayıt gönderilemedi.';$('#uploadState').classList.remove('hidden');if(e.status===410)expired();else setRecorderUI('idle')}
+ recorder=null;chunks=[];elapsedBeforePause=0;
 }
-
-async function loadMobileHistory(){
+async function loadMyRecordings(){
  if(!device)return;
  try{
-  const recs=await api('device-recordings',{query:{token,device_token:device.device_token}});
-  $('#historyCount').textContent=`${recs.length} kayıt`;
-  const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
-  recs.forEach((r,i)=>{
-   const el=document.createElement('div');el.className='mrec wave-mrec';
-   const stamp=new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-   el.innerHTML=`<div class="mrec-wave-line"><div class="mrec-label"><img class="recording-rec-icon" src="live-recording.svg" alt="Kayıt tamamlandı"><b>Kayıt ${recs.length-i}</b><small>${stamp} · ${fmt(r.duration_seconds)}</small></div>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}<button class="play mobile-play" aria-label="Oynat">▶</button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
-   const audio=el.querySelector('audio'),play=el.querySelector('.play');
-   wireWavePlayer(el,audio,play,null); animatePlaybackWave(el,audio);
-   box.appendChild(el);
+  const list=await api('device-recordings',{query:{token,device_token:device.device_token}});
+  $('#myRecCount').textContent=`${list.length} kayıt`;const box=$('#myRecList');box.innerHTML=list.length?'':'<div class="empty small">Henüz kayıt yok.</div>';
+  list.forEach((r,i)=>{
+   const row=document.createElement('div');row.className='myrec-row';
+   const bars=Array.from({length:34},(_,j)=>`<i style="height:${8+Math.abs(Math.sin((j+1)*(i+2)*.37))*25}px"></i>`).join('');
+   row.innerHTML=`<div class="myrec-meta"><b>Kayıt ${list.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><div class="mini-wave">${bars}</div><button class="myplay">▶</button><audio preload="metadata" src="${r.signed_url||''}"></audio>`;
+   const a=row.querySelector('audio'),b=row.querySelector('.myplay');b.onclick=()=>{document.querySelectorAll('#myRecList audio').forEach(x=>{if(x!==a)x.pause()});a.paused?a.play():a.pause()};a.onplay=()=>b.textContent='Ⅱ';a.onpause=()=>b.textContent='▶';box.appendChild(row);
   });
- }catch(e){console.error('mobile history',e)}
-}
-function expired(){stopHeartbeat();
- setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
+ }catch(e){console.error('recording history',e)}
 }
 function startWave(s){
- stopWave();
- $('#waveWrap')?.classList.remove('hidden');
- const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
- analyser=ac.createAnalyser();analyser.fftSize=256;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;
- const freq=new Uint8Array(analyser.frequencyBinCount);
+ stopWave(false);
+ const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.68;src.connect(analyser);waveCtx=ac;
+ const freq=new Uint8Array(analyser.frequencyBinCount), time=new Uint8Array(analyser.fftSize);let smooth=.08,t=0;
  const draw=()=>{
-  waveRAF=requestAnimationFrame(draw);
-  const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);
-  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
-  analyser.getByteFrequencyData(freq);
-  ctx.clearRect(0,0,w,h);
-  // transparent background; only the animated waveform is drawn
-  const bars=64,gap=2.4*dpr,bw=Math.max(2*dpr,(w-gap*(bars-1))/bars),cy=h/2;
-  for(let i=0;i<bars;i++){
-   const p=i/(bars-1), fi=Math.min(freq.length-1,Math.floor(p*freq.length*.72));
-   const energy=freq[fi]/255, env=.32+.68*Math.pow(Math.sin(Math.PI*p),.72);
-   const bh=Math.max(4*dpr,(8+energy*h*.78)*env);
-   const hue=330+p*210; // pink -> violet -> blue -> cyan
-   ctx.fillStyle=`hsl(${hue%360} 92% 56%)`;
-   const x=i*(bw+gap),y=cy-bh/2,r=Math.min(bw/2,3*dpr);
+  waveRAF=requestAnimationFrame(draw);const dpr=Math.min(devicePixelRatio||1,2),r=c.getBoundingClientRect(),w=Math.max(1,r.width*dpr|0),h=Math.max(1,r.height*dpr|0);if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  analyser.getByteFrequencyData(freq);analyser.getByteTimeDomainData(time);
+  let energy=0;for(let i=2;i<Math.min(120,freq.length);i++)energy+=freq[i];energy/=118*255;smooth=smooth*.76+energy*.24;t+=.045;
+  ctx.clearRect(0,0,w,h);const g=ctx.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,w*.55);g.addColorStop(0,'#0b1024');g.addColorStop(1,'#020409');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  const layers=[['#58e3a5',.72,0,.86],['#ff4e68',.92,1.3,1.12],['#a64cff',.88,2.6,.96],['#3979ff',.82,4.1,1.25],['#ffffff',.5,5.4,.72]];
+  layers.forEach(([col,alpha,phase,mult],li)=>{
    ctx.beginPath();
-   if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,r);else ctx.rect(x,y,bw,bh);
-   ctx.fill();
-  }
- };
- draw();
+   for(let x=0;x<=w;x+=3*dpr){
+    const p=x/w, env=Math.pow(Math.sin(Math.PI*p),.72), idx=Math.min(time.length-1,Math.floor(p*(time.length-1))), raw=(time[idx]-128)/128;
+    const carrier=Math.sin(p*Math.PI*(2.1+li*.34)+t*(1.3+li*.11)+phase)+.42*Math.sin(p*Math.PI*(5.4+li*.31)-t*.8+phase);
+    const amp=h*(.035+smooth*.78)*env*mult;
+    const y=h*.5+(carrier*.48+raw*.9)*amp;
+    if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.strokeStyle=col;ctx.globalAlpha=alpha;ctx.lineWidth=(li===4?1.4:2.7)*dpr;ctx.shadowBlur=(li===4?7:15)*dpr;ctx.shadowColor=col;ctx.stroke();
+  });ctx.globalAlpha=1;
+ };draw();
+}
+function stopWave(hide=true){if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;if(hide)$('#waveWrap')?.classList.add('hidden')}
+function expired(){
+ setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&['recording','paused'].includes(recorder.state)){recorder.onstop=null;try{recorder.stop()}catch{};stream?.getTracks().forEach(t=>t.stop())}clearInterval(timerInt);recorder=null;recorderMode='idle';stopWave();
+}
+function startWave(s){
+ const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);analyser=ac.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;const data=new Uint8Array(analyser.fftSize);
+ const draw=()=>{waveRAF=requestAnimationFrame(draw);const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);if(c.width!==w||c.height!==h){c.width=w;c.height=h}analyser.getByteTimeDomainData(data);ctx.clearRect(0,0,w,h);
+  const layers=[['#5de0a3',1.0,-.08,0],['#ff625f',.85,-.03,23],['#c65cff',.78,.03,41],['#4c7cff',.7,.08,61],['#ffffff',.42,.01,7]];
+  layers.forEach(([color,a,off,phase],li)=>{ctx.beginPath();for(let i=0;i<data.length;i++){const x=i/(data.length-1)*w,p=i/(data.length-1),env=Math.pow(Math.sin(Math.PI*p),.55),n=(data[(i+phase)%data.length]-128)/128,y=h/2+off*h+n*h*.42*a*env;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=color;ctx.globalAlpha=li===4?.9:.72;ctx.lineWidth=(li===4?1.6:3.2)*dpr;ctx.shadowBlur=10*dpr;ctx.shadowColor=color;ctx.stroke()});ctx.globalAlpha=1;
+ };draw();
 }
 function stopWave(){if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
 

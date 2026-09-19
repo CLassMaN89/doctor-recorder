@@ -8,101 +8,45 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=81">
+  <link rel="stylesheet" href="style.css?v=70">
 </head>
 <body>
 <main>
   <!-- DESKTOP -->
-  <section id="desktop" class="desktop desktop-shell hidden">
-    <aside class="side-nav">
-      <div class="side-brand"><span class="side-mic">♩</span><div><b>Doktor Kayıt</b><small>Sesli Raporlama Sistemi</small></div></div>
-      <nav>
-        <button id="navHome" class="nav-item active"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg><span>Ana Sayfa</span></button>
-        <button id="navRecords" class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 12h2m2-5v10m4-13v16m4-12v8m4-5v2"/></svg><span>Ses Kayıtları</span></button>
-        <button id="navDoctors" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 8a3 3 0 0 1 0 6m1 2a5 5 0 0 1 3 4"/></svg><span>Doktorlar</span></button>
-        <button id="navSettings" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>Ayarlar</span></button>
-      </nav>
-      <div class="side-status"><span>●</span> Sistem Aktif<small>v7.2</small></div>
-    </aside>
+  <section id="desktop" class="desktop hidden">
+    <header class="top">
+      <div class="brand"><span class="brandmark">▥</span><div><b>DOKTOR <i>KAYIT</i></b><small>QR ile güvenli mobil dikta</small></div></div>
+      <span class="secure">● HTTPS · Güvenli</span>
+    </header>
 
-    <div class="desktop-work">
-      <header class="app-topbar">
-        <div class="searchbox">⌕ <span>Hasta ara (Ad, Soyad, TC, Acc No...)</span></div>
-        <div class="top-actions"><button id="topRefresh" class="icon-btn" title="Yenile" aria-label="Yenile">
-<svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.4 9A7 7 0 0 0 6.2 6.2L4 8m2 7a7 7 0 0 0 11.8 2.8L20 16"/></svg>
-</button></div>
-      </header>
+    <div class="intro"><span>QR İLE DİKTE</span><h1>Doktor Ses Kayıtları</h1><p>Aynı QR kodunu birden fazla doktor okutabilir. Her telefon ve kayıt ayrı tutulur.</p></div>
 
-      <div class="dashboard-content">
-        <div class="dashboard-showcase"><div class="dashboard-top">
-          <section class="dash-card connect-panel">
-            <div class="connect-upper">
-              <div class="connect-copy"><span class="online-dot"></span><div><h2>Masaüstüne Bağlandı</h2><p>Doktor cihazı aktif olarak bağlandı.</p></div></div>
-              <div class="mini-qr"><div id="qrcode"></div></div>
-              <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span><button id="newQr" class="new-qr-button" type="button"><span>↻</span> Yeni QR Oluştur</button></div>
-            </div>
-            <div class="connect-divider"></div>
-            <div class="connected-area">
-              <div class="devices-toolbar"><span id="deviceCount" class="count">0 cihaz</span></div>
-              <div id="devices" class="devices">
-                <div class="empty waiting-empty">
-                  <span class="waiting-icon-slot"><img class="waiting-live-icon" src="live-recording.svg" alt=""></span>
-                  <div class="waiting-loop"><span class="waiting-static">Telefon</span><div class="waiting-animated-slot"><span class="waiting-rotating-wrap"><span id="waitingType" class="waiting-rotating">Bekleniyor...</span><span class="waiting-gradient"></span></span><span class="type-cursor"></span></div></div>
-                </div>
-              </div>
-            </div>
-          </section>
+    <div class="desktop-grid">
+      <aside class="card qr-card">
+        <div class="kicker">BAĞLANTI</div><h2>Telefon bağla</h2><p>QR kodu telefon kamerasıyla okutun.</p>
+        <div class="qrbox"><div id="qrcode"></div></div>
+        <div class="session"><span>Oturum Kodu</span><b id="sessionCode">--------</b></div>
+        <button id="newQr" class="primary">↻ Yeni QR Oluştur</button>
+        <div class="hint">Aynı aktif QR birden fazla telefon tarafından okutulabilir.</div>
+      </aside>
 
-          <section class="dash-card live-panel">
-            <div class="live-head"><div class="kicker">CANLI SES KAYDI</div><b id="liveTimer" class="live-timer">00:00</b></div>
-            <div id="liveWave" class="live-apple-wave" aria-hidden="true"></div>
-            <div class="live-actions">
-              <button class="live-pause" type="button"><span class="control-circle">Ⅱ</span><small>Duraklat</small></button>
-              <button class="live-finish" type="button"><span class="control-circle"><i></i></span><small>Kaydı Bitir</small></button>
-              <button class="live-mark" type="button"><span class="control-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 20V4.5c3.8-2.2 7.1 2.2 11 0v9c-3.9 2.2-7.2-2.2-11 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><small>İşaretle</small></button>
-            </div>
-            <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText"></span><i class="status-cursor"></i></span><b id="liveConnText">00:00</b></div>
-          </section>
-        </div>
-
-        <aside class="live-phone-preview" aria-label="Canlı mobil arayüz önizlemesi">
-          <div class="iphone-frame">
-            <div class="iphone-screen">
-              <div class="iphone-island"></div>
-              <div class="preview-statusbar"><b>11:53</b><span>▮▮▮ ◉ ▰</span></div>
-              <div class="preview-appbar"><span class="preview-menu">☰</span><div class="preview-brand"><span>🎙</span><div><b>Doktor Kayıt</b><small>Sesli Raporlama</small></div></div></div>
-              <div class="preview-body">
-                <div class="preview-connected"><span class="preview-green"></span><div><b id="previewConnTitle">Bağlandı</b><small>Masaüstü cihazına bağlı.</small></div><div class="preview-qr"><span>QR Kod</span><b id="previewQrCode">---</b></div></div>
-                <div class="preview-rec-card">
-                  <b id="previewTimer" class="preview-timer">00:00</b>
-                  <div id="previewWave" class="preview-wave"></div>
-                  <div class="preview-controls">
-                    <div><button>Ⅱ</button><small>Duraklat</small></div>
-                    <div><button class="preview-stop">■</button><small>Kaydı Bitir</small></div>
-                    <div><button>⚑</button><small>İşaretle</small></div>
-                  </div>
-                  <div class="preview-record-state"><span>🎙</span><b id="previewState">Kayıt bekleniyor...</b><strong id="previewStateTime">00:00</strong></div>
-                </div>
-                <div class="preview-recordings"><h3>Kayıtlarım</h3><div id="previewRecordings"></div></div>
-              </div>
-              <div class="preview-bottomnav"><div>🎙<small>Kayıt</small></div><div>▤<small>Kayıtlarım</small></div><div>⚙<small>Ayarlar</small></div></div>
-              <div class="preview-homebar"></div>
-            </div>
+      <div class="desktop-main">
+        <section class="card device-card">
+          <div class="section-head">
+            <div><div class="kicker">CANLI BAĞLANTILAR</div><h2>Bağlı Telefonlar</h2></div>
+            <span id="deviceCount" class="count">0 cihaz</span>
           </div>
-        </aside>
-      </div>
+          <div id="devices" class="devices"><div class="empty waiting-empty"><span id="waitingType"></span><span class="type-cursor"></span></div></div>
+        </section>
 
-        <section class="dash-card recordings recordings-table">
-          <div class="section-head table-head">
+        <section class="card recordings">
+          <div class="section-head">
             <div><div class="kicker">SES KAYITLARI</div><h2>Gelen Ses Kayıtları</h2></div>
-            <div class="table-filters"><select id="deviceFilter"><option value="">Tüm doktorlar</option></select><button class="date-filter">▣ &nbsp; Tarih seç⌄</button><button class="table-refresh">↻</button></div>
+            <select id="deviceFilter"><option value="">Tüm doktorlar</option></select>
           </div>
-          <div class="recording-columns"><span>#</span><span>DOKTOR</span><span>CİHAZ</span><span>TARİH - SAAT</span><span>SÜRE</span><span>SES DALGASI / İŞLEMLER</span></div>
           <div id="recordings"><div class="empty">Henüz kayıt yok.</div></div>
         </section>
       </div>
-      <section id="doctorsPanel" class="workspace-panel hidden"><div class="panel-card"><div class="panel-title"><div><div class="kicker">DOKTORLAR</div><h2>Bağlı Doktorlar</h2></div><button class="panelClose">×</button></div><div id="doctorListPanel"></div></div></section>
-      <section id="settingsPanel" class="workspace-panel hidden"><div class="panel-card"><div class="panel-title"><div><div class="kicker">AYARLAR</div><h2>Sistem Ayarları</h2></div><button class="panelClose">×</button></div><div class="settings-grid"><div><b>Heartbeat</b><small>5 saniyede bir bağlantı kontrolü</small></div><div><b>Bağlantı toleransı</b><small>45 saniye</small></div><div><b>Kayıt aktarımı</b><small>Otomatik ve güvenli</small></div></div></div></section>
     </div>
   </section>
 
@@ -115,9 +59,7 @@
       </header>
 
       <div id="connection" class="connection checking">
-        <span class="pcico">▣</span>
-        <div class="conn-copy"><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
-        <div class="qr-session-info"><div id="mobileMiniQr" class="mobile-mini-qr"></div><div><span>QR Oturum</span><b id="mobileQrCode">------</b></div></div>
+        <span class="pcico">▣</span><div><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
       </div>
 
       <section id="identity" class="identity cardish hidden">
@@ -131,12 +73,7 @@
       </section>
 
       <section id="recorder" class="recorder cardish hidden">
-        <div class="rec-top">
-          <div class="doctor-block"><div class="kicker">SES KAYDI</div><h1 id="doctorName">Doktor</h1>
-            <div class="device-status-row"><small id="deviceInfo">Telefon</small><span id="sentBadge" class="sent-badge hidden">✓ Ses kaydı bilgisayara gönderildi</span></div>
-          </div>
-          <span id="statePill" class="pill">Hazır</span>
-        </div>
+        <div class="rec-top"><div><div class="kicker">SES KAYDI</div><h1 id="doctorName">Doktor</h1><small id="deviceInfo">Telefon</small></div><span id="statePill" class="pill">Hazır</span></div>
         <p id="recordHelp">Kayda başlamak için mikrofona dokunun.</p>
 
         <button id="mic" class="mic" aria-label="Kaydı başlat">
@@ -147,8 +84,9 @@
         <div id="timer" class="timer">00:00</div>
         <div id="tapHint" class="tap">Mikrofona dokunun</div>
         <div id="recordControls" class="record-controls hidden">
-          <button id="pauseBtn" class="pause-btn">Ⅱ <span>Duraklat</span></button>
-          <button id="finishBtn" class="finish-btn">■ <span>Kaydı Bitir</span></button>
+          <button id="pauseBtn" class="control pause">Ⅱ <span>Durdur</span></button>
+          <button id="resumeBtn" class="control resume hidden">▶ <span>Devam Et</span></button>
+          <button id="finishBtn" class="control finish">■ <span>Kaydı Bitir</span></button>
         </div>
 
         <div id="expiredAction" class="expired hidden">
@@ -158,9 +96,9 @@
 
         <div id="waveWrap" class="wave hidden"><canvas id="wave"></canvas></div>
         <div id="uploadState" class="upload hidden"></div>
-        <section id="mobileHistory" class="mobile-history">
-          <div class="history-head"><div><div class="kicker">KAYITLARIM</div><h2>Ses Kayıtları</h2></div><span id="historyCount">0 kayıt</span></div>
-          <div id="mobileRecordings"><div class="history-empty">Henüz kayıt yok.</div></div>
+        <section id="myRecordings" class="my-recordings">
+          <div class="myrec-head"><div><div class="kicker">KAYITLARIM</div><h2>Ses Kayıtları</h2></div><span id="myRecCount">0 kayıt</span></div>
+          <div id="myRecList" class="myrec-list"><div class="empty small">Henüz kayıt yok.</div></div>
         </section>
       </section>
 
@@ -180,6 +118,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=81"></script>
+<script src="app.js?v=70"></script>
 </body>
 </html>
