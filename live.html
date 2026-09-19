@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Telefon Mikrofonu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D98A6">
+<style>
+  :root { --teal:#0D98A6; --teal2:#15B8B0; --ink:#10263B; --muted:#60778B; --line:#DCE8EE; --bg:#F3F8FB; --red:#E5484D; --green:#1FC98F; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; min-height:100dvh; background:var(--bg); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; padding:max(24px,env(safe-area-inset-top)) 20px 32px; }
+  main { width:100%; max-width:420px; display:flex; flex-direction:column; gap:16px; }
+  h1 { font-size:20px; margin:8px 0 0; text-align:center; }
+  .sub { text-align:center; color:var(--muted); font-size:14px; margin:0; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:0 0 6px; }
+  input { width:100%; font:inherit; font-size:16px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .btn { width:100%; font:inherit; font-size:16px; font-weight:600; border:0; border-radius:12px; padding:14px; background:var(--teal); color:#fff; }
+  .btn.stop { background:var(--red); }
+  .btn:disabled { opacity:.5; }
+  .err { color:var(--red); font-size:14px; text-align:center; min-height:20px; }
+  .hidden { display:none !important; }
+  .mic { width:132px; height:132px; border-radius:50%; margin:6px auto 0; background:#CFF3EE; display:grid; place-items:center; position:relative; }
+  .mic svg { width:56px; height:56px; stroke:var(--teal); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .mic.live { background:#FDE3E3; animation:pulse 1.6s ease-in-out infinite; }
+  .mic.live svg { stroke:var(--red); }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(229,72,77,.35); } 50% { box-shadow:0 0 0 18px rgba(229,72,77,0); } }
+  .state { text-align:center; font-weight:600; margin-top:14px; }
+  .meter { height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:14px; }
+  .meter i { display:block; height:100%; width:0; background:var(--teal2); transition:width .08s linear; }
+  .pc { display:flex; align-items:center; gap:8px; justify-content:center; font-size:14px; color:var(--muted); margin-top:12px; }
+  .dot { width:9px; height:9px; border-radius:50%; background:#C7D3DD; }
+  .dot.on { background:var(--green); }
+  @media (prefers-reduced-motion:reduce) { .mic.live { animation:none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Telefonu Mikrofon Olarak Kullan</h1>
+  <p class="sub" id="sub">Oturum doğrulanıyor…</p>
+
+  <section class="card hidden" id="identity">
+    <div class="grid">
+      <div><label for="first">Ad</label><input id="first" autocomplete="given-name"></div>
+      <div><label for="last">Soyad</label><input id="last" autocomplete="family-name"></div>
+    </div>
+    <div class="err" id="idErr"></div>
+    <button class="btn" id="go">Mikrofonu Başlat</button>
+  </section>
+
+  <section class="card hidden" id="live">
+    <div class="mic" id="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+    <div class="state" id="state">Bilgisayara bağlanılıyor…</div>
+    <div class="meter"><i id="bar"></i></div>
+    <div class="pc"><span class="dot" id="pcDot"></span><span id="pcText">Bilgisayar bekleniyor</span></div>
+    <div class="err" id="liveErr"></div>
+    <button class="btn stop" id="stop">Durdur</button>
+  </section>
+  <div class="err" id="fatal"></div>
+</main>
+
+<script type="module">
+import { joinRoom } from 'https://cdn.jsdelivr.net/npm/trystero@0.21.5/+esm';
+
+const SUPABASE_URL = 'https://sqqqjsmblelxqwalxzfq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lyGKCZxtN4LtEdE3U63FUg_1J4jXqbA';
+const API = `${SUPABASE_URL}/functions/v1/doctor-recorder-api`;
+const token = new URLSearchParams(location.search).get('token') || '';
+const $ = (id) => document.getElementById(id);
+
+let device = null, stream = null, room = null, ctx = null, heartbeat = null, wake = null, running = false;
+
+async function api(action, { method = 'GET', body = null } = {}) {
+  const r = await fetch(`${API}?${new URLSearchParams({ action, token, ...(device ? { device_token: device.device_token } : {}) })}`, {
+    method, cache: 'no-store',
+    headers: { apikey: SUPABASE_KEY, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || 'request_failed'), { status: r.status });
+  return j;
+}
+
+function deviceId() {
+  let id = localStorage.getItem('dr_device_id');
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem('dr_device_id', id); }
+  return id;
+}
+function model() {
+  const ua = navigator.userAgent;
+  if (/iPhone/i.test(ua)) return 'iPhone';
+  if (/iPad/i.test(ua)) return 'iPad';
+  const m = ua.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/|\))/i);
+  return m?.[1]?.trim() || (/Android/i.test(ua) ? 'Android Telefon' : 'Telefon');
+}
+const fatal = (msg) => { $('fatal').textContent = msg; $('identity').classList.add('hidden'); $('live').classList.add('hidden'); };
+
+async function init() {
+  if (!token) return fatal('Geçersiz bağlantı. Bilgisayardaki QR kodu okutun.');
+  try { await api('status'); }
+  catch { $('sub').textContent = ''; return fatal('Bu QR kod geçersiz veya süresi dolmuş. Bilgisayarda yeni QR oluşturun.'); }
+  $('sub').textContent = 'Adınızı girin ve mikrofonu başlatın.';
+  try { const d = JSON.parse(localStorage.getItem('dr_doctor') || 'null'); if (d) { $('first').value = d.first || ''; $('last').value = d.last || ''; } } catch {}
+  $('identity').classList.remove('hidden');
+}
+
+async function start() {
+  const first = $('first').value.trim(), last = $('last').value.trim();
+  if (!first || !last) { $('idErr').textContent = 'Ad ve soyad alanlarını doldurun.'; return; }
+  $('idErr').textContent = ''; $('go').disabled = true;
+  try {
+    // Mikrofon izni kullanıcı dokunuşuyla istenir (iOS Safari bunu şart koşar).
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } });
+  } catch (e) {
+    $('go').disabled = false;
+    $('idErr').textContent = e && e.name === 'NotAllowedError' ? 'Mikrofon izni verilmedi. Tarayıcı ayarlarından izin verin.' : 'Mikrofon açılamadı: ' + (e.message || e.name);
+    return;
+  }
+  try {
+    device = await api('register-device', { method: 'POST', body: { device_id: deviceId(), first_name: first, last_name: last, device_model: model() } });
+    localStorage.setItem('dr_doctor', JSON.stringify({ first, last }));
+  } catch (e) {
+    stream.getTracks().forEach(t => t.stop()); $('go').disabled = false;
+    $('idErr').textContent = e.status === 410 ? 'Oturum sona erdi. Yeni QR okutun.' : 'Bilgisayara bağlanılamadı.';
+    return;
+  }
+  $('identity').classList.add('hidden'); $('live').classList.remove('hidden'); $('sub').textContent = `${first} ${last} · ${model()}`;
+  running = true;
+  setState('connected');
+  heartbeat = setInterval(() => setState(peers > 0 ? 'recording' : 'connected', true), 5000);
+  try { wake = await navigator.wakeLock?.request('screen'); } catch {}
+  watchLevel();
+
+  room = joinRoom({ appId: 'dikte2-voice-hub' }, token);
+  room.onPeerJoin((id) => { peers++; room.addStream(stream, id); pc(true); setState('recording'); });
+  room.onPeerLeave(() => { peers = Math.max(0, peers - 1); if (!peers) { pc(false); setState('connected'); } });
+}
+
+let peers = 0;
+function pc(on) {
+  $('pcDot').className = 'dot' + (on ? ' on' : '');
+  $('pcText').textContent = on ? 'Bilgisayara bağlı' : 'Bilgisayar bekleniyor';
+  $('state').textContent = on ? 'Konuşmanız bilgisayara aktarılıyor' : 'Bilgisayar bekleniyor…';
+  $('mic').classList.toggle('live', on);
+}
+async function setState(status, quiet) {
+  try { await api('device-state', { method: 'POST', body: { status } }); }
+  catch (e) { if (e.status === 410) { stop(); fatal('Oturum sona erdi. Devam etmek için yeni QR kodu okutun.'); } else if (!quiet) $('liveErr').textContent = 'Sunucuya ulaşılamıyor.'; }
+}
+
+function watchLevel() {
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const an = ctx.createAnalyser(); an.fftSize = 512;
+  ctx.createMediaStreamSource(stream).connect(an);
+  const buf = new Uint8Array(an.fftSize);
+  const tick = () => {
+    if (!running) return;
+    an.getByteTimeDomainData(buf);
+    let s = 0; for (const v of buf) { const x = (v - 128) / 128; s += x * x; }
+    $('bar').style.width = Math.min(100, Math.round(Math.sqrt(s / buf.length) * 260)) + '%';
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+function stop() {
+  running = false;
+  clearInterval(heartbeat);
+  try { room?.leave(); } catch {}
+  stream?.getTracks().forEach(t => t.stop());
+  try { ctx?.close(); } catch {}
+  try { wake?.release(); } catch {}
+}
+async function finish() {
+  await setState('connected', true);
+  stop();
+  $('live').classList.add('hidden'); $('sub').textContent = '';
+  fatal('Aktarım durduruldu. Tekrar bağlanmak için QR kodu yeniden okutun.');
+}
+
+$('go').onclick = start;
+$('stop').onclick = finish;
+// Sayfa arka plana atılınca iOS ses akışını keser; geri dönüşte kilidi yenile.
+document.addEventListener('visibilitychange', async () => { if (running && document.visibilityState === 'visible') { try { wake = await navigator.wakeLock?.request('screen'); } catch {} } });
+init();
+</script>
+</body>
+</html>
