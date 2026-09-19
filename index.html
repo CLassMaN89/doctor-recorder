@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=61">
+  <link rel="stylesheet" href="style.css?v=62">
 </head>
 <body>
 <main>
@@ -83,6 +83,10 @@
 
         <div id="timer" class="timer">00:00</div>
         <div id="tapHint" class="tap">Mikrofona dokunun</div>
+        <div id="recordControls" class="record-controls hidden">
+          <button id="pauseBtn" class="pause-btn">Ⅱ <span>Duraklat</span></button>
+          <button id="finishBtn" class="finish-btn">■ <span>Kaydı Bitir</span></button>
+        </div>
 
         <div id="expiredAction" class="expired hidden">
           <span class="spin"></span>
@@ -91,6 +95,10 @@
 
         <div id="waveWrap" class="wave hidden"><canvas id="wave"></canvas></div>
         <div id="uploadState" class="upload hidden"></div>
+        <section id="mobileHistory" class="mobile-history">
+          <div class="history-head"><div><div class="kicker">KAYITLARIM</div><h2>Ses Kayıtları</h2></div><span id="historyCount">0 kayıt</span></div>
+          <div id="mobileRecordings"><div class="history-empty">Henüz kayıt yok.</div></div>
+        </section>
       </section>
 
       <div class="privacy">🛡 Ses kaydı aktif QR oturumu ve bu cihaz bağlantısı ile ayrı tutulur.</div>
@@ -109,6 +117,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=61"></script>
+<script src="app.js?v=62"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@ const $=s=>document.querySelector(s);
 const params=new URLSearchParams(location.search);
 const isMobile=params.get('mode')==='record';
 const token=params.get('token')||'';
-let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
+let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
 
 function deviceId(){
  let id=localStorage.getItem('dr_device_id');
@@ -134,6 +134,8 @@ async function initMobile(){
  $('#mobile').classList.remove('hidden');
  $('#identityContinue').onclick=register;
  $('#mic').onclick=toggleRecording;
+ $('#pauseBtn').onclick=togglePause;
+ $('#finishBtn').onclick=finishRecording;
  $('#scanQrBtn').onclick=openScanner;
  $('#closeScanner').onclick=closeScanner;
  const ok=await checkToken();
@@ -153,38 +155,105 @@ async function register(){
   device=await api('register-device',{method:'POST',query:{token},body:{device_id:deviceId(),first_name:first,last_name:last,device_model:model()}});
   localStorage.setItem('dr_doctor',JSON.stringify({first,last}));
   $('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#doctorName').textContent=`${first} ${last}`;$('#deviceInfo').textContent=`${model()} · Cihaz ${deviceId().slice(0,6).toUpperCase()}`;
-  await state('connected');
+  await state('connected'); await loadMobileHistory();
  }catch(e){if(e.status===410)expired();else{$('#identityError').textContent='Bağlantı kurulamadı.';$('#identityError').classList.remove('hidden')}}
 }
 async function state(status){if(!device)return;try{await api('device-state',{method:'POST',query:{token,device_token:device.device_token},body:{status}})}catch(e){if(e.status===410)expired()}}
-async function toggleRecording(){if(!device||$('#recorder').classList.contains('expired-mode'))return;if(recorder&&recorder.state==='recording')stopRecording();else await startRecording()}
 async function startRecording(){
  try{
   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   const mime=['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm'].find(x=>MediaRecorder.isTypeSupported(x))||'';
-  recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];
+  recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;
   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=uploadRecording;
-  recorder.start(500);startedAt=Date.now();timerInt=setInterval(()=>$('#timer').textContent=fmt((Date.now()-startedAt)/1000),250);
-  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#tapHint').textContent='Durdurmak için kırmızı mikrofona dokunun';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#waveWrap').classList.remove('hidden');startWave(stream);await state('recording');
+  recorder.start(350);startedAt=Date.now();
+  timerInt=setInterval(updateTimer,100);
+  $('#timer').textContent='00:00';$('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#waveWrap').classList.remove('hidden');$('#recordControls').classList.remove('hidden');$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';startWave(stream);await state('recording');
  }catch(e){$('#uploadState').textContent='Mikrofon izni gerekli.';$('#uploadState').classList.remove('hidden')}
 }
-function stopRecording(){if(recorder?.state==='recording'){recorder.stop();clearInterval(timerInt);$('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';stopWave();state('uploading')}}
-async function uploadRecording(){
- const duration=Math.max(1,Math.round((Date.now()-startedAt)/1000)), blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});stream?.getTracks().forEach(t=>t.stop());
- const form=new FormData();form.append('file',blob,`recording.${blob.type.includes('mp4')?'m4a':'webm'}`);form.append('duration_seconds',String(duration));
- try{await api('upload',{method:'POST',query:{token,device_token:device.device_token},body:form});$('#uploadState').textContent='✓ Kayıt bilgisayara gönderildi.';$('#uploadState').classList.remove('hidden');$('#statePill').textContent='Hazır';$('#tapHint').textContent='Yeni kayıt için mikrofona dokunun';$('#recordHelp').textContent='Kayda başlamak için mikrofona dokunun.';setTimeout(()=>$('#uploadState').classList.add('hidden'),3500)}
- catch(e){$('#uploadState').textContent=e.status===410?'Oturum sona erdi.':'Kayıt gönderilemedi.';$('#uploadState').classList.remove('hidden');if(e.status===410)expired()}
- recorder=null;chunks=[];
+function updateTimer(){
+ let ms=0;
+ if(recorder){
+  if(isPaused) ms=elapsedBeforePause;
+  else ms=elapsedBeforePause+(Date.now()-startedAt);
+ }
+ $('#timer').textContent=fmt(ms/1000);
+}
+async function togglePause(){
+ if(!recorder||isFinishing)return;
+ if(recorder.state==='recording'){
+  recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
+  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');$('#pauseBtn').innerHTML='▶ <span>Devam Et</span>';stopWave();await state('idle');
+ }else if(recorder.state==='paused'){
+  recorder.resume(); startedAt=Date.now(); isPaused=false;
+  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');$('#pauseBtn').innerHTML='Ⅱ <span>Duraklat</span>';$('#waveWrap').classList.remove('hidden');startWave(stream);await state('recording');
+ }
+}
+async function finishRecording(){
+ if(!recorder||isFinishing)return;
+ isFinishing=true;
+ if(recorder.state==='paused') recorder.resume();
+ const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
+ recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
+ clearInterval(timerInt); recorder.stop(); isPaused=false;
+ $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();await state('uploading');
+}
+async function toggleRecording(){
+ if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;
+ if(!recorder) return startRecording();
+ if(recorder.state==='recording'||recorder.state==='paused') return togglePause();
+}
+
+async function loadMobileHistory(){
+ if(!device)return;
+ try{
+  const recs=await api('device-recordings',{query:{token,device_token:device.device_token}});
+  $('#historyCount').textContent=`${recs.length} kayıt`;
+  const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
+  recs.forEach((r,i)=>{
+   const el=document.createElement('div');el.className='mrec';
+   el.innerHTML=`<div class="mrec-top"><b>Kayıt ${recs.length-i}</b><small>${new Date(r.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} · ${fmt(r.duration_seconds)}</small></div><audio controls preload="metadata" src="${r.signed_url||''}"></audio>`;
+   box.appendChild(el);
+  });
+ }catch(e){console.error('mobile history',e)}
 }
 function expired(){
- setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder?.state==='recording')recorder.stop();stopWave();
+ setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
 }
 function startWave(s){
- const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);analyser=ac.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;const data=new Uint8Array(analyser.fftSize);
- const draw=()=>{waveRAF=requestAnimationFrame(draw);const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);if(c.width!==w||c.height!==h){c.width=w;c.height=h}analyser.getByteTimeDomainData(data);ctx.clearRect(0,0,w,h);
-  const layers=[['#5de0a3',1.0,-.08,0],['#ff625f',.85,-.03,23],['#c65cff',.78,.03,41],['#4c7cff',.7,.08,61],['#ffffff',.42,.01,7]];
-  layers.forEach(([color,a,off,phase],li)=>{ctx.beginPath();for(let i=0;i<data.length;i++){const x=i/(data.length-1)*w,p=i/(data.length-1),env=Math.pow(Math.sin(Math.PI*p),.55),n=(data[(i+phase)%data.length]-128)/128,y=h/2+off*h+n*h*.42*a*env;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=color;ctx.globalAlpha=li===4?.9:.72;ctx.lineWidth=(li===4?1.6:3.2)*dpr;ctx.shadowBlur=10*dpr;ctx.shadowColor=color;ctx.stroke()});ctx.globalAlpha=1;
- };draw();
+ stopWave();
+ const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
+ analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.68;src.connect(analyser);waveCtx=ac;
+ const data=new Uint8Array(analyser.fftSize);
+ const draw=()=>{
+  waveRAF=requestAnimationFrame(draw);
+  const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  analyser.getByteTimeDomainData(data);
+  let energy=0;for(let i=0;i<data.length;i++){const v=(data[i]-128)/128;energy+=v*v}energy=Math.sqrt(energy/data.length);
+  const gain=Math.min(1,Math.max(.10,energy*5.8));
+  ctx.clearRect(0,0,w,h);
+  const grad=ctx.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,w*.58);grad.addColorStop(0,'rgba(40,25,75,.32)');grad.addColorStop(1,'rgba(2,5,12,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  const layers=[
+   {c:'#ff405e',a:1.00,f:1.00,p:0,l:3.1},
+   {c:'#8a4dff',a:.88,f:1.18,p:47,l:3.0},
+   {c:'#3d8bff',a:.78,f:.86,p:103,l:2.8},
+   {c:'#39e5b2',a:.66,f:1.34,p:159,l:2.5},
+   {c:'#ffffff',a:.38,f:1.06,p:211,l:1.4}
+  ];
+  layers.forEach((L,li)=>{
+   ctx.beginPath();
+   for(let i=0;i<420;i++){
+    const p=i/419,x=p*w,env=Math.pow(Math.sin(Math.PI*p),.62);
+    const di=Math.floor(p*(data.length-1)),raw=(data[(di+L.p)%data.length]-128)/128;
+    const harmonic=Math.sin(p*Math.PI*2*(2.1+li*.35)+performance.now()*.0025*(li%2?1:-1))*.16;
+    const y=h*.5+(raw*.78+harmonic)*h*.62*gain*L.a*env;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.strokeStyle=L.c;ctx.lineWidth=L.l*dpr;ctx.globalAlpha=.82;ctx.shadowBlur=14*dpr;ctx.shadowColor=L.c;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+  });
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+ };
+ draw();
 }
 function stopWave(){if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
 

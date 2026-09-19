@@ -26,3 +26,15 @@
   0%,48%{opacity:1}
   49%,100%{opacity:0}
 }
+
+/* v6.2 recorder controls + Siri waveform + mobile history */
+.record-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 2px}
+.record-controls button{border:1px solid #d9e5ed;border-radius:12px;padding:11px 8px;font-weight:800;cursor:pointer}
+.pause-btn{background:#f7fafc;color:#355970}.finish-btn{background:#fff1f2;color:#d13e4d;border-color:#f0cbd0!important}
+.pause-btn.resume{background:#eef7ff;color:#2378c8}
+.mobile-history{margin-top:18px;padding-top:16px;border-top:1px solid #e8eff4;text-align:left}
+.history-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.history-head h2{font-size:17px;margin:3px 0}.history-head>span{font-size:10px;font-weight:800;color:#718a9c;background:#f1f6f9;padding:6px 8px;border-radius:999px}
+.history-empty{text-align:center;color:#8095a5;font-size:12px;padding:15px;border:1px dashed #d9e5ed;border-radius:12px}
+.mrec{padding:11px 0;border-top:1px solid #edf2f5}.mrec:first-child{border-top:0}.mrec-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.mrec-top b{font-size:12px}.mrec-top small{color:#7b91a2}
+.mrec audio{width:100%;height:34px}
+.wave{height:128px;background:radial-gradient(circle at 50% 50%,#111023 0,#070914 55%,#03060c 100%)}
