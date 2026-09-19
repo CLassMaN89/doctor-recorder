@@ -3,95 +3,226 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1220" />
+  <meta name="theme-color" content="#07182d" />
+  <meta name="color-scheme" content="dark" />
   <title>Doctor Recorder</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="shell">
-    <header class="topbar">
-      <div>
-        <div class="eyebrow">DOCTOR RECORDER</div>
-        <h1 id="pageTitle">Telefondan Dikta</h1>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="brand-copy">
+          <div class="brand-name">DOCTOR <strong>RECORDER</strong></div>
+          <div class="brand-tagline">Doktorlar için daha akıllı dokümantasyon</div>
+        </div>
       </div>
-      <div class="secure">HTTPS</div>
+
+      <div class="header-actions">
+        <div class="security-card">
+          <div class="security-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5.2-3.5 8.7-8 10-4.5-1.3-8-4.8-8-10V6l8-3Z"/><path d="m8.8 12 2.1 2.1 4.4-4.5"/></svg>
+          </div>
+          <div>
+            <b>HTTPS</b>
+            <small>Güvenli bağlantı</small>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section id="desktopView" class="card hidden">
-      <div class="section-head">
-        <div>
-          <h2>Telefonla kayıt başlat</h2>
-          <p>QR kodu okutun. Doktor telefona uygulama yüklemeden Safari/Chrome üzerinden kayıt yapar; biten kayıt otomatik olarak bu ekrana gelir.</p>
-        </div>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="hero-eyebrow">DAHA AZ YAZI, DAHA FAZLA HASTA ZAMANI</div>
+        <h1 id="pageTitle">QR ile Doktor Dikta</h1>
+        <p>QR kodu okutun. Doktor telefona uygulama yüklemeden Safari/Chrome üzerinden kayıt yapar; biten kayıt otomatik olarak bu ekrana gelir.</p>
       </div>
 
-      <div class="desktop-grid">
-        <div class="qr-panel">
-          <div id="qrcode" class="qr"></div>
-          <div class="session-line">
-            <span>Oturum</span>
-            <strong id="sessionCode">--------</strong>
-          </div>
-          <button id="newSessionBtn" class="btn primary">Yeni QR Oluştur</button>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-orb hero-orb-a"></div>
+        <div class="hero-orb hero-orb-b"></div>
+        <div class="hero-wave">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
-
-        <div class="steps">
-          <div class="step"><span>1</span><div><b>QR'ı okut</b><small>iPhone kamerası veya Android kamera</small></div></div>
-          <div class="step"><span>2</span><div><b>Mikrofon izni ver</b><small>İlk kullanımda tarayıcı sorar</small></div></div>
-          <div class="step"><span>3</span><div><b>Kaydı bitir</b><small>Ses otomatik olarak PC ekranına gelir</small></div></div>
-
-          <div class="session-status">
-            <div>
-              <small>Oturum durumu</small>
-              <strong id="pcStatus">Hazırlanıyor…</strong>
-            </div>
-            <span id="pcStatusDot" class="status-dot waiting"></span>
-          </div>
-
-          <div id="recordingsPanel" class="recordings-panel hidden">
-            <div class="recordings-title">Gelen Ses Kayıtları</div>
-            <div id="recordingsList"></div>
-          </div>
-
-          <div class="notice" id="hostNotice"></div>
+        <div class="hero-note">
+          <span>HEKİMLERİN ZAMANI</span>
+          <b>hastalar için.</b>
         </div>
       </div>
     </section>
 
-    <section id="recorderView" class="card hidden recorder-card">
-      <div class="recorder-head">
+    <section id="desktopView" class="desktop-view hidden">
+      <div class="desktop-grid">
+        <section class="panel qr-section">
+          <div class="panel-title-row">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-6v-2M14 18h2"/></svg>
+            </div>
+            <div>
+              <div class="section-kicker">QR İLE DİKTE</div>
+              <h2>Telefonla kayıt başlat</h2>
+              <p>QR kodu doktorunuza okutun. Telefon tarayıcısı üzerinden kayıt başlar.</p>
+            </div>
+          </div>
+
+          <div class="qr-card">
+            <div id="qrcode" class="qr"></div>
+            <div class="session-line">
+              <div>
+                <span>Oturum Kodu</span>
+                <small>Bu oturuma ait kısa kod</small>
+              </div>
+              <strong id="sessionCode">--------</strong>
+            </div>
+          </div>
+
+          <button id="newSessionBtn" class="btn primary qr-action">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+            <span>Yeni QR Oluştur</span>
+          </button>
+
+          <div class="qr-help">
+            <span class="info-dot">i</span>
+            <span>Yeni QR oluşturduğunuzda önceki oturumun bağlantısı değişir.</span>
+          </div>
+        </section>
+
+        <div class="right-stack">
+          <section class="panel how-panel">
+            <div class="panel-heading">
+              <div>
+                <div class="section-kicker">KOLAY BAŞLANGIÇ</div>
+                <h2>Nasıl çalışır?</h2>
+              </div>
+              <span class="steps-badge">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg>
+                3 adımda hazır
+              </span>
+            </div>
+
+            <div class="steps">
+              <div class="step">
+                <span class="step-number">1</span>
+                <span class="step-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10.5 18.5h3"/></svg>
+                </span>
+                <div>
+                  <b>QR'ı okut</b>
+                  <small>iPhone kamerası veya Android kamera ile QR kodunu tarayın.</small>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-number">2</span>
+                <span class="step-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+                </span>
+                <div>
+                  <b>Mikrofon izni ver</b>
+                  <small>İlk kullanımda tarayıcı mikrofon erişimi ister. İzin verin.</small>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-number">3</span>
+                <span class="step-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg>
+                </span>
+                <div>
+                  <b>Kaydı bitir</b>
+                  <small>Ses otomatik olarak bu ekrana gelir ve güvenli alana kaydedilir.</small>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel status-panel">
+            <div class="status-orb">
+              <span id="pcStatusDot" class="status-dot waiting"></span>
+            </div>
+            <div class="status-copy">
+              <small>Oturum durumu</small>
+              <strong id="pcStatus">Hazırlanıyor…</strong>
+              <span>Telefon bağlantısı ve kayıt durumu burada anlık görünür.</span>
+            </div>
+            <div class="status-side">
+              <div class="status-secure">
+                <span class="mini-dot"></span>
+                Canlı durum
+              </div>
+            </div>
+          </section>
+
+          <section id="recordingsPanel" class="panel recordings-panel hidden">
+            <div class="recordings-header">
+              <div>
+                <div class="recordings-title">
+                  <span class="wave-icon" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </span>
+                  Gelen Ses Kayıtları
+                </div>
+                <p>Telefondan gönderilen kayıtlar burada otomatik listelenir.</p>
+              </div>
+              <span class="recording-count">Kayıtlar</span>
+            </div>
+            <div id="recordingsList"></div>
+          </section>
+
+          <div class="notice" id="hostNotice"></div>
+        </div>
+      </div>
+
+      <footer class="desktop-footer">
         <div>
-          <div class="eyebrow">DİKTA OTURUMU</div>
-          <h2 id="mobileSession">--------</h2>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5.2-3.5 8.7-8 10-4.5-1.3-8-4.8-8-10V6l8-3Z"/><path d="m8.8 12 2.1 2.1 4.4-4.5"/></svg>
+          <span>Bağlantı HTTPS üzerinden çalışır.</span>
         </div>
-        <div id="statusPill" class="pill idle">Hazır</div>
-      </div>
+        <span>Doctor Recorder</span>
+      </footer>
+    </section>
 
-      <div class="mic-orb" id="micOrb">
-        <div class="mic-icon">🎙️</div>
-      </div>
-
-      <div id="timer" class="timer">00:00</div>
-      <canvas id="meter" width="640" height="120" aria-label="Ses seviyesi"></canvas>
-
-      <div class="controls">
-        <button id="startBtn" class="btn primary big">Kaydı Başlat</button>
-        <button id="pauseBtn" class="btn secondary hidden">Duraklat</button>
-        <button id="stopBtn" class="btn danger hidden">Kaydı Bitir</button>
-      </div>
-
-      <div id="uploadState" class="upload-state hidden"></div>
-
-      <div id="result" class="result hidden">
-        <h3>Kayıt PC'ye gönderildi</h3>
-        <audio id="playback" controls playsinline></audio>
-        <div class="result-actions">
-          <button id="againBtn" class="btn secondary">Yeni Kayıt</button>
+    <section id="recorderView" class="recorder-view hidden">
+      <div class="recorder-card">
+        <div class="recorder-head">
+          <div>
+            <div class="section-kicker">DİKTA OTURUMU</div>
+            <h2 id="mobileSession">--------</h2>
+            <p>Telefon mikrofonunuzdan güvenli ses kaydı oluşturun.</p>
+          </div>
+          <div id="statusPill" class="pill idle">Hazır</div>
         </div>
-        <p class="footnote">Ses dosyası güvenli depolama alanına yüklendi. Telefonda ayrıca dosya kaydetmeniz gerekmez.</p>
-      </div>
 
-      <div id="errorBox" class="error hidden"></div>
+        <div class="mic-orb" id="micOrb">
+          <div class="mobile-mic-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </div>
+        </div>
+
+        <div id="timer" class="timer">00:00</div>
+        <canvas id="meter" width="640" height="120" aria-label="Ses seviyesi"></canvas>
+
+        <div class="controls">
+          <button id="startBtn" class="btn primary big">Kaydı Başlat</button>
+          <button id="pauseBtn" class="btn secondary hidden">Duraklat</button>
+          <button id="stopBtn" class="btn danger hidden">Kaydı Bitir</button>
+        </div>
+
+        <div id="uploadState" class="upload-state hidden"></div>
+
+        <div id="result" class="result hidden">
+          <div class="result-icon">✓</div>
+          <h3>Kayıt PC'ye gönderildi</h3>
+          <audio id="playback" controls playsinline></audio>
+          <div class="result-actions">
+            <button id="againBtn" class="btn secondary">Yeni Kayıt</button>
+          </div>
+          <p class="footnote">Ses dosyası güvenli depolama alanına yüklendi. Telefonda ayrıca dosya kaydetmeniz gerekmez.</p>
+        </div>
+
+        <div id="errorBox" class="error hidden"></div>
+      </div>
     </section>
   </main>
 
