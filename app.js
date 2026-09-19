@@ -166,6 +166,21 @@ function clinicLogin(){
   box.querySelector('#clEmail').focus();
  });
 }
+// Üst çubuk: canlı tarih-saat ve sistem durumu
+function tickBrandClock(){
+ const el=document.getElementById('brandClock'); if(!el)return;
+ const d=new Date();
+ const date=d.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
+ const time=d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+ el.textContent=`${date} • ${time}`;
+}
+function updateSysPill(){
+ const pill=document.getElementById('sysPill'),t=document.getElementById('sysPillText'); if(!pill||!t)return;
+ const ok=navigator.onLine!==false;
+ pill.classList.toggle('offline',!ok); t.textContent=ok?'Sistem Hazır':'Bağlantı Yok';
+}
+tickBrandClock(); setInterval(tickBrandClock,15000);
+updateSysPill(); window.addEventListener('online',updateSysPill); window.addEventListener('offline',updateSysPill);
 async function initDesktop(){
  $('#desktop').classList.remove('hidden'); startWaitingLoop();
  let {data}=await sb.auth.getSession();
