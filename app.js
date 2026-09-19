@@ -613,14 +613,14 @@ function scan(){
  scanRAF=requestAnimationFrame(scan);
 }
 
-// v8.9 theme preference
+// v9.0 Light/Dark theme. Theme code changes colors only; it never changes layout.
 function applyTheme(theme){
  const value=theme==='dark'?'dark':'light';
  document.documentElement.dataset.theme=value;
  try{localStorage.setItem('dr_theme',value)}catch{}
- const meta=document.getElementById('themeColorMeta'); if(meta)meta.content=value==='dark'?'#09111c':'#f4f8fc';
- document.getElementById('themeLight')?.classList.toggle('active',value==='light');
- document.getElementById('themeDark')?.classList.toggle('active',value==='dark');
+ const light=document.getElementById('themeLight'),dark=document.getElementById('themeDark');
+ light?.classList.toggle('active',value==='light'); dark?.classList.toggle('active',value==='dark');
+ const meta=document.querySelector('meta[name="theme-color"]'); if(meta)meta.content=value==='dark'?'#07111d':'#f4f8fc';
 }
 applyTheme((()=>{try{return localStorage.getItem('dr_theme')||'light'}catch{return 'light'}})());
 document.getElementById('themeLight')?.addEventListener('click',()=>applyTheme('light'));
