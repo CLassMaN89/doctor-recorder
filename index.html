@@ -192,8 +192,8 @@
             </svg>
           </div>
           <div class="mobile-connection-copy">
-            <b>Masaüstüne Bağlandı</b>
-            <small>Kayıtlar otomatik olarak aktarılır.</small>
+            <b id="mobileConnectionTitle">Bağlantı kontrol ediliyor…</b>
+            <small id="mobileConnectionSub">QR oturumu doğrulanıyor.</small>
           </div>
           <div class="mobile-session-code">
             <small>Oturum Kodu</small>
@@ -293,6 +293,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
+  <script src="session-guard.js"></script>
 
   <script>
     // "Telefon bekleniyor" durumunda sürekli typewriter görünümü.

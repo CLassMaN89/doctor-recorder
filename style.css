@@ -1268,3 +1268,60 @@ body:has(#recorderView:not(.hidden)){
   .mic-ring-three{width:134px;height:134px}
   .mobile-record-card .mic-orb{width:88px;height:88px}
 }
+
+
+/* =========================================================
+   v5.5 - MOBIL OTURUM DOGRULAMA DURUMLARI
+   ========================================================= */
+.mobile-connection{
+  transition:border-color .25s ease, background .25s ease, opacity .25s ease;
+}
+
+.mobile-connection.connection-checking{
+  border-color:rgba(244,181,68,.28);
+  background:rgba(63,49,18,.34);
+}
+
+.mobile-connection.connection-checking .desktop-link-icon{
+  color:#ffd37b;
+  animation:connectionBreath 1.9s ease-in-out infinite;
+}
+
+.mobile-connection.connection-ok{
+  border-color:rgba(45,212,191,.30);
+}
+
+.mobile-connection.connection-ok .desktop-link-icon{
+  color:#6cf0d5;
+}
+
+.mobile-connection.connection-expired{
+  border-color:rgba(239,91,102,.42);
+  background:rgba(67,24,33,.48);
+}
+
+.mobile-connection.connection-expired .desktop-link-icon{
+  color:#ff9ca5;
+}
+
+.mobile-record-card.session-expired{
+  border-color:rgba(239,91,102,.35);
+}
+
+.mobile-record-card.session-expired .mic-stage,
+.mobile-record-card.session-expired .mobile-wave-wrap{
+  opacity:.34;
+  filter:saturate(.3);
+}
+
+.mobile-record-card.session-expired #startBtn,
+.mobile-record-card.session-expired #pauseBtn,
+.mobile-record-card.session-expired #stopBtn{
+  opacity:.42;
+  cursor:not-allowed;
+}
+
+@keyframes connectionBreath{
+  0%,100%{opacity:.55;transform:scale(.96)}
+  50%{opacity:1;transform:scale(1.04)}
+}
