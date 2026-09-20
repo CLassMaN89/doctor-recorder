@@ -411,15 +411,15 @@ function renderLiveWave(recording){
  const box=$('#liveWave'); if(!box)return;
  if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',92);
  box.classList.toggle('active',!!recording);
- setFlow(box,true);
+ setFlow(box,!!recording);   // yalnızca kayıt sürerken akar
  if(recording && !liveStartedAt) liveStartedAt=Date.now();
  if(!recording) liveStartedAt=0;
- cancelAnimationFrame(liveTimerRAF);
+ clearTimeout(liveTimerRAF);
  const tick=()=>{
   const sec=liveStartedAt?Math.floor((Date.now()-liveStartedAt)/1000):0;
   const val=fmt(sec);
   const a=$('#liveTimer'),b=$('#liveConnText'),c=$('#previewTimer'),e=$('#previewStateTime'); if(a)a.textContent=val;if(b)b.textContent=val;if(c)c.textContent=val;if(e)e.textContent=val;
-  if(recording)liveTimerRAF=requestAnimationFrame(tick);
+  if(recording)liveTimerRAF=setTimeout(tick,250);   // saniyede 60 kez değil, dörtte bir saniyede güncelle
  };
  tick();
 }
@@ -454,7 +454,7 @@ function renderPhonePreview(d){
  const st=$('#previewState'); if(st)st.textContent=active?'Kayıt yapılıyor...':'Kayıt bekleniyor...';
  const wave=$('#previewWave');
  if(wave && !wave.children.length) wave.innerHTML=waveBars('phone-preview-live',62);
- if(wave) {wave.classList.toggle('active',!!active);setFlow(wave,true)}
+ if(wave) {wave.classList.toggle('active',!!active);setFlow(wave,!!active)}
  const rows=$('#previewRecordings'); if(rows){
    rows.innerHTML=recs.slice(0,5).map((r,i)=>{
      const dev=devices.find(x=>x.id===r.device_connection_id);
