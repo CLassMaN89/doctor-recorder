@@ -198,7 +198,7 @@ async function initDesktop(){
  $('#desktop').classList.remove('hidden'); startWaitingLoop();
  let {data}=await sb.auth.getSession();
  if(!data.session||data.session.user?.is_anonymous){await clinicLogin();}
- $('#newQr').onclick=createSession;
+ $('#newQr').onclick=()=>createSession(false);
  $('#deviceFilter').onchange=()=>renderDashboard(window.__dash||{devices:[],recordings:[]});
  const dateInput=$('#recordingDateFilter');
  if(dateInput){dateInput.onchange=()=>{selectedRecordingDate=dateInput.value||'';syncDateFilterUI();renderDashboard(window.__dash||{devices:[],recordings:[]})};dateInput.onclick=()=>{try{dateInput.showPicker?.()}catch{}};syncDateFilterUI();}
@@ -231,9 +231,10 @@ function showSessionQR(){
  const url=`${location.origin}${location.pathname}?mode=record&token=${encodeURIComponent(session.token)}`;
  $('#qrcode').innerHTML=''; new QRCode($('#qrcode'),{text:url,width:150,height:150,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
 }
-async function createSession(){
+async function createSession(auto){
  try{
-  session=await api('create-session',{method:'POST',auth:true,body:{mode:'web'}});
+  // auto=true: süre dolunca otomatik yenileme (bağlı doktorlar düşmez); aksi halde eski bağlantılar da kapanır.
+  session=await api('create-session',{method:'POST',auth:true,body:{mode:'web',replace:!auto}});
   qrLocalExpiry=Date.now()+Math.max(0,Date.parse(session.expires_at)-Date.parse(session.created_at));
   document.body.classList.remove('qr-expired');
   localStorage.setItem('dr_pc_session',JSON.stringify(session)); showSessionQR();
@@ -259,7 +260,8 @@ async function checkSessionStillValid(){
   const st=await api('status',{query:{token:session.token}});
   if(typeof st?.remaining_seconds==='number')qrLocalExpiry=Date.now()+st.remaining_seconds*1000;
   const dead=st?.status==='expired';
-  if(dead&&st.reason==='timeout'){qrChecking=false;await createSession();return}   // süre doldu: yeni QR
+  if(dead&&st.reason==='timeout'){qrChecking=false;await createSession(true);return}   // mutlak süre doldu: yeni QR
+  if(!dead&&typeof st?.remaining_seconds==='number'&&st.remaining_seconds<=0){qrChecking=false;await createSession(true);return}   // katılım penceresi kapandı: yeni QR
   document.body.classList.toggle('qr-expired',dead);                                 // başka yerden kapatıldı: uyar
   const code=document.getElementById('sessionCode');
   if(dead&&code)code.textContent='YENİLENDİ';
@@ -280,7 +282,7 @@ async function loadDashboard(){
    if(isRecordingPlaybackActive())return;
    // Current QR session devices first, historical recordings remain persistent.
    const now=Date.now();
-   const currentDevices=(d.devices||[]).filter(x=>x.session_id===session.id && x.last_seen_at && now-new Date(x.last_seen_at).getTime()<45000);
+   const currentDevices=(d.devices||[]).filter(x=>(x.mode?x.mode==='web':x.session_id===session.id) && x.last_seen_at && now-new Date(x.last_seen_at).getTime()<45000);
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
    renderDashboard(window.__dash);
  }catch(e){console.error(e)}
@@ -623,7 +625,7 @@ document.addEventListener('pointerdown',()=>{if(device&&sessionRemaining!=null&&
 async function checkToken(){
  if(!token)return false;
  if(revokedTokens().includes(token))return false;
- try{const st=await api('status',{query:{token}});if(st&&st.status==='expired')return false;if(st&&typeof st.remaining_seconds==='number'){sessionRemaining=st.remaining_seconds;updateIdleWarning()}setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
+ try{const st=await api('status',{query:{token,...(device?{device_token:device.device_token}:{})}});if(st&&st.status==='expired')return false;if(st&&typeof st.remaining_seconds==='number'){sessionRemaining=st.remaining_seconds;updateIdleWarning()}setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
 }
 function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textContent=b;$('#connection').className=`connection ${state||''}`}
 async function register(){
