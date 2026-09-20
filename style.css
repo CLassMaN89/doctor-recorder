@@ -1477,12 +1477,12 @@ html body #desktop .brand-bar .icon-btn svg{width:19px!important;height:19px!imp
 html body #desktop .brand-sep{height:36px!important}
 /* bağlantı kartı */
 html body #desktop .connect-copy .online-dot{display:none!important}
-html body #desktop .conn-ico{position:relative;flex:none;width:54px;height:54px;display:grid;place-items:center}
+html body #desktop .conn-ico{position:relative;flex:none;width:76px;height:76px;display:grid;place-items:center}
 html body #desktop .conn-ico img{display:none;-webkit-user-drag:none;user-select:none}
-html body #desktop .conn-ico .ci-wait{display:block;width:74px;height:74px;margin:-10px}
-html body #desktop .conn-ico .ci-ok{width:54px;height:54px}
+html body #desktop .conn-ico .ci-wait{display:block;width:104px;height:104px;margin:-14px}
+html body #desktop .conn-ico .ci-ok{width:76px;height:76px}
 html body #desktop .conn-ico.connected .ci-wait{display:none}
 html body #desktop .conn-ico.connected .ci-ok{display:block}
-html body.desktop-mode #desktop .connect-copy h2{font-size:19px!important}
+html body.desktop-mode #desktop .connect-copy h2{font-size:17px!important}
 html body.desktop-mode #desktop .connect-copy p{font-size:11.5px!important;margin-top:3px!important}
 html body.desktop-mode #desktop .qr-detail b{font-size:20px!important;letter-spacing:.04em!important}
