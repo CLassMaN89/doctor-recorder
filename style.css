@@ -1727,3 +1727,62 @@ html[data-theme="dark"] body.mobile-mode .long-warn{background:#33270f;border-co
 html[data-theme="dark"] body.mobile-mode .long-warn .lw-head{color:#f6d48b}
 html[data-theme="dark"] body.mobile-mode .long-warn .lw-bar{background:#4b3a17}
 html[data-theme="dark"] body.mobile-mode .long-warn .lw-actions .lw-finish{background:#2a1a1e;border-color:#6b2a35;color:#ff8a98}
+
+/* v15.0 — Kayıt paneli (referans tasarım): durum satırı, büyük süre, dalga, hap düğmeler, alt durum çubuğu; açık ve koyu tema ayrı */
+body.mobile-mode #recorder #recPanel{display:contents}
+body.mobile-mode #recorder #recPanel .rec-line,body.mobile-mode #recorder #recPanel .rec-timeline{display:none}
+body.mobile-mode #recorder:has(#recordControls:not(.hidden)) #recPanel#recPanel{
+ display:grid!important;order:1;grid-template-columns:1fr;grid-template-areas:"line" "timer" "wave" "ctrl" "status";
+ gap:12px;padding:18px 16px 16px;margin:6px 0 12px;border-radius:24px;text-align:center;
+ background:linear-gradient(180deg,#ffffff 0%,#f4f8fd 100%);border:1px solid #dde9f4;box-shadow:0 12px 32px rgba(43,111,224,.09)}
+body.mobile-mode #recorder #recPanel#recPanel .rec-line{grid-area:line;display:flex;justify-self:center;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#5b7286}
+body.mobile-mode #recorder #recPanel .rl-dot{width:10px;height:10px;border-radius:50%;background:#ff4757;animation:rlPulse 1.4s ease-in-out infinite}
+body.mobile-mode #recorder #recPanel.paused .rl-dot{background:#e89a1c;animation:none}
+@keyframes rlPulse{50%{opacity:.35}}
+body.mobile-mode #recorder #recPanel#recPanel #timer{grid-area:timer;margin:0!important;order:0;font-size:44px!important;font-weight:800!important;line-height:1.05;text-align:center;color:#10263b;letter-spacing:.5px}
+body.mobile-mode #recorder #recPanel#recPanel #waveWrap{grid-area:wave;order:0;height:58px!important;margin:0!important}
+body.mobile-mode #recorder #recPanel#recPanel #recordControls{grid-area:ctrl;order:0;display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin:4px 0 0!important;justify-content:stretch}
+body.mobile-mode #recorder #recPanel#recPanel #recordControls.hidden{display:none!important}
+body.mobile-mode #recorder #recPanel#recPanel .rc-btn{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:10px;height:54px!important;padding:0 14px!important;border-radius:999px!important;font-size:15.5px;font-weight:800;border:1.5px solid transparent!important;cursor:pointer}
+body.mobile-mode #recorder #recPanel#recPanel .rc-btn .rc-circle{width:22px!important;height:22px!important;border-radius:0!important;background:none!important;box-shadow:none!important;display:grid;place-items:center}
+body.mobile-mode #recorder #recPanel#recPanel .rc-btn .rc-circle svg{width:22px!important;height:22px!important;stroke-width:2.6}
+body.mobile-mode #recorder #recPanel#recPanel .pause-btn{background:#e6effa!important;color:#17324c!important}
+body.mobile-mode #recorder #recPanel#recPanel .pause-btn .rc-circle svg{stroke:#17324c}
+body.mobile-mode #recorder #recPanel#recPanel .pause-btn span{color:#17324c}
+body.mobile-mode #recorder #recPanel#recPanel .finish-btn{background:linear-gradient(135deg,#ff5d6a 0%,#ea3346 100%)!important;color:#fff!important;box-shadow:0 10px 24px rgba(234,51,70,.38)}
+body.mobile-mode #recorder #recPanel#recPanel .finish-btn .rc-circle em{display:block;width:20px;height:20px;border-radius:6px;background:#fff}
+body.mobile-mode #recorder #recPanel#recPanel .finish-btn span{color:#fff}
+body.mobile-mode #recorder #recPanel#recPanel .rc-btn:active{transform:scale(.98)}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus{grid-area:status;display:flex;align-items:center;gap:10px;margin:0;padding:13px 16px;border-radius:15px;background:#edf3fa;color:#6b8195}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus.hidden{display:none!important}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus svg{width:22px;height:22px;flex:none;fill:none;stroke:#7d92a6;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus .rs-mic{display:none}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus b{flex:1;text-align:left;font-size:14px;font-weight:500;color:#6b8195}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus span{padding-left:14px;border-left:1px solid #d3dfea;font-size:17px;font-weight:800;color:#10263b;font-variant-numeric:tabular-nums}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus.paused{background:#fff4dc}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus.paused b{color:#a86a0a}
+body.mobile-mode #recorder #recPanel#recPanel #recStatus.paused svg{stroke:#c98214}
+
+/* Koyu tema: süre sağ üstte, dalganın altında zaman çizgisi, çerçeveli Duraklat */
+html[data-theme="dark"] body.mobile-mode #recorder:has(#recordControls:not(.hidden)) #recPanel#recPanel{
+ grid-template-columns:1fr auto;grid-template-areas:"line timer" "wave wave" "tl tl" "ctrl ctrl" "status status";gap:10px 12px;
+ background:linear-gradient(180deg,#2c3644 0%,#262f3c 100%);border-color:#3b4757;box-shadow:0 16px 36px rgba(0,0,0,.4);text-align:left}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel .rec-line{justify-self:start;color:#d3dce8}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #timer{justify-self:end;align-self:center;font-size:17px!important;font-weight:800!important;color:#fff!important;letter-spacing:.3px}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #waveWrap{height:56px!important}
+html[data-theme="dark"] body.mobile-mode #recorder:has(#recordControls:not(.hidden)) #recPanel#recPanel .rec-timeline{grid-area:tl;display:block;position:relative;height:24px;margin-top:-4px;border-top:1px solid #465468}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel .rec-timeline #recTlFill{position:absolute;left:0;top:-1.5px;height:2px;width:0;border-radius:2px;background:linear-gradient(90deg,#ff6ec7,#a56bff,#4f9dff)}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel .rec-timeline span{position:absolute;top:6px;font-size:11px;font-weight:600;color:#8b9bb0;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel .rec-timeline span:first-of-type{left:0}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel .rec-timeline span:last-of-type{right:0}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel .pause-btn{background:transparent!important;border-color:#5c6b81!important;color:#fff!important}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel .pause-btn .rc-circle svg{stroke:#fff}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel .pause-btn span{color:#fff}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus{background:#394453;color:#aebbcb}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus .rs-wave{display:none}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus .rs-mic{display:block}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus svg{stroke:#b9c6d6}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus b{color:#aebbcb}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus span{border-left:0;padding-left:0;color:#d4dde9}
+html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus.paused{background:#4a3f22}
+@media(prefers-reduced-motion:reduce){body.mobile-mode #recorder #recPanel .rl-dot{animation:none}}

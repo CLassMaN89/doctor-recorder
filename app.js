@@ -749,6 +749,8 @@ function setRecStatus(text,paused){
  const b=$('#recStatus'); if(!b)return;
  b.classList.remove('hidden'); b.classList.toggle('paused',!!paused);
  $('#recStatusText').textContent=text;
+ $('#recPanel')?.classList.toggle('paused',!!paused);
+ const rl=$('#recLineText');if(rl)rl.textContent=paused?'Kayıt duraklatıldı':'Kayıt ediliyor...';
 }
 let recWake=null;
 async function holdScreenAwake(){try{recWake=await navigator.wakeLock?.request('screen')}catch{}}
@@ -943,6 +945,8 @@ function updateTimer(){
  if(recorder&&!isPaused&&!isFinishing&&ms>=longWarnAt)showLongWarn();
  $('#timer').textContent=fmt(ms/1000);
  const rs=$('#recStatusTime'); if(rs)rs.textContent=fmt(ms/1000);
+ const tlEnd=$('#recTlEnd');if(tlEnd)tlEnd.textContent=fmt(longWarnAt/1000);
+ const tlFill=$('#recTlFill');if(tlFill)tlFill.style.width=Math.min(100,ms/longWarnAt*100)+'%';
 }
 async function togglePause(){
  if(longWarnTimer){hideLongWarn();longWarnAt=elapsedMs()+LONG_REC_MS}   // duraklatmak da bir işlemdir
