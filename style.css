@@ -1531,3 +1531,15 @@ html[data-theme="dark"] body #desktop .rec-kicker,html body[data-theme="dark"] #
 html body #desktop .rec-banner{width:100%;box-sizing:border-box}
 html body #desktop .recordings-table .table-head{width:100%}
 html body #desktop .recordings-table .table-head .table-filters{margin-left:auto}
+
+/* v12.2 — Başlık bandı küçüldü ve süzgeçlerle aynı satırda; bağlanınca yeni ikon */
+html body #desktop .recordings-table .table-head{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:12px 16px!important;margin:0 0 12px!important}
+html body #desktop .rec-banner{width:auto!important;flex:0 1 auto!important;gap:14px!important;padding:10px 18px!important;border-radius:18px!important}
+html body #desktop .rec-banner-ico{width:46px!important;height:46px!important}
+html body #desktop .rec-kicker{font-size:10px!important;padding:3px 10px!important;gap:6px!important}
+html body #desktop .rec-kicker i{width:6px!important;height:6px!important}
+html body #desktop .rec-banner h2{font-size:19px!important;margin:6px 0 1px!important}
+html body #desktop .rec-banner p{font-size:12px!important}
+html body #desktop .recordings-table .table-head .table-filters{margin:0 0 0 auto!important;flex:0 0 auto}
+html body #desktop .conn-ico .ci-ok{width:82px!important;height:82px!important;object-fit:contain}
+html body #desktop .conn-ico{width:84px!important;height:84px!important}
