@@ -491,15 +491,18 @@ function renderDashboard(d){
  const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
  const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0}
- const pageSize=box.clientHeight>150?Math.max(3,Math.floor(box.clientHeight/66)):6,pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
+ const pageSize=recSizeOverride||(box.clientHeight>150?Math.max(3,Math.floor(box.clientHeight/66)):6),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
  recPage=Math.min(recPage,pageCount-1);
  const start=recPage*pageSize,pageItems=shown.slice(start,start+pageSize);
  renderRecPager(pageCount,shown.length,start,pageItems.length);
  pageItems.forEach((r,pi)=>{const ri=start+pi;const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row';const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
  row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
  const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};box.appendChild(row)});
+ // Son satır kesiliyorsa sayfa başına kayıt sayısı, gerçek satır yüksekliğine göre azaltılır.
+ if(pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;rerenderRecs()}
 }
-let recPage=0,recPageKey='';
+let recPage=0,recPageKey='',recSizeOverride=null;
+window.addEventListener('resize',()=>{recSizeOverride=null;clearTimeout(window._recRz);window._recRz=setTimeout(rerenderRecs,250)});
 function renderRecPager(pageCount,total,start,count){
  const p=document.getElementById('recPager');if(!p)return;
  p.classList.toggle('single',pageCount<=1);

@@ -1599,3 +1599,11 @@ html body #desktop .rec-pager button:disabled{opacity:.4;cursor:default}
 html[data-theme="dark"] body #desktop .rec-pager,html body[data-theme="dark"] #desktop .rec-pager{border-top-color:#1e3850;color:#8fa8bc}
 html[data-theme="dark"] body #desktop .rec-pager button,html body[data-theme="dark"] #desktop .rec-pager button{background:#12283c;border-color:#24425a;color:#7cc0ff}
 html[data-theme="dark"] body #desktop .rec-pager .rp-nav b,html body[data-theme="dark"] #desktop .rec-pager .rp-nav b{color:#dbe9f5}
+@media(max-width:1100px){html body.desktop-mode #desktop .dashboard-showcase>.recordings-table{overflow:visible!important}html body #desktop .recordings-table #recordings{overflow:visible!important;height:auto!important;max-height:none!important}}
+@media(max-width:1100px){
+html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .recording-columns,
+html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:38px minmax(70px,.8fr) minmax(110px,1.1fr) 96px 40px minmax(120px,1.2fr)!important;column-gap:8px!important}
+}
+/* v13.1 — koyu modda cihaz alanı ve ayırıcı çizgi tema renklerini kullanır */
+html body #desktop .connect-panel .connected-area{background:var(--th-card-soft,#fff)!important;border-radius:12px}
+html body #desktop .connect-panel .connect-divider{background:var(--th-line-soft,#e6eef4)!important}
