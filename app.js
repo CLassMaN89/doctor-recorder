@@ -1083,7 +1083,7 @@ let cam=null,scanRAF=null;
 let jsQRLoading=null;
 function loadJsQR(){
  if(window.jsQR)return Promise.resolve();
- return jsQRLoading||(jsQRLoading=new Promise((ok,fail)=>{const el=document.createElement('script');el.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';el.onload=ok;el.onerror=()=>{jsQRLoading=null;fail(new Error('jsqr'))};document.head.appendChild(el)}));
+ return jsQRLoading||(jsQRLoading=new Promise((ok,fail)=>{const el=document.createElement('script');el.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';el.integrity='sha384-b5Ya4Bq3qCyz39m2ISh+4DxjAIljdeFwK/BsXLuj9gugaNwAcj/ia15fxNZL9Nlx';el.crossOrigin='anonymous';el.onload=ok;el.onerror=()=>{jsQRLoading=null;fail(new Error('jsqr'))};document.head.appendChild(el)}));
 }
 async function openScanner(){
  $('#scanner').classList.remove('hidden');$('#scanStatus').textContent='Kamera hazırlanıyor…';
