@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=116">
+  <link rel="stylesheet" href="style.css?v=118">
 </head>
 <body>
 <main>
@@ -99,12 +99,12 @@
   <section id="mobile" class="mobile hidden">
     <div class="phone">
       <header class="mobile-head">
-        <div class="mbrand"><span>🎙</span><div><b>Doktor Kayıt</b><small>Mobil dikta</small></div></div>
+        <div class="mbrand"><span class="mbrand-ico"><img src="mic-anim.svg" alt="" draggable="false"></span><b>Sesli Doktor Kayıt Ekranı</b></div>
         <span class="safe">● Güvenli</span>
       </header>
 
       <div id="connection" class="connection checking">
-        <span class="pcico">▣</span>
+        <span class="pcico" aria-hidden="true"><span class="ico-checking">▣</span><img class="ico-ok" src="qr-success.svg" alt="" draggable="false"><img class="ico-expired" src="logout-icon.png" alt="" draggable="false"></span>
         <div class="conn-copy"><b id="connTitle">Bağlantı kontrol ediliyor…</b><small id="connSub">QR oturumu doğrulanıyor.</small></div>
         <div class="qr-session-info"><div id="mobileMiniQr" class="mobile-mini-qr"></div><div><span>QR Oturum</span><b id="mobileQrCode">------</b></div></div>
       </div>
@@ -173,6 +173,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=117"></script>
+<script src="app.js?v=118"></script>
 </body>
 </html>
