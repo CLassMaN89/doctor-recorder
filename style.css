@@ -1627,3 +1627,21 @@ html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .table-hea
 html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .table-head .table-filters>*{max-width:100%}
 html body #desktop .rec-pager{flex-wrap:wrap}
 }
+/* v13.3 — telefonda kayıt başlığı sıkı: başlık üstte, süzgeçler (doktor / tarih / yenile) tek satırda yan yana */
+@media(max-width:760px){
+html body #desktop .recordings-table .table-head{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;padding:12px!important;margin:0 0 10px!important}
+html body #desktop .recordings-table .table-head .rec-banner{flex:0 0 auto!important;gap:10px!important;padding:0!important;min-height:0!important}
+html body #desktop .rec-banner .rec-kicker{display:none!important}
+html body #desktop .rec-banner-ico{width:36px!important;height:36px!important}
+html body #desktop .rec-banner h2{font-size:16px!important;margin:0!important}
+html body #desktop .rec-banner p{font-size:11px!important;margin:1px 0 0!important}
+html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .table-head .table-filters{display:flex!important;flex-wrap:nowrap!important;gap:6px!important;margin:0!important;width:100%!important}
+html body #desktop .table-filters .doctor-select-wrap{flex:1 1 0!important;width:auto!important;min-width:0!important}
+html body #desktop .table-filters .date-picker-wrap{flex:1 1 0!important;width:auto!important;min-width:0!important}
+html body #desktop .table-filters select,html body #desktop .table-filters .date-filter{width:100%!important;min-width:0!important;font-size:12px!important;padding-left:10px!important}
+html body #desktop .table-filters .table-refresh{flex:0 0 36px!important}
+}
+/* v13.4 — koyu temada tüm sayfa zemini ve süzgeç kutuları koyu */
+html[data-theme="dark"],html[data-theme="dark"] body,html[data-theme="dark"] body.desktop-mode,html[data-theme="dark"] body #desktop,html[data-theme="dark"] body #desktop .desktop-shell,html[data-theme="dark"] body #desktop .desktop-work,html[data-theme="dark"] body #desktop .dashboard-content,html[data-theme="dark"] body #desktop .dashboard-showcase{background:#07111d!important}
+html[data-theme="dark"] body #desktop .table-filters select,html[data-theme="dark"] body #desktop .table-filters .date-filter,html[data-theme="dark"] body #desktop .table-filters .table-refresh,html[data-theme="dark"] body #desktop .count{background:#102235!important;color:#eaf4ff!important;border-color:#20384b!important}
+html[data-theme="dark"] body #desktop .live-actions .control-circle{background:#102235!important}

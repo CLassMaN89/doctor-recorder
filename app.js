@@ -488,10 +488,10 @@ function renderDashboard(d){
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
- const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings');box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY;box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
  const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0}
- const pageSize=recSizeOverride||(box.clientHeight>150?Math.max(3,Math.floor(box.clientHeight/66)):6),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
+ const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/66)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
  recPage=Math.min(recPage,pageCount-1);
  const start=recPage*pageSize,pageItems=shown.slice(start,start+pageSize);
  renderRecPager(pageCount,shown.length,start,pageItems.length);
@@ -499,7 +499,8 @@ function renderDashboard(d){
  row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
  const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};box.appendChild(row)});
  // Son satır kesiliyorsa sayfa başına kayıt sayısı, gerçek satır yüksekliğine göre azaltılır.
- if(pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;rerenderRecs()}
+ if(wideList&&pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;rerenderRecs()}
+ if(Math.abs(window.scrollY-scrollY0)>1)window.scrollTo(0,scrollY0);   // liste yeniden çizilirken sayfa yukarı atmasın
 }
 let recPage=0,recPageKey='',recSizeOverride=null;
 window.addEventListener('resize',()=>{recSizeOverride=null;clearTimeout(window._recRz);window._recRz=setTimeout(rerenderRecs,250)});
