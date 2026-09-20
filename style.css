@@ -1692,3 +1692,11 @@ body.mobile-mode #recordHelp.sent .sent-tick.on path{animation:sentDraw .35s .3s
 @keyframes sentCaret{50%{opacity:0}}
 html[data-theme="dark"] body.mobile-mode #recordHelp.sent{color:#3ddc97!important}
 html[data-theme="dark"] body.mobile-mode #recordHelp.sent .sent-tick{stroke:#3ddc97}
+
+/* v14.0 — performans: dalga kutuları kendi içinde yerleşir, uzun listede ekran dışı satırlar çizilmez */
+.apple-wave{contain:layout style}
+body.mobile-mode .mrow{content-visibility:auto;contain-intrinsic-size:auto 64px}
+body.mobile-mode .history-more{display:block;width:100%;margin:12px 0 2px;padding:12px;border:1px solid #d5e3ee;border-radius:12px;background:#f5f9fd;color:#2b7fe6;font-weight:800;font-size:13px}
+body.mobile-mode .history-more:active{background:#e8f1fd}
+body.mobile-mode .history-more:disabled{opacity:.6}
+html[data-theme="dark"] body.mobile-mode .history-more{background:#12283c;border-color:#24425a;color:#7cc0ff}

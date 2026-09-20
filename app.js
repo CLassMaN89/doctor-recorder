@@ -313,19 +313,33 @@ function flowHeights(bars,H,t){
   b.style.height=Math.max(4,Math.min(H-2,(5+H*(.18+.52*primary*detail)*env)*pulse))+'px';
  });
 }
+// Dalga animasyonu: tüm dalgalar TEK ortak döngüde, en fazla ~30 kare/sn, yalnızca ekranda görünenler ve sayfa görünürken çizilir.
+// (Liste ne kadar uzun olursa olsun maliyet ekrandaki satır sayısıyla sınırlı kalır.)
+const flowSet=new Set();let flowRAF=0,flowLast=0;
+const flowIO=('IntersectionObserver' in window)?new IntersectionObserver(es=>es.forEach(e=>{e.target.__vis=e.isIntersecting})):null;
+window.addEventListener('resize',()=>flowSet.forEach(el=>{el.__h=0}));
+function flowLoop(t){
+ flowRAF=requestAnimationFrame(flowLoop);
+ if(document.hidden||t-flowLast<33)return;
+ flowLast=t;const now=t*.003;
+ for(const el of flowSet){
+  if(!el.isConnected){
+   if(el.__seen||++el.__idle>240){flowSet.delete(el);flowIO?.unobserve(el)}
+   continue;
+  }
+  el.__seen=true;
+  if(!el.__vis)continue;
+  if(!el.__h)el.__h=el.clientHeight||46;
+  flowHeights(el.__bars,el.__h,now);
+ }
+ if(!flowSet.size){cancelAnimationFrame(flowRAF);flowRAF=0}
+}
 function setFlow(el,on){
  if(!el)return;
- if(el.__flow){cancelAnimationFrame(el.__flow);el.__flow=0}
- const bars=[...el.querySelectorAll('i')];
- if(!on){bars.forEach(b=>b.style.height='');return}
- let seen=false,idle=0;
- const tick=()=>{
-  // Satır oluşturulup DOM'a eklenene kadar bekle; eklendikten sonra kaldırılırsa döngüyü durdur.
-  if(el.isConnected) seen=true; else if(seen||++idle>120){el.__flow=0;return}
-  if(seen) flowHeights(bars,el.clientHeight||46,performance.now()*.003);
-  el.__flow=requestAnimationFrame(tick);
- };
- tick();
+ if(!on){flowSet.delete(el);flowIO?.unobserve(el);[...el.querySelectorAll('i')].forEach(b=>b.style.height='');return}
+ el.__bars=[...el.querySelectorAll('i')];el.__seen=false;el.__idle=0;el.__h=0;el.__vis=true;
+ flowIO?.observe(el);flowSet.add(el);
+ if(!flowRAF)flowRAF=requestAnimationFrame(flowLoop);
 }
 function waveBars(seed,count=72){
  let x=waveSeed(seed), vals=[];
@@ -603,9 +617,16 @@ function showSentHelp(){
 
 function startHeartbeat(){
  if(heartbeatTimer) clearInterval(heartbeatTimer);
- const beat=()=>{ if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{}); };
+ // Kayıt/gönderim sürerken sinyal şart; sayfa gizli ve boştaysa (ekran kilitli) pil için gönderilmez.
+ const beat=()=>{
+  if(!device)return;
+  const busy=(recorder&&(recorder.state==='recording'||recorder.state==='paused'))||isFinishing;
+  if(document.hidden&&!busy)return;
+  state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{});
+ };
  beat();
- heartbeatTimer=setInterval(beat,5000);
+ heartbeatTimer=setInterval(beat,8000);
+ if(!window.__beatVis){window.__beatVis=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden)beat()})}
 }
 function stopHeartbeat(){
  if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}
@@ -648,7 +669,7 @@ async function initMobile(){
  } else {
   $('#identity').classList.remove('hidden');
  }
- setInterval(async()=>{if(!(await checkToken()))expired()},5000);
+ setInterval(async()=>{if(document.hidden)return;if(!(await checkToken()))expired()},10000);   // sayfa gizliyken sunucuyu yoklama
 }
 function readLogin(){try{return JSON.parse(localStorage.getItem('dr_login')||'null')}catch{return null}}
 function saveLogin(first,last){try{localStorage.setItem('dr_login',JSON.stringify({token,first,last}))}catch{}}
@@ -779,7 +800,7 @@ async function startRecording(){
   recorder.onstop=uploadRecording;
   recorder.start(500);
   startedAt=Date.now();
-  timerInt=setInterval(updateTimer,100);
+  timerInt=setInterval(updateTimer,250);
   $('#timer').textContent='00:00';
   $('#mic').classList.add('recording');
   $('#statePill').className='pill recording';
@@ -923,20 +944,62 @@ async function toggleRecording(){
  if(recorder.state==='recording'||recorder.state==='paused') return togglePause();
 }
 
+// Kayıtlarım: sunucudan ve ekranda 10'ar kayıt gösterilir; "Daha fazla göster" ile sonraki 10 gelir.
+// Liste ne kadar uzun olursa olsun telefondaki iş yükü sabit kalır (ses dosyaları da yalnızca oynatılırken indirilir).
+const HIST_PAGE=10;
+let histRecs=[],histShown=0,histDone=false,histLoading=false;
+const listSince=()=>Number((()=>{try{return localStorage.getItem('dr_list_since')}catch{return 0}})()||0);
+async function fetchHistory(limit,before){
+ const q={token,device_token:device.device_token,limit:String(limit)};if(before)q.before=before;
+ const raw=await api('device-recordings',{query:q}),since=listSince();
+ // Eski sunucu limit'i tanımazsa hepsi gelir: istemci sayfalar.
+ const legacy=raw.length>limit;
+ let done=legacy||raw.length<limit,recs=raw;
+ if(since){recs=raw.filter(r=>new Date(r.created_at).getTime()>since);if(recs.length<raw.length)done=true}
+ return {recs,done};
+}
 async function loadMobileHistory(){
- if(!device)return;
+ if(!device||histLoading)return;
+ histLoading=true;
  try{
-  let recs=await api('device-recordings',{query:{token,device_token:device.device_token}});
-  // Çıkış yapıldıysa o andan önceki kayıtlar bu telefonda gösterilmez (sistemde durur).
-  const since=Number((()=>{try{return localStorage.getItem('dr_list_since')}catch{return 0}})()||0);
-  if(since)recs=recs.filter(r=>new Date(r.created_at).getTime()>since);
-  $('#historyCount').textContent=`${recs.length} kayıt`;
-  const box=$('#mobileRecordings');box.innerHTML=recs.length?'':'<div class="history-empty">Henüz kayıt yok.</div>';
-  recs.forEach((r,i)=>{
+  const keep=Math.min(50,Math.max(HIST_PAGE,histShown));
+  const {recs,done}=await fetchHistory(keep);
+  histRecs=recs;histDone=done;histShown=Math.min(histRecs.length,Math.max(HIST_PAGE,keep));
+  const box=$('#mobileRecordings');box.innerHTML='';
+  renderHistoryRows(box,0,histShown);
+  updateHistoryChrome();
+ }catch(e){console.error('mobile history',e)}
+ finally{histLoading=false}
+}
+function updateHistoryChrome(){
+ const box=$('#mobileRecordings');
+ $('#historyCount').textContent=`${histRecs.length}${histDone?'':'+'} kayıt`;
+ if(!histRecs.length&&!box.querySelector('.history-empty'))box.innerHTML='<div class="history-empty">Henüz kayıt yok.</div>';
+ box.querySelector('.history-more')?.remove();
+ if(histRecs.length>histShown||!histDone){
+  const b=document.createElement('button');b.type='button';b.className='history-more';b.textContent='Daha fazla göster';
+  b.onclick=async()=>{
+   b.disabled=true;b.textContent='Yükleniyor…';
+   try{
+    if(histRecs.length<=histShown&&!histDone){
+     const last=histRecs[histRecs.length-1];
+     const {recs,done}=await fetchHistory(HIST_PAGE,last?.created_at);
+     histRecs=histRecs.concat(recs.filter(r=>!histRecs.some(x=>x.id===r.id)));histDone=done;
+    }
+    const from=histShown;histShown=Math.min(histRecs.length,histShown+HIST_PAGE);
+    b.remove();renderHistoryRows(box,from,histShown);updateHistoryChrome();
+   }catch{b.disabled=false;b.textContent='Daha fazla göster'}
+  };
+  box.appendChild(b);
+ }
+}
+function renderHistoryRows(box,from,to){
+ const frag=document.createDocumentFragment();
+ histRecs.slice(from,to).forEach(r=>{
    const el=document.createElement('div');
    const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
    el.className='mrow';
-   el.innerHTML=`<span class="mrow-rec"><i></i>REC</span><div class="mrow-mid"><small>${stamp} <em>${fmt(r.duration_seconds)}</em></small>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}</div><button class="play mrow-play" aria-label="Oynat"></button><button class="mrow-del" type="button" aria-label="Kaydı sil" title="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio>`;
+   el.innerHTML=`<span class="mrow-rec"><i></i>REC</span><div class="mrow-mid"><small>${stamp} <em>${fmt(r.duration_seconds)}</em></small>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}</div><button class="play mrow-play" aria-label="Oynat"></button><button class="mrow-del" type="button" aria-label="Kaydı sil" title="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="none" src="${r.signed_url||''}"></audio>`;
    el.querySelector('.mrow-del').onclick=async()=>{
     if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı sistemden kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;
     try{await api('delete-my-recording',{method:'POST',query:{token,device_token:device.device_token},body:{recording_id:r.id}});el.classList.add('removing');setTimeout(()=>loadMobileHistory(),260)}
@@ -944,9 +1007,9 @@ async function loadMobileHistory(){
    };
    const audio=el.querySelector('audio'),play=el.querySelector('.play');
    wireWavePlayer(el,audio,play,null); animatePlaybackWave(el,audio);
-   box.appendChild(el);
-  });
- }catch(e){console.error('mobile history',e)}
+   frag.appendChild(el);
+ });
+ box.appendChild(frag);
 }
 function expired(){stopHeartbeat();try{localStorage.removeItem('dr_login')}catch{}
  setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
@@ -957,10 +1020,14 @@ function startWave(s){
  const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
  analyser=ac.createAnalyser();analyser.fftSize=256;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;
  const freq=new Uint8Array(analyser.frequencyBinCount);
- const draw=()=>{
+ let lastDraw=0,dpr=Math.min(devicePixelRatio||1,2),w=1,h=1;
+ const measure=()=>{dpr=Math.min(devicePixelRatio||1,2);const rect=c.getBoundingClientRect();w=Math.max(1,rect.width*dpr|0);h=Math.max(1,rect.height*dpr|0);if(c.width!==w||c.height!==h){c.width=w;c.height=h}};
+ measure();
+ if('ResizeObserver' in window){const ro=new ResizeObserver(measure);ro.observe(c);c.__ro=ro}
+ const draw=(now)=>{
   waveRAF=requestAnimationFrame(draw);
-  const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);
-  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  if(document.hidden||now-lastDraw<33)return;   // gizliyken çizme, en fazla ~30 kare/sn
+  lastDraw=now;
   analyser.getByteFrequencyData(freq);
   ctx.clearRect(0,0,w,h);
   // transparent background; only the animated waveform is drawn
@@ -978,12 +1045,17 @@ function startWave(s){
  };
  draw();
 }
-function stopWave(){if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
+function stopWave(){try{$('#wave')?.__ro?.disconnect()}catch{}if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
 
 let cam=null,scanRAF=null;
+let jsQRLoading=null;
+function loadJsQR(){
+ if(window.jsQR)return Promise.resolve();
+ return jsQRLoading||(jsQRLoading=new Promise((ok,fail)=>{const el=document.createElement('script');el.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';el.onload=ok;el.onerror=()=>{jsQRLoading=null;fail(new Error('jsqr'))};document.head.appendChild(el)}));
+}
 async function openScanner(){
  $('#scanner').classList.remove('hidden');$('#scanStatus').textContent='Kamera hazırlanıyor…';
- try{cam=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});const v=$('#scanVideo');v.srcObject=cam;await v.play();scan()}
+ try{await loadJsQR();cam=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});const v=$('#scanVideo');v.srcObject=cam;await v.play();scan()}
  catch{$('#scanStatus').textContent='Kamera izni verilmedi.';$('#scanStatus').className='scan-status error'}
 }
 function closeScanner(){cam?.getTracks().forEach(t=>t.stop());cam=null;if(scanRAF)cancelAnimationFrame(scanRAF);$('#scanner').classList.add('hidden')}
@@ -1005,4 +1077,19 @@ function applyTheme(theme){
 applyTheme((()=>{try{return localStorage.getItem('dr_theme')||'light'}catch{return 'light'}})());
 document.getElementById('themeLight')?.addEventListener('click',()=>applyTheme('light'));
 document.getElementById('themeDark')?.addEventListener('click',()=>applyTheme('dark'));
+// Yapay zekâ küresi (467 KB, ~1500 animasyonlu öğe) yalnızca kullanıcı etkileşimdeyken canlı oynar;
+// ~25 sn dokunulmazsa, sayfa gizlenince ya da "hareketi azalt" açıksa hafif sabit resme geçilir.
+(function(){
+ const orb=document.querySelector('.mic-orb');if(!orb)return;
+ const LIVE='ai-orb.svg',STILL='ai-orb-poster.webp';
+ const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ let timer=0,live=false;
+ const setSrc=v=>{if(!orb.src.endsWith(v))orb.src=v};
+ const rest=()=>{clearTimeout(timer);live=false;setSrc(STILL)};
+ const wake=()=>{if(reduce||document.hidden)return;if(!live){live=true;setSrc(LIVE)}clearTimeout(timer);timer=setTimeout(rest,25000)};
+ let lastWake=0;
+ ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{const t=Date.now();if(t-lastWake>1500){lastWake=t;wake()}},{passive:true}));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)rest();else wake()});
+ if(reduce||document.hidden)setSrc(STILL);else wake();
+})();
 })();
