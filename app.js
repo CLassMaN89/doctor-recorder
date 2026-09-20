@@ -191,7 +191,12 @@ async function initDesktop(){
  if(dateInput){dateInput.onchange=()=>{selectedRecordingDate=dateInput.value||'';syncDateFilterUI();renderDashboard(window.__dash||{devices:[],recordings:[]})};dateInput.onclick=()=>{try{dateInput.showPicker?.()}catch{}};syncDateFilterUI();}
  $('.table-refresh') && ($('.table-refresh').onclick=loadDashboard);
  $('#topRefresh') && ($('#topRefresh').onclick=loadDashboard);
- const saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
+ let saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
+ // Kayıtlı QR başka yerden (ör. Dikte2) kapatılmış olabilir: geçerli değilse yenisini oluştur.
+ if(saved?.token){
+  try{const st=await api('status',{query:{token:saved.token}});if(st?.status==='expired')saved=null}catch{saved=null}
+  if(!saved)localStorage.removeItem('dr_pc_session');
+ }
  if(saved?.id&&saved?.token){session=saved;showSessionQR();await loadDashboard();dashboardInt=setInterval(loadDashboard,2500)}
  else await createSession();
 }
@@ -215,14 +220,26 @@ function showSessionQR(){
 }
 async function createSession(){
  try{
-  session=await api('create-session',{method:'POST',auth:true,body:{}});
+  session=await api('create-session',{method:'POST',auth:true,body:{mode:'web'}});
   localStorage.setItem('dr_pc_session',JSON.stringify(session)); showSessionQR();
   if(dashboardInt)clearInterval(dashboardInt);
   await loadDashboard(); dashboardInt=setInterval(loadDashboard,2500);
  }catch(e){console.error(e);alert('QR oluşturulamadı.')}
 }
+let sessionCheckTick=0;
+async function checkSessionStillValid(){
+ if(!session?.token)return;
+ try{
+  const st=await api('status',{query:{token:session.token}});
+  const dead=st?.status==='expired';
+  document.body.classList.toggle('qr-expired',dead);
+  const code=document.getElementById('sessionCode');
+  if(dead&&code)code.textContent='SÜRESİ DOLDU';
+ }catch{}
+}
 async function loadDashboard(){
  if(!session)return;
+ if(++sessionCheckTick%8===1)checkSessionStillValid();
  // Do not rebuild the recordings DOM while a recording is playing.
  // The dashboard refreshes every 2.5 seconds; rebuilding the <audio> element
  // was stopping playback at each refresh.

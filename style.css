@@ -1434,3 +1434,7 @@ html[data-theme="dark"] body #desktop .sys-pill:not(.offline),html body[data-the
 
 /* v11.4 — Marka çubuğu alttaki kartlarla aynı genişlikte; üstte hafif boşluk */
 html body #desktop .brand-bar{margin:18px 0 18px!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
+
+/* v11.6 — QR dışarıdan kapatılırsa görünür şekilde soluk */
+body.qr-expired #qrcode{opacity:.15;filter:grayscale(1);transition:opacity .2s}
+body.qr-expired #sessionCode{color:#e5484d!important;font-size:15px!important;letter-spacing:.5px}
