@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=158">
+  <link rel="stylesheet" href="style.css?v=162">
 </head>
 <body>
 <main>
@@ -67,15 +67,16 @@
             </div>
           </section>
 
-          <section class="dash-card live-panel">
-            <div class="live-head"><div class="kicker">CANLI SES KAYDI</div><b id="liveTimer" class="live-timer">00:00</b></div>
-            <div id="liveWave" class="live-apple-wave" aria-hidden="true"></div>
-            <div class="live-actions">
-              <button class="live-pause" type="button"><span class="control-circle"><img class="duraklat-icon" src="duraklat.png" alt="Duraklat"></span><small>Duraklat</small></button>
-              <button class="live-finish" type="button"><span class="control-circle"><i></i></span><small>Kaydı Bitir</small></button>
-              <button class="live-mark" type="button"><span class="control-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 20V4.5c3.8-2.2 7.1 2.2 11 0v9c-3.9 2.2-7.2-2.2-11 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><small>İşaretle</small></button>
+          <section class="dash-card live-panel live2">
+            <div class="kicker l2-kicker">CANLI SES KAYDI</div>
+            <div class="l2-line"><i class="l2-dot"></i><span id="liveLineText">Kayıt bekleniyor...</span></div>
+            <b id="liveTimer" class="l2-timer">00:00</b>
+            <div id="liveWave" class="live-apple-wave l2-wave" aria-hidden="true"></div>
+            <div class="l2-actions">
+              <button class="l2-btn l2-pause" type="button"><i class="l2-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></i><span>Duraklat</span></button>
+              <button class="l2-btn l2-finish" type="button"><i class="l2-ic"><em></em></i><span>Kaydı Bitir</span></button>
             </div>
-            <div class="live-strip"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText"></span><i class="status-cursor"></i></span><b id="liveConnText">00:00</b></div>
+            <div class="l2-status"><span class="live-rec-svg"><img src="live-recording.svg" alt="REC"></span><span class="live-status-loop"><span id="liveStatusText"></span><i class="status-cursor"></i></span><b id="liveConnText">00:00</b></div>
           </section>
         </div>
 
@@ -196,6 +197,6 @@
 </main>
 <script defer src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0" integrity="sha384-JBR+x8blGwjDRO63aHCGiZMD4VNiTR4ZUGA+N6ZKLf3zNt1fK8IBpcgPaMrxqWBp" crossorigin="anonymous"></script>
-<script defer src="app.js?v=155"></script>
+<script defer src="app.js?v=157"></script>
 </body>
 </html>

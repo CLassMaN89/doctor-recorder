@@ -487,9 +487,31 @@ function setDesktopConnectionState(connected){
  if(dot)dot.classList.toggle('offline',!connected);
  const ico=$('#connIco'); if(ico)ico.classList.toggle('connected',!!connected);
 }
+// Masaüstü paneli ekrana sığdırılır: sayfa kaydırma çubuğu çıkmaz. Kısa ekranda en fazla %20 küçültülür (yazılar çok küçülmesin),
+// uzun ekranda kartlar boşluk kalmayacak şekilde uzatılır.
+let fitSig='',fitRAF=0;
+function fitDesktop(force){
+ const root=document.documentElement,sc=document.querySelector('.dashboard-showcase'),shell=document.querySelector('.desktop-shell');
+ if(!sc||!shell||!document.body.classList.contains('desktop-mode')||window.innerWidth<1101||document.getElementById('desktop')?.classList.contains('hidden')){
+  root.classList.remove('fit');root.style.removeProperty('zoom');root.style.removeProperty('--z');sc&&(sc.style.minHeight='');fitSig='';return;
+ }
+ const sig=window.innerWidth+'x'+window.innerHeight+'|'+(document.querySelectorAll('#devices .device-rich,#devices .device').length);
+ if(!force&&sig===fitSig)return;
+ fitSig=sig;
+ root.classList.add('fit');root.style.zoom='1';sc.style.minHeight='0px';shell.style.setProperty('min-height','0px','important');   // doğal yüksekliği ölç
+ const shellH=shell.getBoundingClientRect().height,scH=sc.getBoundingClientRect().height,extra=shellH-scH;
+ shell.style.removeProperty('min-height');
+ const z=Math.max(.8,Math.min(1,window.innerHeight/shellH));
+ root.style.zoom=String(z);root.style.setProperty('--z',String(z));
+ sc.style.minHeight=Math.max(scH,Math.floor(window.innerHeight/z-extra))+'px';
+ recSizeOverride=null;recFitTries=0;
+ if(lastDash)renderDashboard(lastDash);
+}
+window.addEventListener('resize',()=>{cancelAnimationFrame(fitRAF);fitRAF=requestAnimationFrame(()=>fitDesktop(true))});
 let lastDash=null;const rerenderRecs=()=>{if(lastDash)renderDashboard(lastDash)};
 function renderDashboard(d){
  lastDash=d;
+ if(!renderDashboard.__fitting){renderDashboard.__fitting=true;try{fitDesktop(false)}finally{renderDashboard.__fitting=false}}
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
  setDesktopConnectionState(devices.length>0);
  $('#deviceCount').textContent=`${devices.length} cihaz`;
@@ -508,6 +530,7 @@ function renderDashboard(d){
  const live=$('.live-panel');
  if(live){
   live.classList.toggle('is-recording',!!activeRec);
+  const lt=$('#liveLineText');if(lt)lt.textContent=activeRec?'Kayıt ediliyor...':'Kayıt bekleniyor...';
   startLiveTypeLoop(activeRec?'Şuanda kayıt işlemi yapılıyor...':'Telefon bekleniyor...');
  }
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
@@ -515,8 +538,8 @@ function renderDashboard(d){
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
  const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY,prevTops=new Map([...box.querySelectorAll('.wave-rec-row[data-rid]')].map(e=>[e.dataset.rid,e.getBoundingClientRect().top]));box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
- const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0}
- const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/48)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
+ const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0;recSizeOverride=null;recFitTries=0}
+ const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/40)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
  recPage=Math.min(recPage,pageCount-1);
  // Sabitlenen kayıtlar listenin en üstünde (sabitleme sırasıyla); numara kayıt sırasına göre kalır.
  const numOf=new Map(shown.map((r,i)=>[r.id,shown.length-i])),pins=getPinnedRecs();
@@ -536,10 +559,18 @@ function renderDashboard(d){
  }
  pinFlip=false;pinAnimId=null;
  // Son satır kesiliyorsa sayfa başına kayıt sayısı, gerçek satır yüksekliğine göre azaltılır.
- if(wideList&&pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;rerenderRecs()}
+ if(wideList&&pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;recFitTries=0;rerenderRecs()}
+ else if(wideList&&recFitTries<4&&start+pageItems.length<shown.length){
+  // Liste alanında boş yer kaldıysa (satırlar küçükse) sığabilecek kadar satır daha eklenir.
+  const last=box.querySelector('.wave-rec-row:last-of-type'),rows=box.querySelectorAll('.wave-rec-row');
+  if(last&&rows.length){
+   const used=last.offsetTop+last.offsetHeight-box.offsetTop,avg=used/rows.length,free=box.clientHeight-used;
+   if(free>=avg*.9){recFitTries++;recSizeOverride=pageItems.length+Math.max(1,Math.floor(free/avg));rerenderRecs()}
+  }
+ }
  if(Math.abs(window.scrollY-scrollY0)>1)window.scrollTo(0,scrollY0);   // liste yeniden çizilirken sayfa yukarı atmasın
 }
-let recPage=0,recPageKey='',recSizeOverride=null,pinFlip=false,pinAnimId=null;
+let recPage=0,recPageKey='',recSizeOverride=null,recFitTries=0,pinFlip=false,pinAnimId=null;
 // Sabitlenen kayıtlar bu tarayıcıda saklanır (en fazla 3).
 const MAX_PINNED_RECS=3;
 function getPinnedRecs(){try{const v=JSON.parse(localStorage.getItem('dr_pinned_recs')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
@@ -554,7 +585,7 @@ async function togglePinRec(id){
  }
  pinFlip=true;pinAnimId=id;recPage=0;rerenderRecs();
 }
-window.addEventListener('resize',()=>{recSizeOverride=null;clearTimeout(window._recRz);window._recRz=setTimeout(rerenderRecs,250)});
+window.addEventListener('resize',()=>{recSizeOverride=null;recFitTries=0;clearTimeout(window._recRz);window._recRz=setTimeout(rerenderRecs,250)});
 function renderRecPager(pageCount,total,start,count){
  const p=document.getElementById('recPager');if(!p)return;
  p.classList.toggle('single',pageCount<=1);
