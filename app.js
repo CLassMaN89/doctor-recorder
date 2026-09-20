@@ -488,21 +488,47 @@ function renderDashboard(d){
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
  const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
- const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY;box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY,prevTops=new Map([...box.querySelectorAll('.wave-rec-row[data-rid]')].map(e=>[e.dataset.rid,e.getBoundingClientRect().top]));box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
  const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0}
  const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/66)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
  recPage=Math.min(recPage,pageCount-1);
+ // Sabitlenen kayıtlar listenin en üstünde (sabitleme sırasıyla); numara kayıt sırasına göre kalır.
+ const numOf=new Map(shown.map((r,i)=>[r.id,shown.length-i])),pins=getPinnedRecs();
+ prunePinnedRecs(recs);
+ shown.sort((p,q)=>{const a=pins.indexOf(p.id),b=pins.indexOf(q.id);return (a<0?1e9:a)-(b<0?1e9:b)});
  const start=recPage*pageSize,pageItems=shown.slice(start,start+pageSize);
  renderRecPager(pageCount,shown.length,start,pageItems.length);
- pageItems.forEach((r,pi)=>{const ri=start+pi;const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row';const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
- row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${shown.length-ri}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b></div><div class="rec-device">${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
- const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};box.appendChild(row)});
+ pageItems.forEach((r,pi)=>{const ri=start+pi;const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row'+(pins.includes(r.id)?' pinned':'');row.dataset.rid=r.id;const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+ row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b>REC</b><span>${numOf.get(r.id)}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><button class="pin-rec" type="button" aria-pressed="${pins.includes(r.id)}" title="${pins.includes(r.id)?'Sabitlemeyi kaldır':'Üste sabitle'}" aria-label="${pins.includes(r.id)?'Sabitlemeyi kaldır':'Üste sabitle'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6l-1 6 3.2 3.4V14H6.8v-1.6L10 9z"/></svg></button></div><div class="rec-device">${osIcon(x.device_model)}${esc(x.device_model||'Telefon')}${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+ const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};const pinBtn=row.querySelector('.pin-rec');pinBtn.onclick=e=>{e.stopPropagation();togglePinRec(r.id)};row.tabIndex=0;row.onkeydown=e=>{if((e.key==='p'||e.key==='P')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.target===row){e.preventDefault();togglePinRec(r.id)}};
+ if(pinAnimId===r.id)row.classList.add('pin-pop');
+ box.appendChild(row)});
+ // Sabitle/kaldır: satırlar eski konumlarından yeni konumlarına yaylanarak kayar (FLIP)
+ if(pinFlip&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+  const moving=[];box.querySelectorAll('.wave-rec-row[data-rid]').forEach(el=>{const p=prevTops.get(el.dataset.rid);if(p==null)return;const dy=p-el.getBoundingClientRect().top;if(Math.abs(dy)>1){el.style.transition='none';el.style.transform=`translateY(${dy}px)`;moving.push(el)}});
+  if(moving.length){void box.offsetHeight;requestAnimationFrame(()=>moving.forEach((el,i)=>{el.style.transition=`transform .55s cubic-bezier(.34,1.42,.56,1) ${Math.min(i,6)*18}ms`;el.style.transform='';el.addEventListener('transitionend',()=>{el.style.transition=''},{once:true})}))}
+ }
+ pinFlip=false;pinAnimId=null;
  // Son satır kesiliyorsa sayfa başına kayıt sayısı, gerçek satır yüksekliğine göre azaltılır.
  if(wideList&&pageItems.length>1&&box.scrollHeight>box.clientHeight+2){recSizeOverride=pageItems.length-1;rerenderRecs()}
  if(Math.abs(window.scrollY-scrollY0)>1)window.scrollTo(0,scrollY0);   // liste yeniden çizilirken sayfa yukarı atmasın
 }
-let recPage=0,recPageKey='',recSizeOverride=null;
+let recPage=0,recPageKey='',recSizeOverride=null,pinFlip=false,pinAnimId=null;
+// Sabitlenen kayıtlar bu tarayıcıda saklanır (en fazla 3).
+const MAX_PINNED_RECS=3;
+function getPinnedRecs(){try{const v=JSON.parse(localStorage.getItem('dr_pinned_recs')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
+function setPinnedRecs(v){try{localStorage.setItem('dr_pinned_recs',JSON.stringify(v))}catch{}}
+function prunePinnedRecs(all){const ids=new Set((all||[]).map(r=>r.id)),cur=getPinnedRecs();if(!ids.size)return;const keep=cur.filter(id=>ids.has(id));if(keep.length!==cur.length)setPinnedRecs(keep)}
+async function togglePinRec(id){
+ const cur=getPinnedRecs();
+ if(cur.includes(id))setPinnedRecs(cur.filter(x=>x!==id));
+ else{
+  if(cur.length>=MAX_PINNED_RECS){await showNotice('Sabitleme sınırı',`En fazla ${MAX_PINNED_RECS} kayıt sabitlenebilir. Önce birinin sabitlemesini kaldırın.`);return}
+  setPinnedRecs([...cur,id]);
+ }
+ pinFlip=true;pinAnimId=id;recPage=0;rerenderRecs();
+}
 window.addEventListener('resize',()=>{recSizeOverride=null;clearTimeout(window._recRz);window._recRz=setTimeout(rerenderRecs,250)});
 function renderRecPager(pageCount,total,start,count){
  const p=document.getElementById('recPager');if(!p)return;

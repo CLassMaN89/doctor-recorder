@@ -1645,3 +1645,21 @@ html body #desktop .table-filters .table-refresh{flex:0 0 36px!important}
 html[data-theme="dark"],html[data-theme="dark"] body,html[data-theme="dark"] body.desktop-mode,html[data-theme="dark"] body #desktop,html[data-theme="dark"] body #desktop .desktop-shell,html[data-theme="dark"] body #desktop .desktop-work,html[data-theme="dark"] body #desktop .dashboard-content,html[data-theme="dark"] body #desktop .dashboard-showcase{background:#07111d!important}
 html[data-theme="dark"] body #desktop .table-filters select,html[data-theme="dark"] body #desktop .table-filters .date-filter,html[data-theme="dark"] body #desktop .table-filters .table-refresh,html[data-theme="dark"] body #desktop .count{background:#102235!important;color:#eaf4ff!important;border-color:#20384b!important}
 html[data-theme="dark"] body #desktop .live-actions .control-circle{background:#102235!important}
+
+/* v13.5 — kayıt sabitleme: sabitlenenler yükseltilmiş yüzey, renkli iğne ve sol vurgu çizgisiyle listenin üstünde */
+html body #desktop .recordings-table .rec-doctor{display:flex!important;align-items:center;gap:6px;min-width:0}
+html body #desktop .recordings-table .rec-doctor b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #desktop .pin-rec{flex:0 0 auto;width:24px;height:24px;border:0;border-radius:7px;background:transparent;color:#9db0c1;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.55;transition:opacity .15s,background-color .15s,color .15s}
+html body #desktop .wave-rec-row:hover .pin-rec,html body #desktop .pin-rec:focus-visible,html body #desktop .pin-rec[aria-pressed="true"]{opacity:1}
+html body #desktop .pin-rec:hover{background:#e8f1fd;color:#2b7fe6}
+html body #desktop .pin-rec svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s cubic-bezier(.34,1.5,.6,1),fill .15s}
+html body #desktop .pin-rec[aria-pressed="true"]{color:#2b7fe6}
+html body #desktop .pin-rec[aria-pressed="true"] svg{transform:rotate(45deg);fill:currentColor}
+html body #desktop .recordings-table .wave-rec-row.pinned{background:#f4f9ff!important;box-shadow:0 6px 18px rgba(43,111,224,.13),0 0 0 1px #d6e6fb;z-index:1}
+html body #desktop .recordings-table .wave-rec-row.pinned::before{opacity:1!important;background:linear-gradient(#a56bff,#2b7fe6)}
+html body #desktop .wave-rec-row.pin-pop{animation:pinPop .42s cubic-bezier(.34,1.4,.56,1)}
+@keyframes pinPop{0%{scale:1}35%{scale:.985}70%{scale:1.006}100%{scale:1}}
+html[data-theme="dark"] body #desktop .pin-rec:hover,html body[data-theme="dark"] #desktop .pin-rec:hover{background:#16314a;color:#7cc0ff}
+html[data-theme="dark"] body #desktop .pin-rec[aria-pressed="true"]{color:#7cc0ff}
+html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row.pinned{background:#0f2438!important;box-shadow:0 8px 20px rgba(0,0,0,.35),0 0 0 1px #24425a}
+@media(prefers-reduced-motion:reduce){html body #desktop .wave-rec-row.pin-pop{animation:none}html body #desktop .pin-rec svg{transition:none}}
