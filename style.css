@@ -1663,3 +1663,7 @@ html[data-theme="dark"] body #desktop .pin-rec:hover,html body[data-theme="dark"
 html[data-theme="dark"] body #desktop .pin-rec[aria-pressed="true"]{color:#7cc0ff}
 html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row.pinned{background:#0f2438!important;box-shadow:0 8px 20px rgba(0,0,0,.35),0 0 0 1px #24425a}
 @media(prefers-reduced-motion:reduce){html body #desktop .wave-rec-row.pin-pop{animation:none}html body #desktop .pin-rec svg{transition:none}}
+/* v13.6 — iğne düğmesi daha büyük ve kolay tıklanır */
+html body #desktop .pin-rec{width:34px;height:34px;border-radius:10px;opacity:.8}
+html body #desktop .pin-rec svg{width:20px;height:20px}
+@media(max-width:760px){html body #desktop .pin-rec{width:40px;height:40px;margin:-4px 0}html body #desktop .pin-rec svg{width:22px;height:22px}}
