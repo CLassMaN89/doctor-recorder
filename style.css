@@ -1811,3 +1811,27 @@ html[data-theme="dark"] body.mobile-mode #recorder:has(#recordControls:not(.hidd
 html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus span{padding-left:14px;border-left:1px solid #4d5a6d}
 html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus .rs-mic{display:none}
 html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus .rs-wave{display:block}
+
+/* v16.0 — Gelen Ses Kayıtları: kompakt tek satır, cihaz logosu + model + IP yan yana, ortalı başlıklar, küçük işlem ikonları, animasyonlu REC (yalnızca web) */
+.rec-anim{display:none}
+@media(min-width:761px){
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:60px minmax(108px,.85fr) minmax(200px,2fr) 98px 46px minmax(112px,.75fr)!important;column-gap:10px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns span{text-align:center}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{min-height:0!important;height:auto!important;padding-top:4px!important;padding-bottom:4px!important;align-items:center}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-id{justify-content:center;gap:4px}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-id .rec-dot,html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-id .rec-txt{display:none}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-id .rec-anim{display:block;width:44px;height:18px;object-fit:contain;flex:none}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-doctor{justify-content:center}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-device{display:flex!important;align-items:center;justify-content:center;gap:6px;white-space:nowrap!important;overflow:hidden!important;min-width:0}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-device .rd-model{min-width:0;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:12px}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-device .ip-badge{flex:none;margin:0!important;display:inline-block}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-date,html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-duration{text-align:center;justify-content:center}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .wave-player{grid-template-columns:minmax(0,1fr) 30px 28px!important;gap:6px!important;justify-items:center}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .apple-wave{height:22px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .play{width:30px!important;height:30px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .play svg{width:12px!important;height:12px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .delete-rec{width:28px!important;height:28px!important;border-radius:9px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .delete-rec svg{width:14px!important;height:14px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .pin-rec{width:26px!important;height:26px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .pin-rec svg{width:16px!important;height:16px!important}
+}
