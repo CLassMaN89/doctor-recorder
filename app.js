@@ -585,10 +585,22 @@ function qrLabel(){
  return raw.slice(0,9).match(/.{1,3}/g).join(' ');
 }
 
-function setSentBadge(show){
- const el=$('#sentBadge'); if(!el)return;
- el.classList.toggle('hidden',!show);
+function setSentBadge(){ /* cihaz bilgisinin yanındaki yeşil yazı kaldırıldı; gönderim bilgisi mikrofonun üstündeki metinde gösterilir */ }
+let helpTypeTimer=null;
+function setHelp(t){clearInterval(helpTypeTimer);helpTypeTimer=null;const h=$('#recordHelp');if(!h)return;h.classList.remove('sent');h.textContent=t}
+// Gönderim tamamlanınca: yeşil metin harf harf yazılır, bitince onay işareti (tik) çizilerek belirir.
+function showSentHelp(){
+ const h=$('#recordHelp');if(!h)return;
+ clearInterval(helpTypeTimer);
+ const text='Ses kaydı bilgisayara gönderildi.';
+ h.classList.add('sent');
+ h.innerHTML='<span class="sent-typed"></span><svg class="sent-tick" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
+ const out=h.querySelector('.sent-typed'),tick=h.querySelector('.sent-tick');
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){out.textContent=text;tick.classList.add('on');return}
+ let i=0;
+ helpTypeTimer=setInterval(()=>{i++;out.textContent=text.slice(0,i);if(i>=text.length){clearInterval(helpTypeTimer);helpTypeTimer=null;tick.classList.add('on')}},32);
 }
+
 function startHeartbeat(){
  if(heartbeatTimer) clearInterval(heartbeatTimer);
  const beat=()=>{ if(device) state(lastDeviceStatus||'connected',{heartbeat:true}).catch(()=>{}); };
@@ -774,7 +786,7 @@ async function startRecording(){
   $('#statePill').textContent='Kaydediliyor';
   $('#tapHint').classList.remove('permission-needed');
   $('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';
-  $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
+  setHelp('Konuşmanız canlı olarak kaydediliyor.');
   $('#waveWrap').classList.remove('hidden');
   $('#recordControls').classList.remove('hidden');
   holdScreenAwake();
@@ -842,7 +854,7 @@ async function uploadRecording(){
   $('#statePill').className='pill';
   $('#statePill').textContent='Hazır';
   $('#tapHint').textContent='Yeni kayıt için mikrofona dokunun';
-  $('#recordHelp').textContent='Ses kaydı bilgisayara gönderildi.';
+  showSentHelp();
   $('#timer').textContent='00:00';
 
   recorder=null;
@@ -890,10 +902,10 @@ async function togglePause(){
  if(!recorder||isFinishing)return;
  if(recorder.state==='recording'){
   recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
-  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';$('#recordHelp').textContent='Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.';$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');setRecStatus('Kayıt duraklatıldı',true);$('#pauseBtn').innerHTML=pauseBtnHtml(true);stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
+  $('#mic').classList.remove('recording');$('#statePill').className='pill';$('#statePill').textContent='Duraklatıldı';setHelp('Kayıt duraklatıldı. Devam etmek için mikrofona veya Devam Et butonuna dokunun.');$('#tapHint').textContent='Kayıt duraklatıldı';$('#pauseBtn').classList.add('resume');setRecStatus('Kayıt duraklatıldı',true);$('#pauseBtn').innerHTML=pauseBtnHtml(true);stopWave();state('idle').catch(e=>console.warn('Device state update failed:',e));
  }else if(recorder.state==='paused'){
   recorder.resume(); startedAt=Date.now(); isPaused=false;
-  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';$('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');setRecStatus('Kayıt yapılıyor...',false);$('#pauseBtn').innerHTML=pauseBtnHtml(false);$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
+  $('#mic').classList.add('recording');$('#statePill').className='pill recording';$('#statePill').textContent='Kaydediliyor';setHelp('Konuşmanız canlı olarak kaydediliyor.');$('#tapHint').textContent='Mikrofon: kayıt / duraklat · Alttan kaydı bitirebilirsiniz';$('#pauseBtn').classList.remove('resume');setRecStatus('Kayıt yapılıyor...',false);$('#pauseBtn').innerHTML=pauseBtnHtml(false);$('#waveWrap').classList.remove('hidden');try{startWave(stream)}catch(e){console.warn('Waveform unavailable:',e);$('#waveWrap')?.classList.add('hidden')}state('recording').catch(e=>console.warn('Device state update failed:',e));
  }
 }
 async function finishRecording(){
@@ -903,7 +915,7 @@ async function finishRecording(){
  const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
  recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
  clearInterval(timerInt); recorder.stop(); isPaused=false;
- $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#recStatus')?.classList.add('hidden');releaseScreenAwake();$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
+ $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#recStatus')?.classList.add('hidden');releaseScreenAwake();$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';setHelp('Ses kaydı tamamlandı.');stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
 }
 async function toggleRecording(){
  if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;

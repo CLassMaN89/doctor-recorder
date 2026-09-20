@@ -1676,3 +1676,19 @@ body.mobile-mode .mrow-del:active{background:#ffdde2}
 body.mobile-mode .mrow{transition:opacity .25s ease,transform .25s ease}
 body.mobile-mode .mrow.removing{opacity:0;transform:translateX(24px)}
 html[data-theme="dark"] body.mobile-mode .mrow-del{background:#3a1c25;color:#ff7a8a}
+
+/* v13.8 — cihaz bilgisinin yanındaki yeşil "gönderildi" yazısı kaldırıldı; mikrofonun üstündeki metin yeşil, harf harf yazılır ve tik çizilir */
+.sent-badge{display:none!important}
+body.mobile-mode #recordHelp.sent{display:flex;align-items:center;justify-content:center;gap:8px;color:#12a06f!important;font-weight:800;font-size:13px;min-height:22px}
+body.mobile-mode #recordHelp.sent .sent-typed::after{content:"";display:inline-block;width:1.5px;height:1em;margin-left:2px;vertical-align:-2px;background:currentColor;animation:sentCaret .8s steps(1) infinite}
+body.mobile-mode #recordHelp.sent:has(.sent-tick.on) .sent-typed::after{display:none}
+body.mobile-mode #recordHelp.sent .sent-tick{flex:none;width:20px;height:20px;fill:none;stroke:#12a06f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+body.mobile-mode #recordHelp.sent .sent-tick circle{stroke-dasharray:63;stroke-dashoffset:63}
+body.mobile-mode #recordHelp.sent .sent-tick path{stroke-dasharray:18;stroke-dashoffset:18}
+body.mobile-mode #recordHelp.sent .sent-tick.on{opacity:1}
+body.mobile-mode #recordHelp.sent .sent-tick.on circle{animation:sentDraw .45s ease-out forwards}
+body.mobile-mode #recordHelp.sent .sent-tick.on path{animation:sentDraw .35s .3s ease-out forwards}
+@keyframes sentDraw{to{stroke-dashoffset:0}}
+@keyframes sentCaret{50%{opacity:0}}
+html[data-theme="dark"] body.mobile-mode #recordHelp.sent{color:#3ddc97!important}
+html[data-theme="dark"] body.mobile-mode #recordHelp.sent .sent-tick{stroke:#3ddc97}
