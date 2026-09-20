@@ -1786,3 +1786,7 @@ html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus
 html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus span{border-left:0;padding-left:0;color:#d4dde9}
 html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus.paused{background:#4a3f22}
 @media(prefers-reduced-motion:reduce){body.mobile-mode #recorder #recPanel .rl-dot{animation:none}}
+/* v15.1 — kayıt yokken (kontroller gizliyken) panel öğeleri görünmez: "Kayıt ediliyor…" satırı ve zaman çizgisi yalnızca kayıt sırasında */
+body.mobile-mode #recorder:not(:has(#recordControls:not(.hidden))) #recPanel#recPanel .rec-line,
+body.mobile-mode #recorder:not(:has(#recordControls:not(.hidden))) #recPanel#recPanel .rec-timeline,
+body.mobile-mode #recorder:not(:has(#recordControls:not(.hidden))) #recPanel#recPanel #recStatus{display:none!important}
