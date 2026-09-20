@@ -1567,3 +1567,11 @@ html body #desktop .recordings-table .wave-rec-row .rec-id{color:#6b7f93}
 html[data-theme="dark"] body #desktop .recordings-table .recording-columns,html body[data-theme="dark"] #desktop .recordings-table .recording-columns{background:#12283c!important;color:#8fa8bc}
 html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row:hover,html body[data-theme="dark"] #desktop .recordings-table .wave-rec-row:hover{background:rgba(69,167,255,.10)!important}
 html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row::before,html body[data-theme="dark"] #desktop .recordings-table .wave-rec-row::before{background:#45a7ff}
+
+/* v12.7 — QR kalan süre göstergesi ve telefonda oturum bitiyor uyarısı */
+html body #desktop .qr-countdown{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:#2b7fe6;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+html body #desktop .qr-detail .qr-countdown{color:#2b7fe6}
+body.mobile-mode .idle-warn{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#fff6e0;border:1px solid #f6dda7;color:#8a5a0b;font-size:13px;font-weight:700}
+body.mobile-mode .idle-warn.hidden{display:none!important}
+body.mobile-mode .idle-warn button{flex:none;border:0;border-radius:9px;padding:8px 14px;background:#e89a1c;color:#fff;font:inherit;font-size:13px;font-weight:800}
+body.mobile-mode .recorder:has(#recordControls:not(.hidden)) .idle-warn{order:0}

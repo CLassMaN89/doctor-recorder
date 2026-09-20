@@ -207,7 +207,7 @@ async function initDesktop(){
  let saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
  // Kayıtlı QR başka yerden (ör. Dikte2) kapatılmış olabilir: geçerli değilse yenisini oluştur.
  if(saved?.token){
-  try{const st=await api('status',{query:{token:saved.token}});if(st?.status==='expired')saved=null}catch{saved=null}
+  try{const st=await api('status',{query:{token:saved.token}});if(st?.status==='expired')saved=null;else if(typeof st?.remaining_seconds==='number')qrLocalExpiry=Date.now()+st.remaining_seconds*1000}catch{saved=null}
   if(!saved)localStorage.removeItem('dr_pc_session');
  }
  if(saved?.id&&saved?.token){session=saved;showSessionQR();await loadDashboard();dashboardInt=setInterval(loadDashboard,2500)}
@@ -234,21 +234,35 @@ function showSessionQR(){
 async function createSession(){
  try{
   session=await api('create-session',{method:'POST',auth:true,body:{mode:'web'}});
+  qrLocalExpiry=Date.now()+Math.max(0,Date.parse(session.expires_at)-Date.parse(session.created_at));
+  document.body.classList.remove('qr-expired');
   localStorage.setItem('dr_pc_session',JSON.stringify(session)); showSessionQR();
   if(dashboardInt)clearInterval(dashboardInt);
   await loadDashboard(); dashboardInt=setInterval(loadDashboard,2500);
  }catch(e){console.error(e);alert('QR oluşturulamadı.')}
 }
-let sessionCheckTick=0;
+// QR ömrü: kullanılmazsa 5 dk, işlem oldukça 15 dk (sunucu kayan süre tutar). Süre dolunca yeni QR otomatik oluşur.
+let sessionCheckTick=0,qrLocalExpiry=0,qrChecking=false;
+function tickQrCountdown(){
+ const el=document.getElementById('qrCountdown'); if(!el||!qrLocalExpiry)return;
+ const left=Math.max(0,Math.round((qrLocalExpiry-Date.now())/1000));
+ el.textContent=left<=10?'Yenileniyor…':`Yenilenmesine ${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+ if(left<=0&&!qrChecking)checkSessionStillValid();
+}
+setInterval(tickQrCountdown,1000);
 async function checkSessionStillValid(){
- if(!session?.token)return;
+ if(!session?.token||qrChecking)return;
+ qrChecking=true;
  try{
   const st=await api('status',{query:{token:session.token}});
+  if(typeof st?.remaining_seconds==='number')qrLocalExpiry=Date.now()+st.remaining_seconds*1000;
   const dead=st?.status==='expired';
-  document.body.classList.toggle('qr-expired',dead);
+  if(dead&&st.reason==='timeout'){qrChecking=false;await createSession();return}   // süre doldu: yeni QR
+  document.body.classList.toggle('qr-expired',dead);                                 // başka yerden kapatıldı: uyar
   const code=document.getElementById('sessionCode');
-  if(dead&&code)code.textContent='SÜRESİ DOLDU';
+  if(dead&&code)code.textContent='YENİLENDİ';
  }catch{}
+ qrChecking=false;
 }
 async function loadDashboard(){
  if(!session)return;
@@ -556,6 +570,7 @@ async function initMobile(){
  $('#firstName').value='';
  $('#lastName').value='';
  $('#logoutBtn').onclick=logout;
+ $('#idleWarnBtn')&&($('#idleWarnBtn').onclick=()=>touchSession(false));
  // Aynı QR oturumunda sayfa yenilenirse giriş korunur; kayıt ekranı açık kalır. Çıkış için "Çıkış" düğmesi kullanılır.
  const savedLogin=readLogin();
  if(savedLogin&&savedLogin.token!==token){try{localStorage.removeItem('dr_login')}catch{}}
@@ -586,10 +601,27 @@ async function logout(){
 function revokedTokens(){try{return JSON.parse(localStorage.getItem('dr_revoked')||'[]')}catch{return []}}
 function revokeToken(t){if(!t)return;try{const l=revokedTokens().filter(x=>x!==t);l.push(t);localStorage.setItem('dr_revoked',JSON.stringify(l.slice(-30)))}catch{}}
 function unrevokeToken(t){try{localStorage.setItem('dr_revoked',JSON.stringify(revokedTokens().filter(x=>x!==t)))}catch{}}
+// Oturum süresi: sunucu kalan süreyi bildirir (kayan süre: işlem oldukça uzar). Bitmeden 60 sn önce uyarı çıkar.
+let sessionRemaining=null,lastTouchAt=0;
+function updateIdleWarning(){
+ const bar=$('#idleWarn'); if(!bar)return;
+ const recording=recorder&&(recorder.state==='recording'||recorder.state==='paused');
+ const show=!!device&&sessionRemaining!=null&&sessionRemaining>0&&sessionRemaining<=60&&!recording&&!isFinishing;
+ bar.classList.toggle('hidden',!show);
+ if(show)$('#idleWarnText').textContent=`Oturum ${sessionRemaining} sn içinde sona erecek.`;
+}
+async function touchSession(silent){
+ if(!device)return;
+ try{await api('touch',{method:'POST',query:{token,device_token:device.device_token}});sessionRemaining=900;lastTouchAt=Date.now();updateIdleWarning()}
+ catch(e){if(!silent&&e.status===410)expired()}
+}
+setInterval(()=>{if(sessionRemaining!=null&&sessionRemaining>0){sessionRemaining--;updateIdleWarning()}},1000);
+// Sayfayla etkileşim işlem sayılır (en fazla dakikada bir sunucuya bildirilir).
+document.addEventListener('pointerdown',()=>{if(device&&sessionRemaining!=null&&sessionRemaining<840&&Date.now()-lastTouchAt>60000)touchSession(true)},{passive:true});
 async function checkToken(){
  if(!token)return false;
  if(revokedTokens().includes(token))return false;
- try{const st=await api('status',{query:{token}});if(st&&st.status==='expired')return false;setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
+ try{const st=await api('status',{query:{token}});if(st&&st.status==='expired')return false;if(st&&typeof st.remaining_seconds==='number'){sessionRemaining=st.remaining_seconds;updateIdleWarning()}setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
 }
 function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textContent=b;$('#connection').className=`connection ${state||''}`}
 async function register(){
