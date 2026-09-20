@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=145">
+  <link rel="stylesheet" href="style.css?v=146">
 </head>
 <body>
 <main>
@@ -150,6 +150,12 @@
           <button id="pauseBtn" class="rc-btn pause-btn"><i class="rc-circle"><svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg></i><span>Duraklat</span></button>
           <button id="finishBtn" class="rc-btn finish-btn"><i class="rc-circle"><em></em></i><span>Kaydı Bitir</span></button>
         </div>
+        <div id="longWarn" class="long-warn hidden" role="alert">
+          <div class="lw-head"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>Uzun kayıt</b></div>
+          <p id="longWarnText"></p>
+          <div class="lw-bar"><i id="longWarnBar"></i></div>
+          <div class="lw-actions"><button id="longWarnContinue" type="button">Devam Et</button><button id="longWarnFinish" type="button" class="lw-finish">Kaydı Bitir</button></div>
+        </div>
         <div id="recStatus" class="rec-status hidden"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><b id="recStatusText">Kayıt yapılıyor...</b><span id="recStatusTime">00:00</span></div>
 
         <div id="expiredAction" class="expired hidden">
@@ -180,6 +186,6 @@
 </main>
 <script defer src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="app.js?v=143"></script>
+<script defer src="app.js?v=144"></script>
 </body>
 </html>

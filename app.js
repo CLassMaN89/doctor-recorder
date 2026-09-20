@@ -648,6 +648,8 @@ async function initMobile(){
  $('#mic').onclick=toggleRecording;
  $('#pauseBtn').onclick=togglePause;
  $('#finishBtn').onclick=finishRecording;
+ $('#longWarnContinue').onclick=()=>{hideLongWarn();longWarnAt=elapsedMs()+LONG_REC_MS};
+ $('#longWarnFinish').onclick=()=>{hideLongWarn();finishRecording()};
  $('#pauseBtn').innerHTML=pauseBtnHtml(false);
  $('#scanQrBtn').onclick=openScanner;
  $('#closeScanner').onclick=closeScanner;
@@ -784,7 +786,7 @@ async function startRecording(){
    catch(err){err.stage='recorder';err.cause=lastRecorderError;throw err}
   }
 
-  chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;
+  chunks=[];isPaused=false;isFinishing=false;elapsedBeforePause=0;pauseStartedAt=0;resetLongWarn();
   recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
   recorder.onerror=e=>{
    console.error('MediaRecorder error',e);
@@ -904,16 +906,38 @@ async function uploadRecording(){
  }
 }
 
+// Kayıt 10 dakikayı aşarsa uyarı çıkar ve 30 sn geri sayım başlar; işlem yapılmazsa kayıt durdurulup gönderilir.
+// "Devam Et" bir sonraki uyarıyı 10 dk sonraya erteler (unutulan kayıt telefonu doldurmasın).
+const LONG_REC_MS=10*60*1000,LONG_REC_GRACE_MS=30*1000;
+let longWarnAt=LONG_REC_MS,longWarnTimer=0,longWarnDeadline=0;
+function elapsedMs(){return recorder?(isPaused?elapsedBeforePause:elapsedBeforePause+(Date.now()-startedAt)):0}
+function hideLongWarn(){clearInterval(longWarnTimer);longWarnTimer=0;longWarnDeadline=0;$('#longWarn')?.classList.add('hidden')}
+function resetLongWarn(){hideLongWarn();longWarnAt=LONG_REC_MS}
+function tickLongWarn(){
+ const left=Math.max(0,Math.ceil((longWarnDeadline-Date.now())/1000));
+ const t=$('#longWarnText');if(t)t.textContent=`Kayıt 10 dakikayı aştı. ${left} sn içinde işlem yapılmazsa kayıt durdurulup gönderilecek.`;
+ const bar=$('#longWarnBar');if(bar)bar.style.width=Math.max(0,Math.min(100,(longWarnDeadline-Date.now())/LONG_REC_GRACE_MS*100))+'%';
+ if(left<=0){hideLongWarn();finishRecording()}
+}
+function showLongWarn(){
+ if(longWarnTimer||!recorder||isFinishing)return;
+ longWarnDeadline=Date.now()+LONG_REC_GRACE_MS;
+ $('#longWarn')?.classList.remove('hidden');navigator.vibrate?.([200,120,200]);
+ tickLongWarn();longWarnTimer=setInterval(tickLongWarn,500);
+}
+document.addEventListener('visibilitychange',()=>{if(longWarnTimer)tickLongWarn()});
 function updateTimer(){
  let ms=0;
  if(recorder){
   if(isPaused) ms=elapsedBeforePause;
   else ms=elapsedBeforePause+(Date.now()-startedAt);
  }
+ if(recorder&&!isPaused&&!isFinishing&&ms>=longWarnAt)showLongWarn();
  $('#timer').textContent=fmt(ms/1000);
  const rs=$('#recStatusTime'); if(rs)rs.textContent=fmt(ms/1000);
 }
 async function togglePause(){
+ if(longWarnTimer){hideLongWarn();longWarnAt=elapsedMs()+LONG_REC_MS}   // duraklatmak da bir işlemdir
  if(!recorder||isFinishing)return;
  if(recorder.state==='recording'){
   recorder.pause(); elapsedBeforePause+=Date.now()-startedAt; isPaused=true; pauseStartedAt=Date.now();
@@ -925,7 +949,7 @@ async function togglePause(){
 }
 async function finishRecording(){
  if(!recorder||isFinishing)return;
- isFinishing=true;
+ isFinishing=true;hideLongWarn();
  if(recorder.state==='paused') recorder.resume();
  const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
  recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
