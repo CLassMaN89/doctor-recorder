@@ -246,7 +246,9 @@ let sessionCheckTick=0,qrLocalExpiry=0,qrChecking=false;
 function tickQrCountdown(){
  const el=document.getElementById('qrCountdown'); if(!el||!qrLocalExpiry)return;
  const left=Math.max(0,Math.round((qrLocalExpiry-Date.now())/1000));
- el.textContent=left<=10?'Yenileniyor…':`Yenilenmesine ${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+ if(left>86400){el.textContent='';return}   // eski sunucu (30 günlük oturum): geri sayım gösterme
+ const m=Math.floor(left/60),sec=left%60;
+ el.textContent=left<=10?'Yenileniyor…':(m>0?`Yenilenmesine ${m} dk ${sec} sn`:`Yenilenmesine ${sec} sn`);
  if(left<=0&&!qrChecking)checkSessionStillValid();
 }
 setInterval(tickQrCountdown,1000);
@@ -659,6 +661,10 @@ function markMoment(){
  const old=$('#recStatusText').textContent; $('#recStatusText').textContent='İşaretlendi · '+t;
  clearTimeout(markToast); markToast=setTimeout(()=>{$('#recStatusText').textContent=isPaused?'Kayıt duraklatıldı':'Kayıt yapılıyor...'},1600);
 }
+let recWake=null;
+async function holdScreenAwake(){try{recWake=await navigator.wakeLock?.request('screen')}catch{}}
+function releaseScreenAwake(){try{recWake?.release()}catch{}recWake=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&recorder&&(recorder.state==='recording'||recorder.state==='paused')&&!recWake)holdScreenAwake()});
 async function startRecording(){
  setSentBadge(false);
  let acquiredStream=null;
@@ -718,6 +724,7 @@ async function startRecording(){
   $('#recordHelp').textContent='Konuşmanız canlı olarak kaydediliyor.';
   $('#waveWrap').classList.remove('hidden');
   $('#recordControls').classList.remove('hidden');
+  holdScreenAwake();
   setRecStatus('Kayıt yapılıyor...',false);
   $('#pauseBtn').classList.remove('resume');
   $('#pauseBtn').innerHTML=pauseBtnHtml(false);
@@ -843,7 +850,7 @@ async function finishRecording(){
  const totalMs=elapsedBeforePause+(isPaused?0:(Date.now()-startedAt));
  recorder.__finalDuration=Math.max(1,Math.round(totalMs/1000));
  clearInterval(timerInt); recorder.stop(); isPaused=false;
- $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#recStatus')?.classList.add('hidden');$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
+ $('#mic').classList.remove('recording');$('#recordControls').classList.add('hidden');$('#recStatus')?.classList.add('hidden');releaseScreenAwake();$('#statePill').className='pill';$('#statePill').textContent='Gönderiliyor';$('#tapHint').textContent='Kayıt bilgisayara gönderiliyor…';$('#recordHelp').textContent='Ses kaydı tamamlandı.';stopWave();state('uploading').catch(e=>console.warn('Device state update failed:',e));
 }
 async function toggleRecording(){
  if(!device||$('#recorder').classList.contains('expired-mode')||isFinishing)return;
