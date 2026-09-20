@@ -6,7 +6,14 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=s=>document.querySelector(s);
 const params=new URLSearchParams(location.search);
 const isMobile=params.get('mode')==='record';
-const token=params.get('token')||'';
+// Oturum kodu adres çubuğunda kalmaz: telefonda saklanır, adres "?mode=record" olarak temizlenir (sayfa yenilenince buradan okunur).
+const SESSION_TOKEN_KEY='dr_session_token';
+const readStoredToken=()=>{try{const v=JSON.parse(localStorage.getItem(SESSION_TOKEN_KEY)||'null');return v&&v.token&&Date.now()-v.at<24*3600*1000?v.token:''}catch{return ''}};
+const saveStoredToken=t=>{try{localStorage.setItem(SESSION_TOKEN_KEY,JSON.stringify({token:t,at:Date.now()}))}catch{}};
+const clearStoredToken=()=>{try{localStorage.removeItem(SESSION_TOKEN_KEY)}catch{}};
+const urlToken=params.get('token')||'';
+const token=isMobile?(urlToken||readStoredToken()):urlToken;
+if(isMobile&&urlToken){saveStoredToken(urlToken);try{history.replaceState(null,'',location.pathname+'?mode=record')}catch{}}
 let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
 let activePlaybackCount=0;
 const mobileConnectionId=crypto.randomUUID();
@@ -634,7 +641,7 @@ function stopHeartbeat(){
 async function initMobile(){
  $('#mobile').classList.remove('hidden');
  const qrEl=$('#mobileQrCode'); if(qrEl) qrEl.textContent=qrLabel();
- const mini=$('#mobileMiniQr'); if(mini){mini.innerHTML='';new QRCode(mini,{text:location.href,width:54,height:54,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
+ const mini=$('#mobileMiniQr'); if(mini){mini.innerHTML='';new QRCode(mini,{text:location.origin+location.pathname+'?mode=record&token='+encodeURIComponent(token),width:54,height:54,colorDark:'#17324a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
  document.addEventListener('visibilitychange',()=>{
   mobilePageHidden=document.hidden;
   if(!document.hidden && device){
@@ -684,6 +691,7 @@ async function logout(){
  try{localStorage.removeItem('dr_login');localStorage.setItem('dr_list_since',String(Date.now()))}catch{}
  revokeToken(token);
  // Adres çubuğundaki eski QR bilgisi (token) atılır; devam etmek için QR yeniden okutulmalı.
+ clearStoredToken();
  location.replace(location.pathname+'?mode=record');
 }
 // Çıkış yapılan QR'lar bu telefonda iptal listesine girer; aynı bağlantı açılsa bile yeniden QR okutulmadan kullanılamaz.
@@ -1035,7 +1043,7 @@ function renderHistoryRows(box,from,to){
  });
  box.appendChild(frag);
 }
-function expired(){stopHeartbeat();try{localStorage.removeItem('dr_login')}catch{}
+function expired(){stopHeartbeat();clearStoredToken();try{localStorage.removeItem('dr_login')}catch{}
  setConn('Oturum sona erdi','Bilgisayardaki yeni QR kodunu okutun.','expired');$('#identity').classList.add('hidden');$('#recorder').classList.remove('hidden');$('#recorder').classList.add('expired-mode');$('#mic').disabled=true;$('#tapHint').classList.add('hidden');$('#expiredAction').classList.remove('hidden');$('#waveWrap').classList.add('hidden');$('#statePill').textContent='Oturum Sona Erdi';if(recorder&&(recorder.state==='recording'||recorder.state==='paused')){try{recorder.stop()}catch{}}stopWave();
 }
 function startWave(s){
