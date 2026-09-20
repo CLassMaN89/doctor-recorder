@@ -282,7 +282,11 @@ async function loadDashboard(){
    if(isRecordingPlaybackActive())return;
    // Current QR session devices first, historical recordings remain persistent.
    const now=Date.now();
-   const currentDevices=(d.devices||[]).filter(x=>(x.mode?x.mode==='web':x.session_id===session.id) && x.last_seen_at && now-new Date(x.last_seen_at).getTime()<45000);
+   // Aynı telefon başka doktor adıyla girdiyse eski satır (sinyali henüz bitmemiş olsa da) gösterilmez: telefon başına en güncel bağlantı.
+   const freshDevices=(d.devices||[]).filter(x=>(x.mode?x.mode==='web':x.session_id===session.id) && x.last_seen_at && now-new Date(x.last_seen_at).getTime()<45000);
+   const latestByPhone=new Map(),actOf=x=>new Date(x.last_activity_at||x.created_at||0).getTime();
+   freshDevices.forEach(x=>{const k=x.device_id||x.id,cur=latestByPhone.get(k);if(!cur||actOf(x)>actOf(cur)||(actOf(x)===actOf(cur)&&new Date(x.created_at)>new Date(cur.created_at)))latestByPhone.set(k,x)});
+   const currentDevices=freshDevices.filter(x=>latestByPhone.get(x.device_id||x.id)===x);
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
    renderDashboard(window.__dash);
  }catch(e){console.error(e)}
@@ -626,7 +630,8 @@ async function initMobile(){
  if(savedLogin&&savedLogin.token!==token){try{localStorage.removeItem('dr_login')}catch{}}
  if(savedLogin&&savedLogin.token===token){
   $('#firstName').value=savedLogin.first; $('#lastName').value=savedLogin.last;
-  await register();
+  // Sayfa yenilenince giriş kendiliğinden yinelenir; geçici bir ağ sorunu yüzünden isim ekranına düşmemek için 3 kez denenir.
+  for(let i=0;i<3&&!device&&$('#recorder').classList.contains('hidden');i++){await register();if(!device&&!readLogin())break;if(!device)await new Promise(r=>setTimeout(r,1200))}
   if(!device){$('#identity').classList.remove('hidden')}
  } else {
   $('#identity').classList.remove('hidden');
@@ -671,7 +676,7 @@ document.addEventListener('pointerdown',()=>{if(device&&sessionRemaining!=null&&
 async function checkToken(){
  if(!token)return false;
  if(revokedTokens().includes(token))return false;
- try{const st=await api('status',{query:{token,...(device?{device_token:device.device_token}:{})}});if(st&&st.status==='expired')return false;if(st&&typeof st.remaining_seconds==='number'){sessionRemaining=st.remaining_seconds;updateIdleWarning()}setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
+ try{const st=await api('status',{query:{token,...(device?{device_token:device.device_token}:{})}});if(st&&st.status==='expired')return false;if(st&&typeof st.remaining_seconds==='number'){sessionRemaining=st.remaining_seconds;updateIdleWarning()}setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch(e){return !(e&&(e.status===404||e.status===410||e.status===403))}   // ağ kesintisi oturumu bitirmez; yalnızca sunucu "yok/kapalı" derse
 }
 function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textContent=b;$('#connection').className=`connection ${state||''}`}
 async function register(){
@@ -919,8 +924,12 @@ async function loadMobileHistory(){
    const el=document.createElement('div');
    const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
    el.className='mrow';
-   el.innerHTML=`<span class="mrow-rec"><i></i>REC</span><div class="mrow-mid"><small>${stamp} <em>${fmt(r.duration_seconds)}</em></small>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}</div><button class="play mrow-play" aria-label="Oynat"></button><button class="mrow-more" aria-label="Diğer" data-url="${esc(r.signed_url||'')}">⋮</button><audio preload="metadata" src="${r.signed_url||''}"></audio>`;
-   el.querySelector('.mrow-more').onclick=e=>{const u=e.currentTarget.dataset.url;if(u)window.open(u,'_blank')};
+   el.innerHTML=`<span class="mrow-rec"><i></i>REC</span><div class="mrow-mid"><small>${stamp} <em>${fmt(r.duration_seconds)}</em></small>${waveMarkup(r.id||r.file_path||stamp,'mobile-wave')}</div><button class="play mrow-play" aria-label="Oynat"></button><button class="mrow-del" type="button" aria-label="Kaydı sil" title="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio>`;
+   el.querySelector('.mrow-del').onclick=async()=>{
+    if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı sistemden kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;
+    try{await api('delete-my-recording',{method:'POST',query:{token,device_token:device.device_token},body:{recording_id:r.id}});el.classList.add('removing');setTimeout(()=>loadMobileHistory(),260)}
+    catch(e){if(e&&e.status===410)expired();else showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}
+   };
    const audio=el.querySelector('audio'),play=el.querySelector('.play');
    wireWavePlayer(el,audio,play,null); animatePlaybackWave(el,audio);
    box.appendChild(el);

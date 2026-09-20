@@ -1667,3 +1667,12 @@ html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row.pinned{bac
 html body #desktop .pin-rec{width:34px;height:34px;border-radius:10px;opacity:.8}
 html body #desktop .pin-rec svg{width:20px;height:20px}
 @media(max-width:760px){html body #desktop .pin-rec{width:40px;height:40px;margin:-4px 0}html body #desktop .pin-rec svg{width:22px;height:22px}}
+
+/* v13.7 — telefonda kendi kaydını silme düğmesi */
+body.mobile-mode .mrow{grid-template-columns:48px minmax(0,1fr) 40px 38px!important}
+body.mobile-mode .mrow-del{width:38px;height:38px;border:0;border-radius:11px;background:#fff0f2;color:#e0384f;display:grid;place-items:center;padding:0}
+body.mobile-mode .mrow-del svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.mobile-mode .mrow-del:active{background:#ffdde2}
+body.mobile-mode .mrow{transition:opacity .25s ease,transform .25s ease}
+body.mobile-mode .mrow.removing{opacity:0;transform:translateX(24px)}
+html[data-theme="dark"] body.mobile-mode .mrow-del{background:#3a1c25;color:#ff7a8a}
