@@ -547,10 +547,17 @@ async function logout(){
  const ok=await askConfirm({title:'Çıkış yapılsın mı?',text:'Çıkış yaparsanız "Kayıtlarım" listesi bu telefondan silinir.'+'\n\n'+'Ses kayıtlarınız sisteme gönderilmiştir, kaybolmaz.',okText:'Çıkış Yap',cancelText:'Vazgeç',danger:true});
  if(!ok)return;
  try{localStorage.removeItem('dr_login');localStorage.setItem('dr_list_since',String(Date.now()))}catch{}
- location.reload();
+ revokeToken(token);
+ // Adres çubuğundaki eski QR bilgisi (token) atılır; devam etmek için QR yeniden okutulmalı.
+ location.replace(location.pathname+'?mode=record');
 }
+// Çıkış yapılan QR'lar bu telefonda iptal listesine girer; aynı bağlantı açılsa bile yeniden QR okutulmadan kullanılamaz.
+function revokedTokens(){try{return JSON.parse(localStorage.getItem('dr_revoked')||'[]')}catch{return []}}
+function revokeToken(t){if(!t)return;try{const l=revokedTokens().filter(x=>x!==t);l.push(t);localStorage.setItem('dr_revoked',JSON.stringify(l.slice(-30)))}catch{}}
+function unrevokeToken(t){try{localStorage.setItem('dr_revoked',JSON.stringify(revokedTokens().filter(x=>x!==t)))}catch{}}
 async function checkToken(){
  if(!token)return false;
+ if(revokedTokens().includes(token))return false;
  try{const st=await api('status',{query:{token}});if(st&&st.status==='expired')return false;setConn('Masaüstüne Bağlandı','Aktif QR oturumu doğrulandı.','ok');return true}catch{return false}
 }
 function setConn(a,b,state){$('#connTitle').textContent=a;$('#connSub').textContent=b;$('#connection').className=`connection ${state||''}`}
@@ -843,7 +850,7 @@ async function openScanner(){
 function closeScanner(){cam?.getTracks().forEach(t=>t.stop());cam=null;if(scanRAF)cancelAnimationFrame(scanRAF);$('#scanner').classList.add('hidden')}
 function scan(){
  const v=$('#scanVideo'),c=$('#scanCanvas'),ctx=c.getContext('2d',{willReadFrequently:true});
- if(v.readyState>=2){c.width=v.videoWidth;c.height=v.videoHeight;ctx.drawImage(v,0,0);const im=ctx.getImageData(0,0,c.width,c.height),q=jsQR(im.data,im.width,im.height,{inversionAttempts:'dontInvert'});if(q?.data){try{const u=new URL(q.data);if(u.origin===location.origin&&u.pathname===location.pathname&&u.searchParams.get('mode')==='record'&&u.searchParams.get('token')){$('#scanStatus').textContent='QR bulundu. Yeni oturum açılıyor…';$('#scanStatus').className='scan-status ok';closeScanner();location.assign(u.toString());return}}catch{}}}
+ if(v.readyState>=2){c.width=v.videoWidth;c.height=v.videoHeight;ctx.drawImage(v,0,0);const im=ctx.getImageData(0,0,c.width,c.height),q=jsQR(im.data,im.width,im.height,{inversionAttempts:'dontInvert'});if(q?.data){try{const u=new URL(q.data);if(u.origin===location.origin&&u.pathname===location.pathname&&u.searchParams.get('mode')==='record'&&u.searchParams.get('token')){$('#scanStatus').textContent='QR bulundu. Yeni oturum açılıyor…';$('#scanStatus').className='scan-status ok';closeScanner();unrevokeToken(u.searchParams.get('token'));location.assign(u.toString());return}}catch{}}}
  scanRAF=requestAnimationFrame(scan);
 }
 
