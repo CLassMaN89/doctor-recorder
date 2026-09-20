@@ -1575,3 +1575,11 @@ body.mobile-mode .idle-warn{display:flex;align-items:center;justify-content:spac
 body.mobile-mode .idle-warn.hidden{display:none!important}
 body.mobile-mode .idle-warn button{flex:none;border:0;border-radius:9px;padding:8px 14px;background:#e89a1c;color:#fff;font:inherit;font-size:13px;font-weight:800}
 body.mobile-mode .recorder:has(#recordControls:not(.hidden)) .idle-warn{order:0}
+
+/* v12.8 — iPhone: kutulara dokununca sayfa yakınlaşmasın (iOS 16 px'ten küçük yazıda otomatik zoom yapar) */
+body.mobile-mode input,body.mobile-mode select,body.mobile-mode textarea{font-size:16px!important}
+body.mobile-mode input::placeholder{font-size:16px}
+html,body.mobile-mode{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.mobile-mode{overflow-x:hidden}
+body.mobile-mode .phone,body.mobile-mode .cardish,body.mobile-mode .connection,body.mobile-mode .mobile-head{max-width:100%;box-sizing:border-box}
+body.mobile-mode button,body.mobile-mode input{touch-action:manipulation}
