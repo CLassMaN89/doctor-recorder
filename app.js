@@ -206,7 +206,7 @@ async function initDesktop(){
  let {data}=await sb.auth.getSession();
  if(!data.session||data.session.user?.is_anonymous){await clinicLogin();}
  $('#newQr').onclick=()=>createSession(false);
- $('#deviceFilter').onchange=()=>renderDashboard(window.__dash||{devices:[],recordings:[]});
+ $('#deviceFilter').onchange=()=>{recPage=0;rerenderRecs()};
  const dateInput=$('#recordingDateFilter');
  if(dateInput){dateInput.onchange=()=>{selectedRecordingDate=dateInput.value||'';syncDateFilterUI();renderDashboard(window.__dash||{devices:[],recordings:[]})};dateInput.onclick=()=>{try{dateInput.showPicker?.()}catch{}};syncDateFilterUI();}
  $('.table-refresh') && ($('.table-refresh').onclick=loadDashboard);
@@ -536,8 +536,19 @@ function renderDashboard(d){
  const filter=$('#deviceFilter'),old=filter.value;filter.innerHTML='<option value="">Tüm doktorlar</option>';
  const deviceMap=Object.fromEntries(allDevices.map(x=>[x.id,x]));
  announceRecChanges(recs,deviceMap);
- const seen=new Set();allDevices.forEach(x=>{const key=x.id;if(seen.has(key))return;seen.add(key);const o=document.createElement('option');o.value=x.id;o.textContent=`${x.doctor_first_name} ${x.doctor_last_name} · ${x.device_model||'Telefon'}`;filter.appendChild(o)});filter.value=[...seen].includes(old)?old:'';
- const shown=recs.filter(r=>(!filter.value||r.device_connection_id===filter.value)&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY,prevTops=new Map([...box.querySelectorAll('.wave-rec-row[data-rid]')].map(e=>[e.dataset.rid,e.getBoundingClientRect().top]));box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ // Doktor listesi: ad-soyada göre TEK satır (büyük/küçük harf ve oturum/telefon farkı yok sayılır), alfabetik, kayıt sayısıyla.
+ const docKey=x=>`${(x.doctor_first_name||'').trim()} ${(x.doctor_last_name||'').trim()}`.replace(/\s+/g,' ').trim().toLocaleLowerCase('tr-TR')||'?';
+ const titleCase=t=>t.split(' ').map(w=>w?w.charAt(0).toLocaleUpperCase('tr-TR')+w.slice(1).toLocaleLowerCase('tr-TR'):w).join(' ');
+ const docs=new Map();
+ allDevices.forEach(x=>{const k=docKey(x);if(!docs.has(k))docs.set(k,{label:titleCase(k==='?'?'Eski kayıt':k),count:0})});
+ recs.forEach(r=>{const x=deviceMap[r.device_connection_id];if(x)docs.get(docKey(x)).count++});
+ [...docs].sort((a,b)=>a[1].label.localeCompare(b[1].label,'tr')).forEach(([k,v])=>{const o=document.createElement('option');o.value='doc:'+k;o.textContent=`${v.label} (${v.count})`;filter.appendChild(o)});
+ filter.value=docs.has(old.replace(/^doc:/,''))?old:'';
+ // Filtreyi tek tıkla temizleyen ✕ düğmesi
+ const wrap=filter.closest('.doctor-select-wrap');let clr=document.getElementById('docClear');
+ if(wrap&&!clr){clr=document.createElement('button');clr.id='docClear';clr.type='button';clr.className='filter-clear';clr.setAttribute('aria-label','Doktor filtresini temizle');clr.title='Filtreyi temizle';clr.textContent='✕';clr.onclick=()=>{filter.value='';rerenderRecs()};wrap.appendChild(clr)}
+ if(wrap){wrap.classList.toggle('has-clear',!!filter.value)}
+ const shown=recs.filter(r=>(!filter.value||(deviceMap[r.device_connection_id]&&'doc:'+docKey(deviceMap[r.device_connection_id])===filter.value))&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY,prevTops=new Map([...box.querySelectorAll('.wave-rec-row[data-rid]')].map(e=>[e.dataset.rid,e.getBoundingClientRect().top]));box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
  const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0;recSizeOverride=null;recFitTries=0}
  const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/40)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
