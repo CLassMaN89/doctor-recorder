@@ -1543,3 +1543,15 @@ html body #desktop .rec-banner p{font-size:12px!important}
 html body #desktop .recordings-table .table-head .table-filters{margin:0 0 0 auto!important;flex:0 0 auto}
 html body #desktop .conn-ico .ci-ok{width:82px!important;height:82px!important;object-fit:contain}
 html body #desktop .conn-ico{width:84px!important;height:84px!important}
+
+/* v12.3 — Başlık + süzgeçler tek kalıp: kalıbı .table-head taşır, içteki bant sadeleşir */
+html body #desktop .recordings-table .table-head{
+ flex-wrap:wrap!important;gap:10px 16px!important;padding:10px 18px!important;margin:0 0 12px!important;
+ border:1px solid #dbe8f6;border-radius:18px;background:linear-gradient(120deg,#f1f7ff 0%,#ffffff 62%);box-shadow:0 6px 22px rgba(43,111,224,.06)}
+html body #desktop .rec-banner{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;flex:1 1 250px!important;min-width:0}
+html body #desktop .rec-banner-ico{width:42px!important;height:42px!important}
+html body #desktop .rec-kicker{font-size:9.5px!important;padding:3px 9px!important}
+html body #desktop .rec-banner h2{font-size:17px!important;margin:5px 0 1px!important}
+html body #desktop .rec-banner p{font-size:11.5px!important}
+html body #desktop .recordings-table .table-head .table-filters{margin:0 0 0 auto!important}
+html[data-theme="dark"] body #desktop .recordings-table .table-head,html body[data-theme="dark"] #desktop .recordings-table .table-head{background:linear-gradient(120deg,#0f2438 0%,#0d1b2a 65%);border-color:#20384b;box-shadow:none}
