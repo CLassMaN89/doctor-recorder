@@ -411,7 +411,7 @@ function renderLiveWave(recording){
  const box=$('#liveWave'); if(!box)return;
  if(!box.children.length) box.innerHTML=waveBars('live-doctor-wave',92);
  box.classList.toggle('active',!!recording);
- setFlow(box,!!recording);   // yalnızca kayıt sürerken akar
+ setFlow(box,true);   // "Canlı Ses Kaydı" kartındaki dalga (yalnızca sitede) her zaman akar; diğer dalgalar yalnızca ses oynarken
  if(recording && !liveStartedAt) liveStartedAt=Date.now();
  if(!recording) liveStartedAt=0;
  clearTimeout(liveTimerRAF);
@@ -648,7 +648,6 @@ async function initMobile(){
  $('#mic').onclick=toggleRecording;
  $('#pauseBtn').onclick=togglePause;
  $('#finishBtn').onclick=finishRecording;
- $('#markBtn').onclick=markMoment;
  $('#pauseBtn').innerHTML=pauseBtnHtml(false);
  $('#scanQrBtn').onclick=openScanner;
  $('#closeScanner').onclick=closeScanner;
@@ -740,12 +739,6 @@ function setRecStatus(text,paused){
  const b=$('#recStatus'); if(!b)return;
  b.classList.remove('hidden'); b.classList.toggle('paused',!!paused);
  $('#recStatusText').textContent=text;
-}
-let markToast=0;
-function markMoment(){
- const t=$('#timer').textContent; navigator.vibrate?.(30);
- const old=$('#recStatusText').textContent; $('#recStatusText').textContent='İşaretlendi · '+t;
- clearTimeout(markToast); markToast=setTimeout(()=>{$('#recStatusText').textContent=isPaused?'Kayıt duraklatıldı':'Kayıt yapılıyor...'},1600);
 }
 let recWake=null;
 async function holdScreenAwake(){try{recWake=await navigator.wakeLock?.request('screen')}catch{}}
