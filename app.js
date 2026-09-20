@@ -910,8 +910,17 @@ function startWave(s){
  const c=$('#wave'),ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(s);
  analyser=ac.createAnalyser();analyser.fftSize=256;analyser.smoothingTimeConstant=.76;src.connect(analyser);waveCtx=ac;
  const freq=new Uint8Array(analyser.frequencyBinCount);
+ const glow=ensureVoiceGlow();let glowLvl=0;
  const draw=()=>{
   waveRAF=requestAnimationFrame(draw);
+  // Ekranın altından sesle yükselen ışık: hızlı yükselir (attack), yavaş söner (release)
+  if(glow){
+   let sum=0;const n=Math.min(freq.length,48);for(let i=2;i<n;i++)sum+=freq[i];
+   const raw=Math.min(1,Math.pow(sum/((n-2)*255)*2.4,.85)),paused=recorder&&recorder.state==='paused';
+   glowLvl+=((paused?0:raw)-glowLvl)*(raw>glowLvl?.35:.08);
+   glow.style.setProperty('--vg',glowLvl.toFixed(3));
+   glow.classList.toggle('processing',!!isFinishing);glow.classList.toggle('on',true);
+  }
   const dpr=Math.min(devicePixelRatio||1,2),rect=c.getBoundingClientRect(),w=Math.max(1,rect.width*dpr|0),h=Math.max(1,rect.height*dpr|0);
   if(c.width!==w||c.height!==h){c.width=w;c.height=h}
   analyser.getByteFrequencyData(freq);
@@ -931,7 +940,14 @@ function startWave(s){
  };
  draw();
 }
-function stopWave(){if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
+function ensureVoiceGlow(){
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return null;
+ let g=document.getElementById('voiceGlow');
+ if(!g){g=document.createElement('div');g.id='voiceGlow';g.className='voice-glow';g.setAttribute('aria-hidden','true');g.innerHTML='<i class="vg-a"></i><i class="vg-b"></i>';document.body.appendChild(g)}
+ return g;
+}
+function hideVoiceGlow(){const g=document.getElementById('voiceGlow');if(g){g.classList.remove('on','processing');g.style.setProperty('--vg','0')}}
+function stopWave(){hideVoiceGlow();if(waveRAF)cancelAnimationFrame(waveRAF);waveRAF=null;if(waveCtx)waveCtx.close().catch(()=>{});waveCtx=null;analyser=null;const c=$('#wave');c?.getContext('2d')?.clearRect(0,0,c.width,c.height);$('#waveWrap')?.classList.add('hidden')}
 
 let cam=null,scanRAF=null;
 async function openScanner(){

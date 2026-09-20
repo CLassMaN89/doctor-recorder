@@ -1645,3 +1645,16 @@ html body #desktop .table-filters .table-refresh{flex:0 0 36px!important}
 html[data-theme="dark"],html[data-theme="dark"] body,html[data-theme="dark"] body.desktop-mode,html[data-theme="dark"] body #desktop,html[data-theme="dark"] body #desktop .desktop-shell,html[data-theme="dark"] body #desktop .desktop-work,html[data-theme="dark"] body #desktop .dashboard-content,html[data-theme="dark"] body #desktop .dashboard-showcase{background:#07111d!important}
 html[data-theme="dark"] body #desktop .table-filters select,html[data-theme="dark"] body #desktop .table-filters .date-filter,html[data-theme="dark"] body #desktop .table-filters .table-refresh,html[data-theme="dark"] body #desktop .count{background:#102235!important;color:#eaf4ff!important;border-color:#20384b!important}
 html[data-theme="dark"] body #desktop .live-actions .control-circle{background:#102235!important}
+
+/* v13.5 — telefon kayıt ekranı: mikrofon sesiyle ekranın altından yükselen renkli ışık (Dikte2 paleti) */
+.voice-glow{position:fixed;left:0;right:0;bottom:0;height:46vh;max-height:420px;pointer-events:none;z-index:4;opacity:0;transition:opacity .5s ease;--vg:0;overflow:hidden}
+.voice-glow.on{opacity:1}
+.voice-glow i{position:absolute;left:-15%;right:-15%;bottom:-24%;height:100%;border-radius:50% 50% 0 0/80% 80% 0 0;filter:blur(34px);transform-origin:50% 100%;will-change:transform,opacity}
+.voice-glow .vg-a{background:linear-gradient(90deg,#ff6ec7 0%,#a56bff 34%,#4f9dff 68%,#22d3ee 100%);transform:scaleY(calc(.10 + var(--vg)*.9));opacity:calc(.28 + var(--vg)*.62)}
+.voice-glow .vg-b{background:linear-gradient(90deg,#22d3ee 0%,#4f9dff 32%,#a56bff 66%,#ff6ec7 100%);transform:scaleY(calc(.05 + var(--vg)*.62)) translateX(calc(var(--vg)*-6%));opacity:calc(.18 + var(--vg)*.5);mix-blend-mode:screen}
+/* Kayıt bitip yükleniyor: ışık toplanıp iki yana süpürülür */
+.voice-glow.processing .vg-a{transform:scaleY(.14) scaleX(.5);opacity:.85;animation:vgSweep 1.6s ease-in-out infinite alternate}
+.voice-glow.processing .vg-b{transform:scaleY(.1) scaleX(.4);opacity:.7;animation:vgSweep 1.6s ease-in-out infinite alternate-reverse}
+@keyframes vgSweep{from{translate:-32% 0}to{translate:32% 0}}
+html[data-theme="dark"] .voice-glow i{filter:blur(38px)}
+@media(prefers-reduced-motion:reduce){.voice-glow{display:none}}
