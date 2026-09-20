@@ -1583,3 +1583,19 @@ html,body.mobile-mode{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body.mobile-mode{overflow-x:hidden}
 body.mobile-mode .phone,body.mobile-mode .cardish,body.mobile-mode .connection,body.mobile-mode .mobile-head{max-width:100%;box-sizing:border-box}
 body.mobile-mode button,body.mobile-mode input{touch-action:manipulation}
+
+/* v13.0 — sağ liste kartı sol sütunla aynı yükseklikte biter; kayıtlar sayfalanır */
+@media(min-width:1101px){
+html body.desktop-mode #desktop .dashboard-showcase{align-items:stretch!important}
+html body.desktop-mode #desktop .dashboard-showcase>.recordings-table{position:relative!important;top:auto!important;height:auto!important;max-height:none!important;min-height:480px!important;align-self:stretch!important;contain:size}
+}
+html body #desktop .rec-pager{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 4px 0;margin-top:8px;border-top:1px solid #e3ecf3;min-height:44px;font-size:12px;color:#6b7f93}
+html body #desktop .rec-pager.single .rp-nav{visibility:hidden}
+html body #desktop .rec-pager .rp-nav{display:flex;align-items:center;gap:10px}
+html body #desktop .rec-pager .rp-nav b{font-variant-numeric:tabular-nums;color:#19344b;min-width:44px;text-align:center}
+html body #desktop .rec-pager button{width:30px;height:30px;border-radius:9px;border:1px solid #d5e3ee;background:#fff;color:#2b7fe6;font-size:18px;line-height:1;cursor:pointer}
+html body #desktop .rec-pager button:hover:not(:disabled){background:#eef6ff}
+html body #desktop .rec-pager button:disabled{opacity:.4;cursor:default}
+html[data-theme="dark"] body #desktop .rec-pager,html body[data-theme="dark"] #desktop .rec-pager{border-top-color:#1e3850;color:#8fa8bc}
+html[data-theme="dark"] body #desktop .rec-pager button,html body[data-theme="dark"] #desktop .rec-pager button{background:#12283c;border-color:#24425a;color:#7cc0ff}
+html[data-theme="dark"] body #desktop .rec-pager .rp-nav b,html body[data-theme="dark"] #desktop .rec-pager .rp-nav b{color:#dbe9f5}
