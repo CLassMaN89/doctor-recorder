@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=118">
+  <link rel="stylesheet" href="style.css?v=119">
 </head>
 <body>
 <main>
@@ -31,7 +31,7 @@
       <div class="dashboard-content">
         <header class="brand-bar">
         <div class="brand-left">
-          <span class="brand-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+          <span class="brand-ico"><img src="mic-anim.svg" alt="" draggable="false"></span>
           <div class="brand-text"><h1>Dikte Kayıt Sistemi</h1><p>Doktor Ses Kayıt Uygulaması</p></div>
         </div>
         <span id="sysPill" class="sys-pill"><i class="sys-dot"></i><span id="sysPillText">Sistem Hazır</span></span>
@@ -49,7 +49,7 @@
         <div class="dashboard-showcase"><div class="dashboard-top">
           <section class="dash-card connect-panel">
             <div class="connect-upper">
-              <div class="connect-copy"><span id="desktopConnDot" class="online-dot offline"></span><div><h2 id="desktopConnTitle">Telefon Bekleniyor</h2><p id="desktopConnSub">QR kodunu doktor telefonundan okutun.</p></div></div>
+              <div class="connect-copy"><span id="connIco" class="conn-ico" aria-hidden="true"><img class="ci-wait" src="qr-success.svg" alt="" draggable="false"><img class="ci-ok" src="mic-anim.svg" alt="" draggable="false"></span><span id="desktopConnDot" class="online-dot offline"></span><div><h2 id="desktopConnTitle">Telefon Bekleniyor</h2><p id="desktopConnSub">QR kodunu doktor telefonundan okutun.</p></div></div>
               <div class="mini-qr"><div id="qrcode"></div></div>
               <div class="qr-detail"><small>QR Kod Numarası</small><b id="sessionCode">--------</b><span>Bu kod ile telefondan bağlanın.</span><button id="newQr" class="new-qr-button" type="button"><span>↻</span> Yeni QR Oluştur</button></div>
             </div>
@@ -173,6 +173,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="app.js?v=118"></script>
+<script src="app.js?v=119"></script>
 </body>
 </html>

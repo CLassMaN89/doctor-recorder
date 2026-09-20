@@ -442,6 +442,7 @@ function setDesktopConnectionState(connected){
  title.textContent=connected?'Masaüstüne Bağlandı':'Telefon Bekleniyor';
  sub.textContent=connected?'Doktor cihazı aktif olarak bağlandı.':'QR kodunu doktor telefonundan okutun.';
  if(dot)dot.classList.toggle('offline',!connected);
+ const ico=$('#connIco'); if(ico)ico.classList.toggle('connected',!!connected);
 }
 function renderDashboard(d){
  const devices=d.devices||[], recs=d.recordings||[], allDevices=d.allDevices||devices;
