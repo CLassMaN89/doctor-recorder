@@ -1108,11 +1108,13 @@ function applyTheme(theme){
  try{localStorage.setItem('dr_theme',value)}catch{}
  const light=document.getElementById('themeLight'),dark=document.getElementById('themeDark');
  light?.classList.toggle('active',value==='light'); dark?.classList.toggle('active',value==='dark');
+ const mt=document.getElementById('mobileTheme');if(mt){mt.dataset.mode=value;mt.setAttribute('aria-label',value==='dark'?'Açık temaya geç':'Koyu temaya geç')}
  const meta=document.querySelector('meta[name="theme-color"]'); if(meta)meta.content=value==='dark'?'#07111d':'#f4f8fc';
 }
 applyTheme((()=>{try{return localStorage.getItem('dr_theme')||'light'}catch{return 'light'}})());
 document.getElementById('themeLight')?.addEventListener('click',()=>applyTheme('light'));
 document.getElementById('themeDark')?.addEventListener('click',()=>applyTheme('dark'));
+document.getElementById('mobileTheme')?.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 // Yapay zekâ küresi (467 KB, ~1500 animasyonlu öğe) yalnızca kullanıcı etkileşimdeyken canlı oynar;
 // ~25 sn dokunulmazsa, sayfa gizlenince ya da "hareketi azalt" açıksa hafif sabit resme geçilir.
 (function(){
