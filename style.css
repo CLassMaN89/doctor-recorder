@@ -1483,6 +1483,6 @@ html body #desktop .conn-ico .ci-wait{display:block;width:74px;height:74px;margi
 html body #desktop .conn-ico .ci-ok{width:54px;height:54px}
 html body #desktop .conn-ico.connected .ci-wait{display:none}
 html body #desktop .conn-ico.connected .ci-ok{display:block}
-html body.desktop-mode #desktop .connect-copy h2{font-size:17px!important}
+html body.desktop-mode #desktop .connect-copy h2{font-size:19px!important}
 html body.desktop-mode #desktop .connect-copy p{font-size:11.5px!important;margin-top:3px!important}
 html body.desktop-mode #desktop .qr-detail b{font-size:20px!important;letter-spacing:.04em!important}
