@@ -1555,3 +1555,15 @@ html body #desktop .rec-banner h2{font-size:17px!important;margin:5px 0 1px!impo
 html body #desktop .rec-banner p{font-size:11.5px!important}
 html body #desktop .recordings-table .table-head .table-filters{margin:0 0 0 auto!important}
 html[data-theme="dark"] body #desktop .recordings-table .table-head,html body[data-theme="dark"] #desktop .recordings-table .table-head{background:linear-gradient(120deg,#0f2438 0%,#0d1b2a 65%);border-color:#20384b;box-shadow:none}
+
+/* v12.4 — Kayıt listesi: gri sütun başlığı, satırda hover ile sol mavi çizgi ve açık mavi zemin */
+html body #desktop .recordings-table .recording-columns{
+ background:#f3f5f9!important;border:0!important;border-radius:12px;padding:12px 16px!important;margin:0 0 4px!important;color:#6b7f93;font-weight:800;letter-spacing:.06em}
+html body #desktop .recordings-table .wave-rec-row{position:relative;border-radius:10px;transition:background-color .15s ease;padding-left:16px!important}
+html body #desktop .recordings-table .wave-rec-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:#1e7bf2;opacity:0;transition:opacity .15s ease;pointer-events:none}
+html body #desktop .recordings-table .wave-rec-row:hover{background:#f1f7ff!important}
+html body #desktop .recordings-table .wave-rec-row:hover::before{opacity:1}
+html body #desktop .recordings-table .wave-rec-row .rec-id{color:#6b7f93}
+html[data-theme="dark"] body #desktop .recordings-table .recording-columns,html body[data-theme="dark"] #desktop .recordings-table .recording-columns{background:#12283c!important;color:#8fa8bc}
+html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row:hover,html body[data-theme="dark"] #desktop .recordings-table .wave-rec-row:hover{background:rgba(69,167,255,.10)!important}
+html[data-theme="dark"] body #desktop .recordings-table .wave-rec-row::before,html body[data-theme="dark"] #desktop .recordings-table .wave-rec-row::before{background:#45a7ff}
