@@ -69,14 +69,27 @@ function fillPhoneModel(){
 detectModel().then(fillPhoneModel);
 window.addEventListener('load',fillPhoneModel);
 function fmt(sec){sec=Math.max(0,Math.floor(sec||0));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`}
+// ---- Merkezi günlük: hatalar sunucudaki app_logs tablosuna gönderilir (oturumsuz, hız sınırlı) ----
+const APP_VER='panel v11.x';
+let __logCount=0; const __logSeen=new Set();
+function logEvent(level,message,detail){
+ try{
+  if(__logCount>=15)return;
+  const key=level+'|'+message; if(__logSeen.has(key))return; __logSeen.add(key); __logCount++;
+  fetch(`${API}?action=log`,{method:'POST',keepalive:true,headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({source:isMobile?'phone':'web',level,message:String(message).slice(0,500),detail,app_version:APP_VER,session_token:token||null})}).catch(()=>{});
+ }catch{}
+}
+window.addEventListener('error',e=>logEvent('error',e.message||'Betik hatası',{file:e.filename,line:e.lineno,col:e.colno}));
+window.addEventListener('unhandledrejection',e=>logEvent('error','Yakalanmamış hata: '+(e.reason&&e.reason.message||e.reason),{status:e.reason&&e.reason.status}));
 async function api(action,{method='GET',body=null,auth=false,query={}}={}){
  const q=new URLSearchParams({action,...query});
  const headers={apikey:SUPABASE_KEY};
  if(auth){const {data}=await sb.auth.getSession(); if(data.session)headers.Authorization=`Bearer ${data.session.access_token}`}
  if(body && !(body instanceof FormData))headers['Content-Type']='application/json';
- const r=await fetch(`${API}?${q}`,{method,headers,body:body?(body instanceof FormData?body:JSON.stringify(body)):undefined,cache:'no-store'});
+ let r; try{r=await fetch(`${API}?${q}`,{method,headers,body:body?(body instanceof FormData?body:JSON.stringify(body)):undefined,cache:'no-store'})}catch(err){logEvent('warn','Ağ hatası: '+action,{message:String(err&&err.message||err)});throw err}
  const j=await r.json().catch(()=>({}));
- if(!r.ok) throw Object.assign(new Error(j.error||'request_failed'),{status:r.status,data:j});
+ if(!r.ok){ if(![401,403,404,410].includes(r.status))logEvent(r.status>=500?'error':'warn',`API ${action} -> ${r.status}`,{error:j.error}); throw Object.assign(new Error(j.error||'request_failed'),{status:r.status,data:j}); }
  return j;
 }
 

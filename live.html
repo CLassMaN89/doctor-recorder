@@ -95,14 +95,29 @@ const $ = (id) => document.getElementById(id);
 
 let device = null, stream = null, room = null, ctx = null, heartbeat = null, wake = null, running = false;
 
+// ---- Merkezi günlük ----
+let __logCount = 0; const __logSeen = new Set();
+function logEvent(level, message, detail) {
+  try {
+    if (__logCount >= 15) return;
+    const key = level + '|' + message; if (__logSeen.has(key)) return; __logSeen.add(key); __logCount++;
+    fetch(`${API}?action=log`, { method: 'POST', keepalive: true, headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'phone', level, message: String(message).slice(0, 500), detail, app_version: 'canli-mikrofon', session_token: token || null }) }).catch(() => {});
+  } catch {}
+}
+window.addEventListener('error', e => logEvent('error', e.message || 'Betik hatası', { file: e.filename, line: e.lineno }));
+window.addEventListener('unhandledrejection', e => logEvent('error', 'Yakalanmamış hata: ' + (e.reason && e.reason.message || e.reason)));
 async function api(action, { method = 'GET', body = null } = {}) {
-  const r = await fetch(`${API}?${new URLSearchParams({ action, token, ...(device ? { device_token: device.device_token } : {}) })}`, {
-    method, cache: 'no-store',
-    headers: { apikey: SUPABASE_KEY, ...(body ? { 'Content-Type': 'application/json' } : {}) },
-    body: body ? JSON.stringify(body) : undefined
-  });
+  let r;
+  try {
+    r = await fetch(`${API}?${new URLSearchParams({ action, token, ...(device ? { device_token: device.device_token } : {}) })}`, {
+      method, cache: 'no-store',
+      headers: { apikey: SUPABASE_KEY, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      body: body ? JSON.stringify(body) : undefined
+    });
+  } catch (err) { logEvent('warn', 'Ağ hatası: ' + action, { message: String(err && err.message || err) }); throw err; }
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(j.error || 'request_failed'), { status: r.status });
+  if (!r.ok) { if (![401, 403, 404, 410].includes(r.status)) logEvent(r.status >= 500 ? 'error' : 'warn', `API ${action} -> ${r.status}`, { error: j.error }); throw Object.assign(new Error(j.error || 'request_failed'), { status: r.status }); }
   return j;
 }
 
