@@ -1815,7 +1815,7 @@ html[data-theme="dark"] body.mobile-mode #recorder #recPanel#recPanel #recStatus
 /* v16.0 — Gelen Ses Kayıtları: kompakt tek satır, cihaz logosu + model + IP yan yana, ortalı başlıklar, küçük işlem ikonları, animasyonlu REC (yalnızca web) */
 .rec-anim{display:none}
 @media(min-width:761px){
-html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:60px minmax(108px,.85fr) minmax(200px,2fr) 98px 46px minmax(112px,.75fr)!important;column-gap:10px!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:56px minmax(116px,1fr) 64px minmax(118px,.8fr) 104px 46px minmax(140px,1fr)!important;column-gap:10px!important}
 html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns span{text-align:center}
 html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{min-height:0!important;height:auto!important;padding-top:4px!important;padding-bottom:4px!important;align-items:center}
 html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .rec-id{justify-content:center;gap:4px}
@@ -1835,3 +1835,10 @@ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .w
 html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .pin-rec{width:26px!important;height:26px!important}
 html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row .pin-rec svg{width:16px!important;height:16px!important}
 }
+
+/* v16.1 — cihaz marka/model yazısı gösterilmez: yalnızca OS logosu + IP (model, üzerine gelince ipucunda) */
+@media(min-width:761px){
+html body.desktop-mode #desktop .recordings-table .wave-rec-row .rec-device .rd-model,html body.desktop-mode #desktop .recordings-table .wave-rec-row .rec-device .ip-badge{display:none!important}
+html body.desktop-mode #desktop .recordings-table .wave-rec-row .rec-ip{display:flex;align-items:center;justify-content:center;min-width:0}
+}
+@media(max-width:760px){html body.desktop-mode #desktop .recordings-table .wave-rec-row .rec-ip{display:none!important}}
