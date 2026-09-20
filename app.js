@@ -260,7 +260,7 @@ async function checkSessionStillValid(){
   const st=await api('status',{query:{token:session.token}});
   if(typeof st?.remaining_seconds==='number')qrLocalExpiry=Date.now()+st.remaining_seconds*1000;
   const dead=st?.status==='expired';
-  if(dead&&st.reason==='timeout'){qrChecking=false;await createSession(true);return}   // mutlak süre doldu: yeni QR
+  if(dead){qrChecking=false;await createSession(true);return}   // kapandı (süre/başka yerden yenilendi): otomatik yeni QR — diğer oturumları kapatmaz   // mutlak süre doldu: yeni QR
   if(!dead&&typeof st?.remaining_seconds==='number'&&st.remaining_seconds<=0){qrChecking=false;await createSession(true);return}   // katılım penceresi kapandı: yeni QR
   document.body.classList.toggle('qr-expired',dead);                                 // başka yerden kapatıldı: uyar
   const code=document.getElementById('sessionCode');
