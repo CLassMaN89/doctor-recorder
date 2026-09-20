@@ -399,9 +399,9 @@ function pauseIcon(){return '<img class="pause-control-icon" src="duraklat.png" 
 
 function animatePlaybackWave(root,audio){
  const wave=root.querySelector('.apple-wave'); if(!wave)return;
- setFlow(wave,true); // Dikte2'deki gibi dalga sürekli akar; oynatırken çalınan kısım koyulaşır
- audio.addEventListener('play',()=>wave.classList.add('is-playing'));
- const stop=()=>wave.classList.remove('is-playing');
+ // Liste dalgaları boşta durağan (sıfır maliyet); yalnızca ses oynarken akar, çalınan kısım koyulaşır.
+ audio.addEventListener('play',()=>{wave.classList.add('is-playing');setFlow(wave,true)});
+ const stop=()=>{wave.classList.remove('is-playing');setFlow(wave,false)};
  audio.addEventListener('pause',stop);audio.addEventListener('ended',stop);
 }
 
