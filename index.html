@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=122">
+  <link rel="stylesheet" href="style.css?v=123">
 </head>
 <body>
 <main>
@@ -79,7 +79,14 @@
 
         <section class="dash-card recordings recordings-table">
           <div class="section-head table-head">
-            <div><div class="kicker">SES KAYITLARI</div><h2>Gelen Ses Kayıtları</h2></div>
+            <div class="rec-banner">
+              <img class="rec-banner-ico" src="recordings-icon.png" alt="" draggable="false">
+              <div class="rec-banner-text">
+                <span class="rec-kicker"><i></i>SES KAYITLARI</span>
+                <h2>Gelen Ses Kayıtları</h2>
+                <p>Doktorlardan gelen kayıtları yönetin</p>
+              </div>
+            </div>
             <div class="table-filters">
               <div class="doctor-select-wrap"><select id="deviceFilter" aria-label="Doktor filtresi"><option value="">Tüm doktorlar</option></select></div>
               <div class="date-picker-wrap"><input id="recordingDateFilter" class="date-filter" type="date" aria-label="Kayıt tarihi"><span class="date-placeholder">Tarih seç</span></div>

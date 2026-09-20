@@ -1514,3 +1514,20 @@ html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .recording
 html body.desktop-mode #desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:38px minmax(70px,.8fr) minmax(112px,1.1fr) 98px 40px minmax(112px,1.2fr)!important;column-gap:8px!important}
 html body.desktop-mode #desktop .dashboard-showcase{grid-template-columns:minmax(360px,420px) minmax(0,1fr)!important}
 }
+
+/* v12.1 — "Gelen Ses Kayıtları" başlık bandı */
+html body #desktop .recordings-table .table-head{display:block!important;margin:0 0 12px!important}
+html body #desktop .recordings-table .table-head .table-filters{display:flex!important;justify-content:flex-end;align-items:center;gap:10px;margin-top:12px}
+html body #desktop .rec-banner{display:flex;align-items:center;gap:20px;padding:18px 24px;border-radius:22px;border:1px solid #dbe8f6;background:linear-gradient(120deg,#f1f7ff 0%,#ffffff 62%);box-shadow:0 6px 22px rgba(43,111,224,.06)}
+html body #desktop .rec-banner-ico{flex:none;width:68px;height:68px;border-radius:50%;display:block;-webkit-user-drag:none;user-select:none}
+html body #desktop .rec-banner-text{min-width:0}
+html body #desktop .rec-kicker{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:999px;background:#e6f0ff;border:1px solid #d3e3fb;color:#2b6fe0;font-size:11.5px;font-weight:800;letter-spacing:.07em}
+html body #desktop .rec-kicker i{width:8px;height:8px;border-radius:50%;background:#2b7fe6;display:block}
+html body #desktop .rec-banner h2{margin:9px 0 3px!important;font-size:26px!important;line-height:1.15!important;font-weight:800!important;letter-spacing:-.4px;color:var(--th-text,#10263b)!important}
+html body #desktop .rec-banner p{margin:0!important;font-size:14px!important;color:var(--th-muted,#71889b)!important}
+html[data-theme="dark"] body #desktop .rec-banner,html body[data-theme="dark"] #desktop .rec-banner{background:linear-gradient(120deg,#0f2438 0%,#0d1b2a 65%);border-color:#20384b;box-shadow:none}
+html[data-theme="dark"] body #desktop .rec-kicker,html body[data-theme="dark"] #desktop .rec-kicker{background:rgba(69,167,255,.14);border-color:rgba(69,167,255,.28);color:#7cbcff}
+@media(max-width:900px){html body #desktop .rec-banner{padding:14px 16px;gap:14px}html body #desktop .rec-banner-ico{width:52px;height:52px}html body #desktop .rec-banner h2{font-size:21px!important}}
+html body #desktop .rec-banner{width:100%;box-sizing:border-box}
+html body #desktop .recordings-table .table-head{width:100%}
+html body #desktop .recordings-table .table-head .table-filters{margin-left:auto}
