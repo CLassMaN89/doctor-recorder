@@ -1964,3 +1964,5 @@ html[data-theme="dark"] .toast-card.t-delete,html[data-theme="dark"] .toast-card
 html[data-theme="dark"] .toast-card.t-info{--t-bg:#0b2a3d;--t-border:#155e85;--t-title:#7dd3fc;--t-msg:#67b8dd;--toast-accent:#38bdf8}
 html[data-theme="dark"] .toast-card.t-warning{--t-bg:#3a2a0c;--t-border:#7c5a12;--t-title:#fcd34d;--t-msg:#e0b94e;--toast-accent:#fbbf24}
 html[data-theme="dark"] .toast-card{box-shadow:0 10px 28px rgba(0,0,0,.45)}
+/* v17.3 — kayıt listesinde cihaz (OS) logoları büyütüldü */
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .rec-device .os-ico{width:24px!important;height:24px!important;margin:0!important;vertical-align:middle}
