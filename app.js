@@ -774,7 +774,8 @@ async function startRecording(){
   for(const type of candidates){
    try{
     if(window.MediaRecorder?.isTypeSupported && !MediaRecorder.isTypeSupported(type)) continue;
-    recorder=new MediaRecorder(stream,{mimeType:type});
+    // Konuşma için 64 kb/sn yeterli: 1 saatlik kayıt ~29 MB (varsayılan ~128 kb/sn'de ~58 MB); bit hızı desteklenmezse varsayılana dönülür.
+    try{recorder=new MediaRecorder(stream,{mimeType:type,audioBitsPerSecond:64000})}catch{recorder=new MediaRecorder(stream,{mimeType:type})}
     break;
    }catch(err){lastRecorderError=err}
   }
@@ -940,7 +941,7 @@ async function toggleRecording(){
 // Kayıtlarım: sunucudan ve ekranda 10'ar kayıt gösterilir; "Daha fazla göster" ile sonraki 10 gelir.
 // Liste ne kadar uzun olursa olsun telefondaki iş yükü sabit kalır (ses dosyaları da yalnızca oynatılırken indirilir).
 const HIST_PAGE=10;
-let histRecs=[],histShown=0,histDone=false,histLoading=false;
+let histRecs=[],histPage=0,histDone=false,histLoading=false;
 const listSince=()=>Number((()=>{try{return localStorage.getItem('dr_list_since')}catch{return 0}})()||0);
 async function fetchHistory(limit,before){
  const q={token,device_token:device.device_token,limit:String(limit)};if(before)q.before=before;
@@ -951,16 +952,31 @@ async function fetchHistory(limit,before){
  if(since){recs=raw.filter(r=>new Date(r.created_at).getTime()>since);if(recs.length<raw.length)done=true}
  return {recs,done};
 }
+// Sayfa değiştirmeli liste: DOM'da her zaman en fazla 10 satır bulunur; eski sayfalar bellekten atılır.
+async function showHistPage(p){
+ const box=$('#mobileRecordings');
+ try{
+  while((p+1)*HIST_PAGE>histRecs.length&&!histDone){
+   const last=histRecs[histRecs.length-1];
+   const {recs,done}=await fetchHistory(HIST_PAGE,last?.created_at);
+   histRecs=histRecs.concat(recs.filter(r=>!histRecs.some(x=>x.id===r.id)));histDone=done;
+   if(!recs.length)break;
+  }
+ }catch{ if(p>histPage)return }
+ histPage=Math.max(0,Math.min(p,Math.max(0,Math.ceil(histRecs.length/HIST_PAGE)-1)));
+ box.innerHTML='';
+ renderHistoryRows(box,histPage*HIST_PAGE,(histPage+1)*HIST_PAGE);
+ updateHistoryChrome();
+}
 async function loadMobileHistory(){
  if(!device||histLoading)return;
  histLoading=true;
  try{
-  const keep=Math.min(50,Math.max(HIST_PAGE,histShown));
+  const keep=Math.min(50,Math.max(HIST_PAGE,(histPage+1)*HIST_PAGE));
   const {recs,done}=await fetchHistory(keep);
-  histRecs=recs;histDone=done;histShown=Math.min(histRecs.length,Math.max(HIST_PAGE,keep));
-  const box=$('#mobileRecordings');box.innerHTML='';
-  renderHistoryRows(box,0,histShown);
-  updateHistoryChrome();
+  histRecs=recs;histDone=done;
+  if(histPage*HIST_PAGE>=histRecs.length&&!histDone)histPage=0;
+  await showHistPage(histPage);
  }catch(e){console.error('mobile history',e)}
  finally{histLoading=false}
 }
@@ -968,23 +984,14 @@ function updateHistoryChrome(){
  const box=$('#mobileRecordings');
  $('#historyCount').textContent=`${histRecs.length}${histDone?'':'+'} kayıt`;
  if(!histRecs.length&&!box.querySelector('.history-empty'))box.innerHTML='<div class="history-empty">Henüz kayıt yok.</div>';
- box.querySelector('.history-more')?.remove();
- if(histRecs.length>histShown||!histDone){
-  const b=document.createElement('button');b.type='button';b.className='history-more';b.textContent='Daha fazla göster';
-  b.onclick=async()=>{
-   b.disabled=true;b.textContent='Yükleniyor…';
-   try{
-    if(histRecs.length<=histShown&&!histDone){
-     const last=histRecs[histRecs.length-1];
-     const {recs,done}=await fetchHistory(HIST_PAGE,last?.created_at);
-     histRecs=histRecs.concat(recs.filter(r=>!histRecs.some(x=>x.id===r.id)));histDone=done;
-    }
-    const from=histShown;histShown=Math.min(histRecs.length,histShown+HIST_PAGE);
-    b.remove();renderHistoryRows(box,from,histShown);updateHistoryChrome();
-   }catch{b.disabled=false;b.textContent='Daha fazla göster'}
-  };
-  box.appendChild(b);
- }
+ box.querySelector('.history-pager')?.remove();
+ const pages=Math.max(1,Math.ceil(histRecs.length/HIST_PAGE)),hasNext=(histPage+1)*HIST_PAGE<histRecs.length||!histDone;
+ if(pages<=1&&!hasNext)return;
+ const nav=document.createElement('div');nav.className='history-pager';
+ nav.innerHTML=`<button type="button" class="hp-prev" ${histPage<=0?'disabled':''} aria-label="Önceki sayfa">‹ Yeni</button><b>Sayfa ${histPage+1}${histDone?' / '+pages:''}</b><button type="button" class="hp-next" ${hasNext?'':'disabled'} aria-label="Sonraki sayfa">Eski ›</button>`;
+ const go=async d=>{nav.querySelectorAll('button').forEach(b=>b.disabled=true);await showHistPage(histPage+d);box.closest('.mobile-history')?.scrollIntoView({block:'start',behavior:'smooth'})};
+ nav.querySelector('.hp-prev').onclick=()=>go(-1);nav.querySelector('.hp-next').onclick=()=>go(1);
+ box.appendChild(nav);
 }
 function renderHistoryRows(box,from,to){
  const frag=document.createDocumentFragment();
