@@ -1974,3 +1974,16 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .rec-dev
 #desktop .doctor-select-wrap.has-clear select{padding-right:56px!important}
 #desktop .doctor-select-wrap .filter-clear:hover{background:#d3e2f3;color:#17324c}
 html[data-theme="dark"] #desktop .doctor-select-wrap .filter-clear{background:#22394d;color:#b9c9d8}
+
+/* v17.5 — kayıt işlemlerine ses dosyasını indirme düğmesi */
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{grid-template-columns:minmax(0,1fr) 30px 28px 28px!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec{width:28px;height:28px;display:grid;place-items:center;padding:0;border:1px solid #b9e6eb;border-radius:9px;background:#ecfbfc;color:#078d9b;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec:hover{background:#0aa7b5;border-color:#0aa7b5;color:#fff;transform:translateY(-1px)}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec:focus-visible{outline:2px solid #19b9c5;outline-offset:2px}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec:disabled{cursor:wait;opacity:.72;transform:none}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec.is-loading svg{animation:downloadPulse .8s ease-in-out infinite alternate}
+html[data-theme="dark"] body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec{background:#163b43;border-color:#28616b;color:#66d7df}
+html[data-theme="dark"] body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec:hover{background:#0b9daa;border-color:#0b9daa;color:#fff}
+@keyframes downloadPulse{to{opacity:.35;transform:translateY(2px)}}
+@media(prefers-reduced-motion:reduce){html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec,html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec.is-loading svg{transition:none;animation:none}}

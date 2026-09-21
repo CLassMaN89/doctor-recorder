@@ -32,11 +32,15 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - GitHub Pages `main` dalının kökünden yayın yapıyor ve HTTPS zorunlu.
 - Canlı site HTTP 200 dönüyor.
 - GitHub'daki `app.js` güncel Supabase proje referansını kullanıyor.
+- Kayıt listesindeki işlemler alanında oynat ve sil düğmelerinin yanında ses dosyasını indiren turkuaz indirme düğmesi bulunuyor.
 
 ## Son işte değişen dosyalar
 
-- `PROJECT_HANDOFF.md`: dosya haritası, bağlantılar ve kalıcı iş sonu kayıt düzeni eklendi.
+- `app.js`: imzalı kayıt bağlantısını güvenli dosya adına sahip yerel indirmeye dönüştüren davranış eklendi.
+- `style.css`: açık/koyu temalı, yükleniyor ve klavye odağı durumlarına sahip indirme simgesi eklendi.
+- `index.html`: `app.js` sürümü 162'ye, `style.css` sürümü 168'e yükseltildi.
+- `PROJECT_HANDOFF.md`: indirme özelliğinin son durumu kaydedildi.
 
 ## Açık işler
 
-- Her Doctor Recorder değişikliğinde bu dosyanın son durum, değişen dosyalar ve açık işler bölümleri güncellenmelidir.
+- Klinik hesabıyla canlı ortamda gerçek bir kayıt indirilerek tarayıcının hedef dosya adı kullanıcı tarafından kontrol edilmelidir.

@@ -509,6 +509,26 @@ function fitDesktop(force){
 }
 window.addEventListener('resize',()=>{cancelAnimationFrame(fitRAF);fitRAF=requestAnimationFrame(()=>fitDesktop(true))});
 let lastDash=null;const rerenderRecs=()=>{if(lastDash)renderDashboard(lastDash)};
+function downloadFileName(r,x){
+ const clean=v=>String(v||'').trim().replace(/[^\p{L}\p{N}._-]+/gu,'_').replace(/^_+|_+$/g,'');
+ const doctor=clean(`${x.doctor_first_name||'Doktor'}_${x.doctor_last_name||''}`)||'Doktor';
+ const created=new Date(r.created_at),date=Number.isNaN(created.getTime())?'kayit':created.toISOString().replace(/[:]/g,'-').replace(/\.\d{3}Z$/,'');
+ const path=String(r.file_path||'').split('?')[0],pathExt=(path.match(/\.([a-z0-9]{2,5})$/i)||[])[1];
+ const mimeExt={'audio/webm':'webm','audio/ogg':'ogg','audio/mpeg':'mp3','audio/mp4':'m4a','audio/wav':'wav','audio/x-wav':'wav'}[String(r.mime_type||'').split(';')[0].toLowerCase()];
+ return `${doctor}_${date}.${pathExt||mimeExt||'webm'}`;
+}
+async function downloadRecording(r,x,button){
+ if(!r.signed_url){showNotice('Kayıt indirilemedi','Ses dosyası bağlantısı bulunamadı.');return}
+ button.disabled=true;button.classList.add('is-loading');button.setAttribute('aria-label','İndiriliyor');
+ try{
+  const response=await fetch(r.signed_url,{cache:'no-store'});if(!response.ok)throw new Error(`download_${response.status}`);
+  const blob=await response.blob(),href=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=href;link.download=downloadFileName(r,x);link.style.display='none';document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(href),1500);
+  toast({title:'İndirme tamamlandı',message:'Ses kaydı bilgisayarınıza indirildi.',variant:'success'});
+ }catch(e){logEvent('warn','Ses kaydı indirilemedi',{recording_id:r.id,message:String(e&&e.message||e)});showNotice('Kayıt indirilemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}
+ finally{button.disabled=false;button.classList.remove('is-loading');button.setAttribute('aria-label','Ses kaydını indir')}
+}
 function renderDashboard(d){
  lastDash=d;
  if(!renderDashboard.__fitting){renderDashboard.__fitting=true;try{fitDesktop(false)}finally{renderDashboard.__fitting=false}}
@@ -561,6 +581,7 @@ function renderDashboard(d){
  renderRecPager(pageCount,shown.length,start,pageItems.length);
  pageItems.forEach((r,pi)=>{const ri=start+pi;const x=deviceMap[r.device_connection_id]||{},row=document.createElement('div');row.className='rec-row wave-rec-row'+(pins.includes(r.id)?' pinned':'');row.dataset.rid=r.id;const when=new Date(r.created_at),stamp=`${when.toLocaleDateString('tr-TR')} - ${when.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
  row.innerHTML=`<div class="rec-id"><span class="rec-dot"></span><b class="rec-txt">REC</b><img class="rec-anim" src="live-recording.svg" alt="" draggable="false"><span>${numOf.get(r.id)}</span></div><div class="rec-doctor"><b>${esc(x.doctor_first_name||'Eski kayıt')} ${esc(x.doctor_last_name||'')}</b><button class="pin-rec" type="button" aria-pressed="${pins.includes(r.id)}" title="${pins.includes(r.id)?'Sabitlemeyi kaldır':'Üste sabitle'}" aria-label="${pins.includes(r.id)?'Sabitlemeyi kaldır':'Üste sabitle'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6l-1 6 3.2 3.4V14H6.8v-1.6L10 9z"/></svg></button></div><div class="rec-device" title="${esc(x.device_model||'Telefon')}">${osIcon(x.device_model)}<span class="rd-model" title="${esc(x.device_model||'Telefon')}">${esc(x.device_model||'Telefon')}</span>${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:''}</div><div class="rec-ip">${x.ip_address?`<span class="ip-badge">${esc(x.ip_address)}</span>`:'—'}</div><div class="rec-date">${stamp}</div><div class="rec-duration">${fmt(r.duration_seconds)}</div><div class="wave-player">${waveMarkup(r.id||r.file_path||stamp)}<button class="play" aria-label="Oynat"></button><button class="delete-rec" title="Kaydı sil" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button><audio preload="metadata" src="${r.signed_url||''}"></audio></div>`;
+ const downloadBtn=document.createElement('button');downloadBtn.className='download-rec';downloadBtn.type='button';downloadBtn.title='Ses kaydını indir';downloadBtn.setAttribute('aria-label','Ses kaydını indir');downloadBtn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg>';row.querySelector('.delete-rec').before(downloadBtn);downloadBtn.onclick=e=>{e.stopPropagation();downloadRecording(r,x,downloadBtn)};
  const audio=row.querySelector('audio'),play=row.querySelector('.play');wireWavePlayer(row,audio,play,null);animatePlaybackWave(row,audio);row.querySelector('.delete-rec').onclick=async()=>{if(!(await askConfirm({title:'Ses kaydı silinsin mi?',text:'Bu ses kaydı kalıcı olarak silinir. Bu işlem geri alınamaz.',okText:'Sil',cancelText:'Vazgeç',danger:true})))return;try{await api('delete-recording',{method:'POST',auth:true,body:{recording_id:r.id}});localGone.add(r.id);row.classList.add('row-out');await new Promise(z=>setTimeout(z,300));toast({title:'Ses kaydı silindi',message:`${(x.doctor_first_name||'')+' '+(x.doctor_last_name||'')} · ${fmt(r.duration_seconds||0)} kaydı kalıcı olarak silindi`.trim(),variant:'delete'});await loadDashboard()}catch(e){showNotice('Kayıt silinemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}};const pinBtn=row.querySelector('.pin-rec');pinBtn.onclick=e=>{e.stopPropagation();togglePinRec(r.id)};row.tabIndex=0;row.onkeydown=e=>{if((e.key==='p'||e.key==='P')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.target===row){e.preventDefault();togglePinRec(r.id)}};
  if(pinAnimId===r.id)row.classList.add('pin-pop');
  box.appendChild(row)});
