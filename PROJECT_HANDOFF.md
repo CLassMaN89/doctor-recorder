@@ -39,13 +39,14 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - Panelin 2,5 saniyelik sorgusu sürer fakat veri değişmedikçe kayıt DOM'u yeniden kurulmaz; hover ve oynatma durumu sıfırlanmaz.
 - Dalga alanı ile oynat/indir/sil düğmelerini ayıran sabit işlem grubu sayesinde kontroller dar sütunda da tek satırda kalır.
 - Geniş masaüstünde sol QR/canlı kayıt sütunu 330–385 px aralığına daraltıldı; sağ kayıt listesine ve ses dalgası/işlem alanına daha fazla genişlik ayrıldı.
+- Daralan sol sütunda QR ve bağlantı bilgileri alt alta merkezlendi; canlı kayıt düğmeleri/status satırı kart dışına taşmayacak şekilde esnekleştirildi. Kayıt dalgasının sağında play grubundan önce görünür boşluk bırakıldı.
 
 ## Son işte değişen dosyalar
 
 - `app.js`: satır bazlı seçim, görünenlerin tümünü seçme ve yalnız işaretli kayıtları MP3/ZIP indirme eklendi; işlem düğmeleri tek grup halinde üretildi.
 - `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
-- `style.css`: masaüstü ana sütun oranı ve kayıt tablosu sütunları sağ listeyi genişletecek şekilde ayarlandı; dalga ile işlem grubu arasındaki boşluk artırıldı.
-- `index.html`: `style.css` sürümü 171 yapıldı (`app.js` 164 olarak kaldı).
+- `style.css`: QR merkezleme, canlı kontrol taşma koruması ve dalga/play ayrımı eklendi.
+- `index.html`: `style.css` sürümü 172 yapıldı (`app.js` 164 olarak kaldı).
 - `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler
