@@ -1997,3 +1997,19 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-pl
 html[data-theme="dark"] #desktop .bulk-download{background:#163b43;border-color:#28616b;color:#66d7df}
 @media(max-width:900px){#desktop .bulk-download{min-width:38px;width:38px;padding:0;font-size:0}#desktop .bulk-download::after{content:'⇩';font-size:18px}}
 @media(prefers-reduced-motion:reduce){#desktop .bulk-download{transition:none}}
+
+/* v17.7 — seçmeli toplu indirme ve taşmayan tek satır işlem grubu */
+html body.desktop-mode #desktop#desktop .recordings-table .bulk-selection-bar{display:flex!important;align-items:center!important;gap:12px!important;min-height:42px!important;margin:0 0 8px!important;padding:6px 10px!important;border:1px solid #dcebf1!important;border-radius:11px!important;background:#f7fcfd!important;color:#315269!important;font-size:12px!important}
+#desktop .bulk-selection-bar label{display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+#desktop .bulk-selection-bar input,#desktop .rec-select{width:16px;height:16px;accent-color:#0aa7b5;cursor:pointer;flex:0 0 auto}
+#desktop .bulk-selection-bar b{font-size:11px;color:#698196;font-weight:600;margin-right:auto;white-space:nowrap}
+#desktop .bulk-selection-bar .bulk-download{flex:0 0 auto;min-width:154px!important}
+html[data-theme="dark"] body.desktop-mode #desktop#desktop .recordings-table .bulk-selection-bar{background:#102538!important;border-color:#24445a!important;color:#dcebf5!important}
+html[data-theme="dark"] #desktop .bulk-selection-bar b{color:#91aabd}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .rec-id{gap:5px!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .rec-id .rec-select{display:block!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .rec-id .rec-anim{width:26px!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:5px!important;align-items:center!important;overflow:hidden!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions{display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:4px!important;width:92px!important;min-width:92px!important;white-space:nowrap!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions>button{position:static!important;margin:0!important;flex:0 0 28px!important;align-self:center!important}
+@media(max-width:760px){html body.desktop-mode #desktop#desktop .recordings-table .bulk-selection-bar{flex-wrap:wrap!important}.bulk-selection-bar .bulk-download{width:100%!important}.bulk-selection-bar b{margin-left:auto!important}.wave-actions{width:92px!important;min-width:92px!important}}

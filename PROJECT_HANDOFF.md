@@ -35,16 +35,16 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - Canlı site HTTP 200 dönüyor.
 - GitHub'daki `app.js` güncel Supabase proje referansını kullanıyor.
 - Telefon, tarayıcının ürettiği geçici kaydı durdurunca yerel worker ile MP3'e çevirip mevcut Supabase yükleme akışına `recording.mp3` olarak gönderiyor.
-- Tekli indirme MP3 verir; geçerli filtredeki ilk 10 kayıt `Toplu MP3 İndir` ile tek ZIP içinde indirilebilir.
+- Tekli indirme MP3 verir. Her kayıt satırında seçim kutusu bulunur; görünür/filtrelenmiş kayıtlardan işaretlenenler `Seçilenleri MP3 İndir` ile tek ZIP içinde indirilebilir.
 - Panelin 2,5 saniyelik sorgusu sürer fakat veri değişmedikçe kayıt DOM'u yeniden kurulmaz; hover ve oynatma durumu sıfırlanmaz.
-- Dalga, oynat, indir ve sil kontrolleri tek satıra sığdırıldı.
+- Dalga alanı ile oynat/indir/sil düğmelerini ayıran sabit işlem grubu sayesinde kontroller dar sütunda da tek satırda kalır.
 
 ## Son işte değişen dosyalar
 
-- `app.js`: telefonda MP3 dönüşümü, eski kayıtları MP3 indirme, en fazla 10 kaydı ZIP indirme ve değişmedikçe DOM'u koruyan panel yenilemesi eklendi.
+- `app.js`: satır bazlı seçim, görünenlerin tümünü seçme ve yalnız işaretli kayıtları MP3/ZIP indirme eklendi; işlem düğmeleri tek grup halinde üretildi.
 - `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
-- `style.css`: işlem düğmeleri tek satıra alındı ve toplu indirme düğmesi biçimlendirildi.
-- `index.html`: toplu indirme düğmesi eklendi; `app.js` 163 ve `style.css` 169 yapıldı.
+- `style.css`: seçim şeridi ve satır kutuları biçimlendirildi; işlem grubu taşmadan tek satırda sabitlendi.
+- `index.html`: seçim/toplu indirme şeridi filtrelerden ayrıldı; `app.js` 164 ve `style.css` 170 yapıldı.
 - `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler
