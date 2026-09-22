@@ -90,12 +90,19 @@ function logEvent(level,message,detail){
 }
 window.addEventListener('error',e=>logEvent('error',e.message||'Betik hatası',{file:e.filename,line:e.lineno,col:e.colno}));
 window.addEventListener('unhandledrejection',e=>logEvent('error','Yakalanmamış hata: '+(e.reason&&e.reason.message||e.reason),{status:e.reason&&e.reason.status}));
-async function api(action,{method='GET',body=null,auth=false,query={}}={}){
+async function api(action,{method='GET',body=null,auth=false,query={},networkRetries=0}={}){
  const q=new URLSearchParams({action,...query});
  const headers={apikey:SUPABASE_KEY};
  if(auth){const {data}=await sb.auth.getSession(); if(data.session)headers.Authorization=`Bearer ${data.session.access_token}`}
  if(body && !(body instanceof FormData))headers['Content-Type']='application/json';
- let r; try{r=await fetch(`${API}?${q}`,{method,headers,body:body?(body instanceof FormData?body:JSON.stringify(body)):undefined,cache:'no-store'})}catch(err){logEvent('warn','Ağ hatası: '+action,{message:String(err&&err.message||err)});throw err}
+ let r;
+ for(let attempt=0;;attempt++){
+  try{r=await fetch(`${API}?${q}`,{method,headers,body:body?(body instanceof FormData?body:JSON.stringify(body)):undefined,cache:'no-store'});break}
+  catch(err){
+   if(attempt<networkRetries){await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));continue}
+   logEvent('warn','Ağ hatası: '+action,{message:String(err&&err.message||err)});throw err
+  }
+ }
  const j=await r.json().catch(()=>({}));
  if(!r.ok){ if(![401,403,404,410].includes(r.status))logEvent(r.status>=500?'error':'warn',`API ${action} -> ${r.status}`,{error:j.error}); throw Object.assign(new Error(j.error||'request_failed'),{status:r.status,data:j}); }
  return j;
@@ -278,15 +285,18 @@ async function checkSessionStillValid(){
  }catch{}
  qrChecking=false;
 }
+let dashboardLoading=false;
 async function loadDashboard(){
  if(!session)return;
+ if(dashboardLoading)return;
  if(++sessionCheckTick%8===1)checkSessionStillValid();
  // Do not rebuild the recordings DOM while a recording is playing.
  // The dashboard refreshes every 2.5 seconds; rebuilding the <audio> element
  // was stopping playback at each refresh.
  if(isRecordingPlaybackActive())return;
+ dashboardLoading=true;
  try{
-   const d=await api('history',{auth:true});
+   const d=await api('history',{auth:true,networkRetries:2});
    // Playback may have started while the async request was in flight.
    // Never replace the audio element once playback has begun.
    if(isRecordingPlaybackActive())return;
@@ -300,7 +310,11 @@ async function loadDashboard(){
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
    const signature=JSON.stringify({devices:currentDevices.map(x=>[x.id,x.status,x.doctor_first_name,x.doctor_last_name,x.device_model,x.ip_address]),recordings:(d.recordings||[]).map(r=>[r.id,r.device_connection_id,r.created_at,r.duration_seconds,r.mime_type,r.size_bytes,r.file_path])});
    if(signature!==dashboardSignature||Date.now()-dashboardRenderedAt>45*60*1000){dashboardSignature=signature;dashboardRenderedAt=Date.now();renderDashboard(window.__dash)}
- }catch(e){console.error(e)}
+ }catch(e){
+   console.error(e);
+   const box=$('#recordings');
+   if(box&&!window.__dash)box.innerHTML='<div class="empty">Ses kayıtları alınamadı. Bağlantı yeniden deneniyor…</div>';
+ }finally{dashboardLoading=false}
 }
 
 function waveSeed(v){

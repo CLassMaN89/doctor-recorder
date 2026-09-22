@@ -58,3 +58,4 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 
 - Gerçek iPhone ve Android cihazda kısa/uzun kayıt alınarak MP3 kodlama süresi, pil ve bellek kullanımı kullanıcı tarafından gözlenmelidir.
 - Klinik hesabıyla yeni MP3 kaydın tekli ve toplu indirmesi canlı ortamda kontrol edilmelidir.
+- Kayıt geçmişi yüklenirken eşzamanlı `history` çağrıları engellenir; geçici ağ hatalarında çağrı iki kez kontrollü olarak yeniden denenir. Başarısız istek artık yanıltıcı biçimde "Henüz kayıt yok" göstermez.
