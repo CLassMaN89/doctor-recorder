@@ -41,13 +41,14 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - Geniş masaüstünde sol QR/canlı kayıt sütunu 330–385 px aralığına daraltıldı; sağ kayıt listesine ve ses dalgası/işlem alanına daha fazla genişlik ayrıldı.
 - Daralan sol sütunda QR ve bağlantı bilgileri alt alta merkezlendi; canlı kayıt düğmeleri/status satırı kart dışına taşmayacak şekilde esnekleştirildi. Kayıt dalgasının sağında play grubundan önce görünür boşluk bırakıldı.
 - QR dış kutusu zaten ortadaydı ancak `#qrcode img` kendi kapsayıcısının solunda kalıyordu; iç QR görseli de grid merkezine alındı. Kayıt dalgasındaki 72 sabit genişlikli çubuk dar hücrede esneyebilir hale getirildi ve işlem grubundan 16 px ayrıldı.
+- QRCode.js aynı anda gizli canvas ve görünür img üretiyor: canvas kesin olarak gizli, yalnız img ortalı tutulur. Dalga yalnız çubukları esnetmekle bırakılmaz; hücresinden 38 px kısa çizilir ve işlem grubundan ayrıca 18 px ayrılır.
 
 ## Son işte değişen dosyalar
 
 - `app.js`: satır bazlı seçim, görünenlerin tümünü seçme ve yalnız işaretli kayıtları MP3/ZIP indirme eklendi; işlem düğmeleri tek grup halinde üretildi.
 - `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
-- `style.css`: gerçek QR img/canvas merkezleme ve dar hücreye ölçeklenen dalga çubukları eklendi.
-- `index.html`: `style.css` sürümü 173 yapıldı (`app.js` 164 olarak kaldı).
+- `style.css`: çift QR'a neden olan canvas görünürlüğü kaldırıldı; dalga fiziksel olarak kısaltıldı ve play grubundan ayrıldı.
+- `index.html`: `style.css` sürümü 174 yapıldı (`app.js` 164 olarak kaldı).
 - `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler

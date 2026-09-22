@@ -2032,6 +2032,12 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-w
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-wave{width:100%!important;padding-right:8px!important;overflow:hidden!important}
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{grid-template-columns:minmax(0,1fr) 96px!important;column-gap:16px!important}
 
+/* v18.1 — QRCode.js çift çıktısında yalnız img görünür; dalga fiziksel olarak kısaltılır */
+html body.desktop-mode #desktop#desktop .dashboard-showcase .mini-qr #qrcode canvas{display:none!important}
+html body.desktop-mode #desktop#desktop .dashboard-showcase .mini-qr #qrcode img{display:block!important;margin:auto!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-wave{width:calc(100% - 38px)!important;justify-self:start!important;padding-right:0!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{grid-template-columns:minmax(0,1fr) 96px!important;column-gap:18px!important}
+
 /* v17.9 — dar sol sütunda QR ve canlı kontroller hizalı; dalga ile play arasında net boşluk */
 @media(min-width:1101px){
  html body.desktop-mode #desktop#desktop .dashboard-showcase .connect-upper{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"copy" "qr" "detail"!important;justify-items:stretch!important;gap:9px!important}
