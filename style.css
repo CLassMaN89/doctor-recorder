@@ -2038,6 +2038,13 @@ html body.desktop-mode #desktop#desktop .dashboard-showcase .mini-qr #qrcode img
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-wave{width:calc(100% - 38px)!important;justify-self:start!important;padding-right:0!important}
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{grid-template-columns:minmax(0,1fr) 96px!important;column-gap:18px!important}
 
+/* v18.2 — dalga, play ve ikincil işlemler yapısal olarak üç ayrı sütun */
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{display:grid!important;grid-template-columns:minmax(42px,64px) 30px 60px!important;column-gap:12px!important;justify-content:end!important;align-items:center!important;overflow:visible!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-wave{grid-column:1!important;width:100%!important;max-width:64px!important;padding:0!important;overflow:hidden!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player>.play{grid-column:2!important;position:static!important;margin:0!important;justify-self:center!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-secondary{grid-column:3!important;display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:4px!important;width:60px!important;min-width:60px!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-secondary>button{position:static!important;margin:0!important;flex:0 0 28px!important}
+
 /* v17.9 — dar sol sütunda QR ve canlı kontroller hizalı; dalga ile play arasında net boşluk */
 @media(min-width:1101px){
  html body.desktop-mode #desktop#desktop .dashboard-showcase .connect-upper{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"copy" "qr" "detail"!important;justify-items:stretch!important;gap:9px!important}

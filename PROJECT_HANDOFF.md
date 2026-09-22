@@ -42,13 +42,15 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - Daralan sol sütunda QR ve bağlantı bilgileri alt alta merkezlendi; canlı kayıt düğmeleri/status satırı kart dışına taşmayacak şekilde esnekleştirildi. Kayıt dalgasının sağında play grubundan önce görünür boşluk bırakıldı.
 - QR dış kutusu zaten ortadaydı ancak `#qrcode img` kendi kapsayıcısının solunda kalıyordu; iç QR görseli de grid merkezine alındı. Kayıt dalgasındaki 72 sabit genişlikli çubuk dar hücrede esneyebilir hale getirildi ve işlem grubundan 16 px ayrıldı.
 - QRCode.js aynı anda gizli canvas ve görünür img üretiyor: canvas kesin olarak gizli, yalnız img ortalı tutulur. Dalga yalnız çubukları esnetmekle bırakılmaz; hücresinden 38 px kısa çizilir ve işlem grubundan ayrıca 18 px ayrılır.
+- Dalga/play ayrımı CSS boşluğu ile değil DOM yapısıyla garanti edilir: `apple-wave`, bağımsız `play` düğmesi ve `wave-secondary` (indir+sil) üç ayrı grid sütunudur. Dalga en fazla 64 px, sütun aralıkları 12 px'tir.
 
 ## Son işte değişen dosyalar
 
 - `app.js`: satır bazlı seçim, görünenlerin tümünü seçme ve yalnız işaretli kayıtları MP3/ZIP indirme eklendi; işlem düğmeleri tek grup halinde üretildi.
 - `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
-- `style.css`: çift QR'a neden olan canvas görünürlüğü kaldırıldı; dalga fiziksel olarak kısaltıldı ve play grubundan ayrıldı.
-- `index.html`: `style.css` sürümü 174 yapıldı (`app.js` 164 olarak kaldı).
+- `app.js`: play düğmesi işlem grubundan çıkarılıp dalga ile ikincil işlemler arasında bağımsız sütuna taşındı.
+- `style.css`: üç sütunlu dalga/play/indir-sil yerleşimi eklendi; dalga 64 px ile sınırlandı.
+- `index.html`: `app.js` 165 ve `style.css` 175 yapıldı.
 - `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler
