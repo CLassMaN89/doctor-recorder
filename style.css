@@ -2024,6 +2024,28 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-ac
  html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions{gap:6px!important;width:96px!important;min-width:96px!important}
 }
 
+/* v18.3 — dalga, oynat, indir ve sil doğrudan ayrı tablo sütunları */
+@media(min-width:1101px){
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:50px minmax(96px,.85fr) 44px minmax(88px,.75fr) 108px 38px minmax(68px,1fr) 32px 32px 32px!important;column-gap:6px!important}
+}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-cell{display:flex!important;align-items:center!important;min-width:0!important;width:100%!important;overflow:hidden!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-cell .apple-wave{width:100%!important;max-width:none!important;min-width:0!important;padding:0!important;overflow:hidden!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.play-cell,
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.download-cell,
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.delete-cell{position:static!important;margin:0 auto!important;justify-self:center!important;align-self:center!important}
+@media(min-width:761px) and (max-width:1100px){
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:42px 88px 40px 82px 92px 36px minmax(54px,1fr) 30px 30px 30px!important;column-gap:4px!important}
+}
+@media(max-width:760px){
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-areas:"id doctor dur" "device device device" "date wave wave" "play download delete"!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-cell{grid-area:wave!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.play-cell{grid-area:play!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.download-cell{grid-area:download!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row>.delete-cell{grid-area:delete!important}
+}
+
 /* v18.0 — QR görseli dış kutusunun gerçek merkezinde; kayıt dalgası dar hücreye ölçeklenir */
 html body.desktop-mode #desktop#desktop .dashboard-showcase .mini-qr #qrcode{display:grid!important;place-items:center!important;width:100%!important;height:100%!important}
 html body.desktop-mode #desktop#desktop .dashboard-showcase .mini-qr #qrcode img,
@@ -2060,3 +2082,10 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-se
  html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .apple-wave{width:calc(100% - 14px)!important;justify-self:start!important}
  html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{gap:12px!important}
 }
+
+/* v18.4 — eski birleşik işlem kurallarından sonra ayrı sütunları kesinleştir */
+@media(min-width:1101px){
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:50px minmax(96px,.85fr) 44px minmax(88px,.75fr) 108px 38px minmax(68px,1fr) 32px 32px 32px!important;column-gap:6px!important}
+}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-cell .apple-wave{width:100%!important;max-width:none!important;padding:0!important}

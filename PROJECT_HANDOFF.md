@@ -43,14 +43,15 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - QR dış kutusu zaten ortadaydı ancak `#qrcode img` kendi kapsayıcısının solunda kalıyordu; iç QR görseli de grid merkezine alındı. Kayıt dalgasındaki 72 sabit genişlikli çubuk dar hücrede esneyebilir hale getirildi ve işlem grubundan 16 px ayrıldı.
 - QRCode.js aynı anda gizli canvas ve görünür img üretiyor: canvas kesin olarak gizli, yalnız img ortalı tutulur. Dalga yalnız çubukları esnetmekle bırakılmaz; hücresinden 38 px kısa çizilir ve işlem grubundan ayrıca 18 px ayrılır.
 - Dalga/play ayrımı CSS boşluğu ile değil DOM yapısıyla garanti edilir: `apple-wave`, bağımsız `play` düğmesi ve `wave-secondary` (indir+sil) üç ayrı grid sütunudur. Dalga en fazla 64 px, sütun aralıkları 12 px'tir.
+- Son karar: kayıt tablosu 10 gerçek sütundur. `SES DALGASI`, `OYNAT`, `İNDİR`, `SİL` başlıkları ve satır öğeleri aynı üst seviye gridde ayrı sütunlardadır; ortak işlem kapsayıcısı yoktur.
 
 ## Son işte değişen dosyalar
 
 - `app.js`: satır bazlı seçim, görünenlerin tümünü seçme ve yalnız işaretli kayıtları MP3/ZIP indirme eklendi; işlem düğmeleri tek grup halinde üretildi.
 - `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
-- `app.js`: play düğmesi işlem grubundan çıkarılıp dalga ile ikincil işlemler arasında bağımsız sütuna taşındı.
-- `style.css`: üç sütunlu dalga/play/indir-sil yerleşimi eklendi; dalga 64 px ile sınırlandı.
-- `index.html`: `app.js` 165 ve `style.css` 175 yapıldı.
+- `app.js`: dalga, play, indir ve sil öğeleri satırın dört ayrı üst seviye grid hücresine ayrıldı.
+- `style.css`: masaüstü/tablet/mobil için ayrı sütun ve grid-area kuralları eklendi.
+- `index.html`: dört ayrı tablo başlığı eklendi; `app.js` 166 ve `style.css` 176 yapıldı.
 - `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler
