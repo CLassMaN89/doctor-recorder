@@ -2013,3 +2013,13 @@ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-pl
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions{display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:4px!important;width:92px!important;min-width:92px!important;white-space:nowrap!important}
 html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions>button{position:static!important;margin:0!important;flex:0 0 28px!important;align-self:center!important}
 @media(max-width:760px){html body.desktop-mode #desktop#desktop .recordings-table .bulk-selection-bar{flex-wrap:wrap!important}.bulk-selection-bar .bulk-download{width:100%!important}.bulk-selection-bar b{margin-left:auto!important}.wave-actions{width:92px!important;min-width:92px!important}}
+
+/* v17.8 — masaüstünde sol sütun dar, kayıt listesi ve ses işlemleri daha ferah */
+@media(min-width:1101px){
+ html body.desktop-mode #desktop#desktop .dashboard-showcase{grid-template-columns:minmax(330px,385px) minmax(0,1fr)!important;gap:14px!important}
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table{padding-left:16px!important;padding-right:16px!important}
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .recording-columns,
+ html body.desktop-mode #desktop#desktop .dashboard-showcase>.recordings-table .wave-rec-row{grid-template-columns:58px minmax(108px,.85fr) 54px minmax(112px,.8fr) 116px 44px minmax(188px,1.45fr)!important;column-gap:9px!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{gap:10px!important}
+ html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-actions{gap:6px!important;width:96px!important;min-width:96px!important}
+}
