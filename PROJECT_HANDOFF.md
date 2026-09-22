@@ -15,6 +15,8 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 
 - `index.html`: masaüstü paneli ve telefon kayıt ekranı; CSP ve sürümlü JS/CSS bağlantıları.
 - `app.js`: kayıt, yükleme, panel, liste, filtre, bildirim, tema ve Supabase API akışları.
+- `mp3-worker.js`: telefonda ve eski kayıt indirmelerinde PCM sesi arka planda 64 kb/sn MP3'e kodlar.
+- `lame.min.js`: projeye sabitlenen `lamejs@1.2.1` tarayıcı MP3 kodlayıcısı.
 - `style.css`: açık/koyu tema ve duyarlı masaüstü/telefon arayüzü.
 - `live.html`: telefonu canlı mikrofon olarak bağlayan WebRTC/Trystero sayfası.
 - `mobile-ui.js`, `player-skin.js`, `qr-scanner.js`, `session-guard.js`, `stream-bridge.js`: ayrılmış yardımcı davranışlar.
@@ -32,15 +34,20 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 - GitHub Pages `main` dalının kökünden yayın yapıyor ve HTTPS zorunlu.
 - Canlı site HTTP 200 dönüyor.
 - GitHub'daki `app.js` güncel Supabase proje referansını kullanıyor.
-- Kayıt listesindeki işlemler alanında oynat ve sil düğmelerinin yanında ses dosyasını indiren turkuaz indirme düğmesi bulunuyor.
+- Telefon, tarayıcının ürettiği geçici kaydı durdurunca yerel worker ile MP3'e çevirip mevcut Supabase yükleme akışına `recording.mp3` olarak gönderiyor.
+- Tekli indirme MP3 verir; geçerli filtredeki ilk 10 kayıt `Toplu MP3 İndir` ile tek ZIP içinde indirilebilir.
+- Panelin 2,5 saniyelik sorgusu sürer fakat veri değişmedikçe kayıt DOM'u yeniden kurulmaz; hover ve oynatma durumu sıfırlanmaz.
+- Dalga, oynat, indir ve sil kontrolleri tek satıra sığdırıldı.
 
 ## Son işte değişen dosyalar
 
-- `app.js`: imzalı kayıt bağlantısını güvenli dosya adına sahip yerel indirmeye dönüştüren davranış eklendi.
-- `style.css`: açık/koyu temalı, yükleniyor ve klavye odağı durumlarına sahip indirme simgesi eklendi.
-- `index.html`: `app.js` sürümü 162'ye, `style.css` sürümü 168'e yükseltildi.
-- `PROJECT_HANDOFF.md`: indirme özelliğinin son durumu kaydedildi.
+- `app.js`: telefonda MP3 dönüşümü, eski kayıtları MP3 indirme, en fazla 10 kaydı ZIP indirme ve değişmedikçe DOM'u koruyan panel yenilemesi eklendi.
+- `mp3-worker.js`, `lame.min.js`: yerel, worker tabanlı MP3 kodlayıcı eklendi.
+- `style.css`: işlem düğmeleri tek satıra alındı ve toplu indirme düğmesi biçimlendirildi.
+- `index.html`: toplu indirme düğmesi eklendi; `app.js` 163 ve `style.css` 169 yapıldı.
+- `PROJECT_HANDOFF.md`: MP3 ve panel yenileme kararları kaydedildi.
 
 ## Açık işler
 
-- Klinik hesabıyla canlı ortamda gerçek bir kayıt indirilerek tarayıcının hedef dosya adı kullanıcı tarafından kontrol edilmelidir.
+- Gerçek iPhone ve Android cihazda kısa/uzun kayıt alınarak MP3 kodlama süresi, pil ve bellek kullanımı kullanıcı tarafından gözlenmelidir.
+- Klinik hesabıyla yeni MP3 kaydın tekli ve toplu indirmesi canlı ortamda kontrol edilmelidir.

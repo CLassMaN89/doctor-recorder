@@ -16,6 +16,7 @@ const token=isMobile?(urlToken||readStoredToken()):urlToken;
 if(isMobile&&urlToken){saveStoredToken(urlToken);try{history.replaceState(null,'',location.pathname+'?mode=record')}catch{}}
 let session=null, device=null, recorder=null, chunks=[], stream=null, timerInt=null, startedAt=0, elapsedBeforePause=0, pauseStartedAt=0, isPaused=false, isFinishing=false, waveCtx=null, analyser=null, waveRAF=null, dashboardInt=null;
 let activePlaybackCount=0;
+let dashboardSignature='',dashboardRenderedAt=0,bulkRows=[];
 const mobileConnectionId=crypto.randomUUID();
 function isRecordingPlaybackActive(){
  return activePlaybackCount>0 || [...document.querySelectorAll('#recordings audio, #mobileHistory audio')].some(a=>!a.paused&&!a.ended);
@@ -210,6 +211,7 @@ async function initDesktop(){
  const dateInput=$('#recordingDateFilter');
  if(dateInput){dateInput.onchange=()=>{selectedRecordingDate=dateInput.value||'';syncDateFilterUI();renderDashboard(window.__dash||{devices:[],recordings:[]})};dateInput.onclick=()=>{try{dateInput.showPicker?.()}catch{}};syncDateFilterUI();}
  $('.table-refresh') && ($('.table-refresh').onclick=loadDashboard);
+ $('#bulkDownload') && ($('#bulkDownload').onclick=downloadBulkMp3);
  $('#topRefresh') && ($('#topRefresh').onclick=loadDashboard);
  let saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
  // Kayıtlı QR başka yerden (ör. Dikte2) kapatılmış olabilir: geçerli değilse yenisini oluştur.
@@ -295,7 +297,8 @@ async function loadDashboard(){
    freshDevices.forEach(x=>{const k=x.device_id||x.id,cur=latestByPhone.get(k);if(!cur||actOf(x)>actOf(cur)||(actOf(x)===actOf(cur)&&new Date(x.created_at)>new Date(cur.created_at)))latestByPhone.set(k,x)});
    const currentDevices=freshDevices.filter(x=>latestByPhone.get(x.device_id||x.id)===x);
    window.__dash={devices:currentDevices,recordings:d.recordings||[],allDevices:d.devices||[]};
-   renderDashboard(window.__dash);
+   const signature=JSON.stringify({devices:currentDevices.map(x=>[x.id,x.status,x.doctor_first_name,x.doctor_last_name,x.device_model,x.ip_address]),recordings:(d.recordings||[]).map(r=>[r.id,r.device_connection_id,r.created_at,r.duration_seconds,r.mime_type,r.size_bytes,r.file_path])});
+   if(signature!==dashboardSignature||Date.now()-dashboardRenderedAt>45*60*1000){dashboardSignature=signature;dashboardRenderedAt=Date.now();renderDashboard(window.__dash)}
  }catch(e){console.error(e)}
 }
 
@@ -517,17 +520,40 @@ function downloadFileName(r,x){
  const mimeExt={'audio/webm':'webm','audio/ogg':'ogg','audio/mpeg':'mp3','audio/mp4':'m4a','audio/wav':'wav','audio/x-wav':'wav'}[String(r.mime_type||'').split(';')[0].toLowerCase()];
  return `${doctor}_${date}.${pathExt||mimeExt||'webm'}`;
 }
+async function audioBlobAsMp3(blob){
+ if(String(blob.type||'').split(';')[0].toLowerCase()==='audio/mpeg')return blob;
+ const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)throw new Error('audio_context_unsupported');
+ const ctx=new Ctx();
+ try{
+  const decoded=await ctx.decodeAudioData(await blob.arrayBuffer()),len=decoded.length,mono=new Float32Array(len);
+  for(let c=0;c<decoded.numberOfChannels;c++){const input=decoded.getChannelData(c);for(let i=0;i<len;i++)mono[i]+=input[i]/decoded.numberOfChannels}
+  const pcm=new Int16Array(len);for(let i=0;i<len;i++){const s=Math.max(-1,Math.min(1,mono[i]));pcm[i]=s<0?s*32768:s*32767}
+  const mp3Buffer=await new Promise((resolve,reject)=>{const worker=new Worker('mp3-worker.js?v=1');worker.onmessage=e=>{worker.terminate();e.data?.error?reject(new Error(e.data.error)):resolve(e.data.buffer)};worker.onerror=e=>{worker.terminate();reject(new Error(e.message||'mp3_worker_error'))};worker.postMessage({buffer:pcm.buffer,sampleRate:decoded.sampleRate,bitRate:64},[pcm.buffer])});
+  return new Blob([mp3Buffer],{type:'audio/mpeg'});
+ }finally{ctx.close().catch(()=>{})}
+}
+function mp3FileName(r,x){return downloadFileName(r,x).replace(/\.[^.]+$/,'.mp3')}
 async function downloadRecording(r,x,button){
  if(!r.signed_url){showNotice('Kayıt indirilemedi','Ses dosyası bağlantısı bulunamadı.');return}
  button.disabled=true;button.classList.add('is-loading');button.setAttribute('aria-label','İndiriliyor');
  try{
   const response=await fetch(r.signed_url,{cache:'no-store'});if(!response.ok)throw new Error(`download_${response.status}`);
-  const blob=await response.blob(),href=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=href;link.download=downloadFileName(r,x);link.style.display='none';document.body.appendChild(link);link.click();link.remove();
+  const blob=await audioBlobAsMp3(await response.blob()),href=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=href;link.download=mp3FileName(r,x);link.style.display='none';document.body.appendChild(link);link.click();link.remove();
   setTimeout(()=>URL.revokeObjectURL(href),1500);
   toast({title:'İndirme tamamlandı',message:'Ses kaydı bilgisayarınıza indirildi.',variant:'success'});
  }catch(e){logEvent('warn','Ses kaydı indirilemedi',{recording_id:r.id,message:String(e&&e.message||e)});showNotice('Kayıt indirilemedi','Lütfen bağlantınızı kontrol edip tekrar deneyin.')}
  finally{button.disabled=false;button.classList.remove('is-loading');button.setAttribute('aria-label','Ses kaydını indir')}
+}
+function crc32(bytes){let crc=-1;for(const b of bytes){crc^=b;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}return (crc^-1)>>>0}
+function storedZip(files){
+ const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
+ for(const file of files){const name=enc.encode(file.name),data=file.data,crc=crc32(data),local=new Uint8Array(30+name.length),lv=new DataView(local.buffer);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x800,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,name.length,true);local.set(name,30);locals.push(local,data);const central=new Uint8Array(46+name.length),cv=new DataView(central.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x800,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,name.length,true);cv.setUint32(42,offset,true);central.set(name,46);centrals.push(central);offset+=local.length+data.length}
+ const centralSize=centrals.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22),ev=new DataView(end.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,centralSize,true);ev.setUint32(16,offset,true);return new Blob([...locals,...centrals,end],{type:'application/zip'})
+}
+async function downloadBulkMp3(){
+ const button=$('#bulkDownload'),rows=bulkRows.slice(0,10);if(!rows.length)return showNotice('İndirilecek kayıt yok','Geçerli filtrede ses kaydı bulunamadı.');
+ button.disabled=true;button.textContent='Hazırlanıyor…';try{const files=[];for(let i=0;i<rows.length;i++){button.textContent=`Hazırlanıyor ${i+1}/${rows.length}`;const {r,x}=rows[i],response=await fetch(r.signed_url,{cache:'no-store'});if(!response.ok)throw new Error(`download_${response.status}`);const blob=await audioBlobAsMp3(await response.blob());files.push({name:mp3FileName(r,x),data:new Uint8Array(await blob.arrayBuffer())})}const zip=storedZip(files),href=URL.createObjectURL(zip),a=document.createElement('a');a.href=href;a.download=`ses_kayitlari_${new Date().toISOString().slice(0,10)}.zip`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1500);toast({title:'Toplu indirme hazır',message:`${files.length} MP3 kaydı ZIP olarak indirildi.`,variant:'success'})}catch(e){showNotice('Toplu indirme tamamlanamadı','Bağlantınızı kontrol edip tekrar deneyin.')}finally{button.disabled=false;button.textContent='Toplu MP3 İndir'}
 }
 function renderDashboard(d){
  lastDash=d;
@@ -569,6 +595,7 @@ function renderDashboard(d){
  if(wrap&&!clr){clr=document.createElement('button');clr.id='docClear';clr.type='button';clr.className='filter-clear';clr.setAttribute('aria-label','Doktor filtresini temizle');clr.title='Filtreyi temizle';clr.textContent='✕';clr.onclick=()=>{filter.value='';rerenderRecs()};wrap.appendChild(clr)}
  if(wrap){wrap.classList.toggle('has-clear',!!filter.value)}
  const shown=recs.filter(r=>(!filter.value||(deviceMap[r.device_connection_id]&&'doc:'+docKey(deviceMap[r.device_connection_id])===filter.value))&&(!selectedRecordingDate||localDateKey(r.created_at)===selectedRecordingDate)),box=$('#recordings'),boxH0=box.clientHeight,scrollY0=window.scrollY,prevTops=new Map([...box.querySelectorAll('.wave-rec-row[data-rid]')].map(e=>[e.dataset.rid,e.getBoundingClientRect().top]));box.innerHTML=shown.length?'':'<div class="empty">Henüz kayıt yok.</div>';
+ bulkRows=shown.filter(r=>r.signed_url).map(r=>({r,x:deviceMap[r.device_connection_id]||{}}));const bulk=$('#bulkDownload');if(bulk)bulk.disabled=!bulkRows.length;
  // Sayfalama: sayfa başına kayıt sayısı, listenin görünür yüksekliğine göre belirlenir.
  const pageKey=`${filter.value}|${selectedRecordingDate||''}`;if(pageKey!==recPageKey){recPageKey=pageKey;recPage=0;recSizeOverride=null;recFitTries=0}
  const wideList=window.matchMedia('(min-width:1101px)').matches,pageSize=recSizeOverride||(wideList&&boxH0>150?Math.max(3,Math.floor(boxH0/40)):8),pageCount=Math.max(1,Math.ceil(shown.length/pageSize));
@@ -950,25 +977,22 @@ async function startRecording(){
 async function uploadRecording(){
  const finishedRecorder=recorder;
  try{
-  $('#uploadState').textContent='Ses kaydı gönderiliyor…';
+  $('#uploadState').textContent='Ses kaydı MP3 hazırlanıyor…';
   $('#uploadState').classList.remove('hidden');
 
   const duration=finishedRecorder?.__finalDuration ||
     Math.max(1,Math.round(elapsedBeforePause/1000));
 
   const actualType=(finishedRecorder?.mimeType || chunks[0]?.type || 'audio/mp4').split(';')[0];
-  const blob=new Blob(chunks,{type:actualType});
+  const sourceBlob=new Blob(chunks,{type:actualType});
   stream?.getTracks().forEach(t=>t.stop());
 
-  if(!blob.size) throw new Error('empty_recording');
-
-  const ext=actualType.includes('mp4')?'m4a':
-            actualType.includes('mpeg')?'mp3':
-            actualType.includes('wav')?'wav':
-            actualType.includes('aac')?'aac':'webm';
+  if(!sourceBlob.size) throw new Error('empty_recording');
+  const blob=await audioBlobAsMp3(sourceBlob);
+  $('#uploadState').textContent='Ses kaydı gönderiliyor…';
 
   const form=new FormData();
-  form.append('file',blob,`recording.${ext}`);
+  form.append('file',blob,'recording.mp3');
   form.append('duration_seconds',String(duration));
 
   await api('upload',{

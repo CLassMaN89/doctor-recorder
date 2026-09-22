@@ -1987,3 +1987,13 @@ html[data-theme="dark"] body.desktop-mode #desktop#desktop .recordings-table .wa
 html[data-theme="dark"] body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec:hover{background:#0b9daa;border-color:#0b9daa;color:#fff}
 @keyframes downloadPulse{to{opacity:.35;transform:translateY(2px)}}
 @media(prefers-reduced-motion:reduce){html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec,html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .download-rec.is-loading svg{transition:none;animation:none}}
+
+/* v17.6 — sabit liste, tek satır işlemler ve toplu MP3 indirme */
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player{display:grid!important;grid-template-columns:minmax(44px,1fr) 28px 28px 28px!important;gap:4px!important;align-items:center!important;min-width:0!important;white-space:nowrap!important}
+html body.desktop-mode #desktop#desktop .recordings-table .wave-rec-row .wave-player>*{min-width:0}
+#desktop .bulk-download{height:38px;min-width:112px;padding:0 12px;border:1px solid #9bdde3;border-radius:10px;background:#ecfbfc;color:#087f8c;font:700 11px Roboto,sans-serif;white-space:nowrap;cursor:pointer;transition:background .16s ease,color .16s ease,border-color .16s ease}
+#desktop .bulk-download:hover{background:#0aa7b5;border-color:#0aa7b5;color:#fff}
+#desktop .bulk-download:disabled{opacity:.5;cursor:not-allowed}
+html[data-theme="dark"] #desktop .bulk-download{background:#163b43;border-color:#28616b;color:#66d7df}
+@media(max-width:900px){#desktop .bulk-download{min-width:38px;width:38px;padding:0;font-size:0}#desktop .bulk-download::after{content:'⇩';font-size:18px}}
+@media(prefers-reduced-motion:reduce){#desktop .bulk-download{transition:none}}
