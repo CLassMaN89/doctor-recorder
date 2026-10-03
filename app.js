@@ -220,7 +220,12 @@ async function initDesktop(){
  $('.table-refresh') && ($('.table-refresh').onclick=loadDashboard);
  $('#bulkDownload') && ($('#bulkDownload').onclick=downloadBulkMp3);
  $('#selectAllRecs') && ($('#selectAllRecs').onchange=e=>{bulkRows.forEach(({r})=>e.target.checked?selectedRecIds.add(r.id):selectedRecIds.delete(r.id));rerenderRecs()});
- $('#topRefresh') && ($('#topRefresh').onclick=loadDashboard);
+ $('#topLogout') && ($('#topLogout').onclick=async()=>{
+  $('#topLogout').disabled=true;
+  try{await sb.auth.signOut()}catch(e){console.error(e)}
+  localStorage.removeItem('dr_pc_session');
+  location.reload();
+ });
  let saved=JSON.parse(localStorage.getItem('dr_pc_session')||'null');
  // Kayıtlı QR başka yerden (ör. Dikte2) kapatılmış olabilir: geçerli değilse yenisini oluştur.
  if(saved?.token){
