@@ -185,8 +185,18 @@ function clinicLogin(){
   form.onsubmit=async e=>{
    e.preventDefault();
    const btn=form.querySelector('button');btn.disabled=true;box.querySelector('#clErr').textContent='';
-   const r=await sb.auth.signInWithPassword({email:box.querySelector('#clEmail').value.trim(),password:box.querySelector('#clPass').value});
-   if(r.error){box.querySelector('#clErr').textContent='E-posta veya şifre hatalı.';btn.disabled=false;return}
+   let r;
+   try{r=await sb.auth.signInWithPassword({email:box.querySelector('#clEmail').value.trim(),password:box.querySelector('#clPass').value})}
+   catch{box.querySelector('#clErr').textContent='Giriş servisine ulaşılamadı. İnternet bağlantısını kontrol edin.';btn.disabled=false;return}
+   if(r.error){
+    const code=String(r.error.code||'').toLowerCase(),message=String(r.error.message||'').toLowerCase();
+    box.querySelector('#clErr').textContent=
+     code==='email_not_confirmed'||message.includes('email not confirmed')?'E-posta adresi henüz doğrulanmamış.':
+     code.includes('rate_limit')||message.includes('rate limit')?'Çok fazla giriş denemesi yapıldı. Birkaç dakika sonra tekrar deneyin.':
+     code==='invalid_credentials'||message.includes('invalid login')?'E-posta veya şifre eşleşmiyor.':
+     `Giriş yapılamadı: ${r.error.message||r.error.code||'Bilinmeyen hata'}`;
+    btn.disabled=false;return
+   }
    // Eski (anonim) oturuma ait kayıtlı QR başka kimliğe aitti; yenisi oluşturulsun.
    localStorage.removeItem('dr_pc_session');
    box.remove();resolve();

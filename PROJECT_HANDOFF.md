@@ -32,6 +32,7 @@ Bu dosya her tamamlanan Doctor Recorder işi sonunda güncellenir. Yeni çalış
 ## Son doğrulanan durum
 
 - Masaüstü panelinin sağ üstündeki yenile düğmesi kaldırıldı; yerine klinik oturumunu kapatıp giriş ekranına döndüren `Çıkış yap` düğmesi eklendi (`app.js?v=168`).
+- Klinik giriş formu artık Supabase hatalarını tek bir yanıltıcı mesaj altında toplamaz; yanlış bilgi, doğrulanmamış e-posta, hız sınırı ve bağlantı hatalarını ayrı gösterir (`app.js?v=169`).
 - GitHub Pages `main` dalının kökünden yayın yapıyor ve HTTPS zorunlu.
 - Canlı site HTTP 200 dönüyor.
 - GitHub'daki `app.js` güncel Supabase proje referansını kullanıyor.
